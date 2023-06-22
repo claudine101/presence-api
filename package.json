@@ -1,12 +1,12 @@
 {
-          "name": "courrier-api",
+          "name": "archivage-api",
           "version": "1.0.0",
           "description": "",
-          "main": "server-courrier.js",
+          "main": "server-archivage.js",
           "scripts": {
-                    "start": "nodemon server-courrier.js",
-                    "start:dev": "NODE_ENV=dev && pm2 start server-courrier.js",
-                    "start:prod": "NODE_ENV=prod && pm2 start server-courrier.js"
+                    "start": "nodemon server-achivage.js",
+                    "start:dev": "NODE_ENV=dev && pm2 start server-archivage.js",
+                    "start:prod": "NODE_ENV=prod && pm2 start server-archivage.js"
           },
           "author": "darcy@mediabox.bi",
           "license": "ISC",

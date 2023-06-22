@@ -21,10 +21,11 @@ const path = require('path')
 const login = async (req, res) => {
     try {
         const { username, password, PUSH_NOTIFICATION_TOKEN, DEVICE } = req.body;
+        console.log(req.body)
         const validation = new Validation(
             req.body,
             {
-                // email: "required,email",
+                username: "required,email",
                 password:
                 {
                     required: true,
@@ -34,10 +35,10 @@ const login = async (req, res) => {
             password: {
                 required: "Mot de passe est obligatoire",
             },
-            // email: {
-            //     required: "L'email est obligatoire",
-            //     email: "Email invalide"
-            // }
+            username: {
+                required: "L'email est obligatoire",
+                username: "Email invalide"
+            }
         }
         );
 

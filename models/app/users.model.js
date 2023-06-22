@@ -2,21 +2,24 @@ const PROFILS = require("../../constants/PROFILS");
 const { query } = require("../../utils/db");
 
 /**
- * Permet de récuper l'utilisateur comme client
+ * Permet de récuper l'utilisateur 
  * @param { string } email 
  * @returns 
  */
 const findUserLogin = async (email) => {
     try {
         var sqlQuery = `
-        SELECT u.*,
-        s.ID_SOCIETE,
-        s.DESCRIPTION AS societe,
-        d.DESCRIPTION as departement
-    FROM users u
-        LEFT JOIN departements d ON d.DEPARTEMENT_ID = u.DEPARTEMENT_ID
-        LEFT JOIN societes s ON s.ID_SOCIETE = d.ID_SOCIETE
-    WHERE u.email =  ?
+            SELECT u.*,
+                p.ID_PROFIL,
+                p.DESCRIPTION AS profil,
+                r.ID_ROLE,
+                r.DESC_ROLE as roles,
+                au.ID_AFFECTATION
+            FROM users u
+                LEFT JOIN profils p ON p.ID_PROFIL = u.ID_PROFIL
+                LEFT JOIN affectation_users au ON au.ID_USERS = u.USERS_ID
+                LEFT JOIN role r ON r.ID_ROLE = au.ID_ROLE
+            WHERE u.email = ?
                     `;
         return query(sqlQuery, [email]);
     } catch (error) {
@@ -74,7 +77,7 @@ const createOne = (
     fileUrlcarte,
     fileUrlvehicule,
     genre,
-    banque, compte, titulaire,plaque) => {
+    banque, compte, titulaire, plaque) => {
     try {
 
         var sqlQuery = `
@@ -117,7 +120,7 @@ const createOne = (
             fileUrlcarte,
             fileUrlvehicule,
             genre,
-            banque, compte, titulaire,plaque])
+            banque, compte, titulaire, plaque])
     }
     catch (error) {
 
