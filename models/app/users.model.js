@@ -8,19 +8,7 @@ const { query } = require("../../utils/db");
  */
 const findUserLogin = async (email) => {
     try {
-        var sqlQuery = `
-            SELECT u.*,
-                p.ID_PROFIL,
-                p.DESCRIPTION AS profil,
-                r.ID_ROLE,
-                r.DESC_ROLE as roles,
-                au.ID_AFFECTATION
-            FROM users u
-                LEFT JOIN profils p ON p.ID_PROFIL = u.ID_PROFIL
-                LEFT JOIN affectation_users au ON au.ID_USERS = u.USERS_ID
-                LEFT JOIN role r ON r.ID_ROLE = au.ID_ROLE
-            WHERE u.email = ?
-                    `;
+        var sqlQuery = `CALL LoginUser(?) `;
         return query(sqlQuery, [email]);
     } catch (error) {
         throw error;

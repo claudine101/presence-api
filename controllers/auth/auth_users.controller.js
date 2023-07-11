@@ -20,12 +20,11 @@ const path = require('path')
  */
 const login = async (req, res) => {
     try {
-        const { username, password, PUSH_NOTIFICATION_TOKEN, DEVICE } = req.body;
-        console.log(req.body)
+        const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE } = req.body;
         const validation = new Validation(
             req.body,
             {
-                username: "required,email",
+                email: "required,email",
                 password:
                 {
                     required: true,
@@ -35,9 +34,9 @@ const login = async (req, res) => {
             password: {
                 required: "Mot de passe est obligatoire",
             },
-            username: {
+            email: {
                 required: "L'email est obligatoire",
-                username: "Email invalide"
+                email: "Email invalide"
             }
         }
         );
@@ -53,38 +52,27 @@ const login = async (req, res) => {
                 result: errors
             })
         }
-        var user = (await users_model.findUserLogin(username))[0];
+        var user={}
+        var results = (await users_model.findUserLogin(email))[0];
+        user=results[0]
         if (user) {
             if (user.PASSEWORD == md5(password)) {
-                if (user.STATUT == 1) {
-                    const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM notification_tokens WHERE TOKEN = ? AND ID_UTILISATEUR = ?', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID]))[0]
-                    if (!notification && PUSH_NOTIFICATION_TOKEN) {
-                        await query('INSERT INTO notification_tokens(ID_UTILISATEUR, DEVICE, TOKEN, ID_PROFIL) VALUES(?, ?, ?, ?)', [user.USERS_ID, DEVICE, PUSH_NOTIFICATION_TOKEN, user.ID_PROFIL]);
+                const notification = (await query('CALL searchToken(?,?)', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID]))[0]
+        
+                if (notification.length==0 && PUSH_NOTIFICATION_TOKEN) {
+                    await query('CALL insertToken(?, ?, ?, ?)', [PUSH_NOTIFICATION_TOKEN,user.USERS_ID ,user.ID_PROFIL,DEVICE]);
+                }
+                const token = generateToken({ user: user.USERS_ID }, 3 * 12 * 30 * 24 * 3600)
+                const { PASSEWORD, USERNAME, ...other } = user
+                res.status(RESPONSE_CODES.CREATED).json({
+                    statusCode: RESPONSE_CODES.CREATED,
+                    httpStatus: RESPONSE_STATUS.CREATED,
+                    message: "Vous êtes connecté avec succès",
+                    result: {
+                        ...other,
+                        token
                     }
-                    const token = generateToken({ user: user.USERS_ID }, 3 * 12 * 30 * 24 * 3600)
-                    const { PASSEWORD, USERNAME, ...other } = user
-                        console.log(user)
-                    res.status(RESPONSE_CODES.CREATED).json({
-                        statusCode: RESPONSE_CODES.CREATED,
-                        httpStatus: RESPONSE_STATUS.CREATED,
-                        message: "Vous êtes connecté avec succès",
-                        result: {
-                            ...other,
-                            token
-                        }
-                    })
-                }
-                else {
-                    validation.setError('main', "vous n'est pas autorisé")
-                    const errors = await validation.getErrors()
-                    res.status(RESPONSE_CODES.NOT_FOUND).json({
-                        statusCode: RESPONSE_CODES.NOT_FOUND,
-                        httpStatus: RESPONSE_STATUS.NOT_FOUND,
-                        message: "Utilisateur n'existe pas",
-                        result: errors
-                    })
-                }
-
+                })
             } else {
                 validation.setError('main', 'Identifiants incorrects')
                 const errors = await validation.getErrors()
