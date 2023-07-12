@@ -14,7 +14,10 @@ const bindUser = require("./middleware/bindUser");
 dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
-const authRouter = require("./routes/auth/auth_users.routes");
+const authRouter = require("./routes/auth/auth_usersRoutes");
+const volumeRouter = require("./routes/volume/volumeRoutes");
+const folioRouter = require("./routes/folio/foliorRouter");
+const agentRouter = require("./routes/agent/agentRouter");
 
 app.use(cors());
 app.set('view engine','ejs');
@@ -24,7 +27,13 @@ app.use(express.json())
 app.use(fileUpload());
 
 app.all('*', bindUser)
+app.use('/volume', volumeRouter)
+app.use('/folio', folioRouter)
 app.use('/auth', authRouter)
+app.use('/agent', agentRouter)
+
+
+
 // app.use('/courrier',courrierRouter)
 
 app.all("*", (req, res) => {

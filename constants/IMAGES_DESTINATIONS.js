@@ -1,8 +1,7 @@
 const path = require('path')
 
 const IMAGES_DESTINATIONS = {
-          partenaires: path.sep + 'uploads' + path.sep + 'partenaires',
-          products: path.sep + 'uploads' + path.sep + 'products'
+          pv: path.sep + 'uploads'+path.sep+'attachement'+ path.sep,
 }
 
 module.exports = IMAGES_DESTINATIONS
