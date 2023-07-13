@@ -9,7 +9,9 @@ const md5 = require('md5')
 const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
-const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
+const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
+const Volume_pv = require('../../models/volume_pv');
+const Volume = require('../../models/volume');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -20,7 +22,11 @@ const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
  */
 const findById = async (req, res) => {
     try {
-        var results = (await volume_model.findVolume(req.userId));
+        const results = await Volume.findAll({
+            where: {
+                ID_USERS:req.userId
+            }
+        })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
@@ -46,15 +52,17 @@ const findById = async (req, res) => {
  */
 const findOne = async (req, res) => {
     try {
-        const {ID_VOLUME}=req.params
-        var results = (await volume_model.findOne(ID_VOLUME));
-        var  resultObjet={}
-        resultObjet=results[0]
+        const { ID_VOLUME } = req.params
+        const results = await Volume.findOne({
+            where: {
+                ID_VOLUME
+            }
+        })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Volume ",
-            result: resultObjet
+            result: results
         })
     } catch (error) {
         console.log(error)
@@ -75,11 +83,11 @@ const findOne = async (req, res) => {
  */
 const findAll = async (req, res) => {
     try {
-        var results = (await volume_model.findAll());
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Vous êtes connecté avec succès",
+        var results = await Volume.findAll();
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les volumes",
             result: results
         })
     } catch (error) {
@@ -129,16 +137,16 @@ const createVolume = async (req, res) => {
         //     })
         // }
         var volumeObjet = {}
-        volumeObjet = JSON.parse(volume)
-        // volumeObjet = volume
+        // volumeObjet = JSON.parse(volume)
+        volumeObjet = volume
         await Promise.all(volumeObjet.map(async (volume) => {
-        const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
-            await volume_model.create(
-                volume.NUMERO_VOLUME,
-                CODE_REFERENCE,
-                req.userId,
-                date
+            await Volume.create({
+                NUMERO_VOLUME: volume.NUMERO_VOLUME,
+                CODE_VOLUME: CODE_REFERENCE,
+                ID_USERS: req.userId
+            }
             )
         }))
         const pvUpload = new VolumePvUpload()
@@ -149,7 +157,7 @@ const createVolume = async (req, res) => {
             // filename = fileInfo_1
             // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
 
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv"+ path.sep
+            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
             console.log(destination)
             const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
             const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
@@ -190,7 +198,14 @@ const update = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { NOMBRE_DOSSIER, ID_USERS } = req.body
-        var results = (await volume_model.update(NOMBRE_DOSSIER, ID_USERS, ID_VOLUME));
+        const results = await Volume.update({
+            NOMBRE_DOSSIER,
+            USER_TRAITEMENT: ID_USERS
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
         const pvUpload = new VolumePvUpload()
         var filename
         const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
@@ -200,24 +215,51 @@ const update = async (req, res) => {
             // filename = fileInfo_1
             // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
 
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv"+ path.sep
+            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
             console.log(destination)
             const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
             const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
             const newFile = await PV.mv(destination + fileName);
             fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
 
-            var histo = await volume_model.createHisto(
-                // filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,
-                fileUrl,
-                req.userId,
-                date
+            var histo = await Volume_pv.create({
+                PV_PATH: fileUrl,
+                USERS_ID: req.userId,
+            }
+
             )
         }
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "modification faite  avec succès",
+            result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de recuper un volume
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  12/07/2023
+ * 
+ */
+const getPv = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        var results = (await Volume_pv.findAll());
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Volume ",
             result: results
         })
     } catch (error) {
@@ -237,6 +279,7 @@ module.exports = {
     createVolume,
     findAll,
     update,
-    findOne
+    findOne,
+    getPv
 
 }

@@ -13,6 +13,12 @@ volume_routes.get('/volume', volume_controller.findById)
  * @url /volume/dossiers/volume
  */
  volume_routes.get('/volumeOne/:ID_VOLUME', volume_controller.findOne)
+ /**
+ * Une route  recuperer  les pv  
+ *@method GET
+ * @url /volume/dossiers/volume
+ */
+ volume_routes.get('/pv', volume_controller.getPv)
 /**
  * Une route  recuperer  tous les volumes
  *@method GET
