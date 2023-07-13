@@ -8,6 +8,8 @@ const { query } = require('../../utils/db');
 const generateToken = require('../../utils/generateToken');
 const md5 = require('md5')
 const path = require('path')
+const ExecQuery = require('../../models/ExecQuery');
+
 
 
 /**
@@ -52,15 +54,22 @@ const login = async (req, res) => {
                 result: errors
             })
         }
-        var user={}
-        var results = (await users_model.findUserLogin(email))[0];
-        user=results[0]
+        var user = {}
+        var requete = ""
+        var requete = `
+                SELECT USERS_ID, NOM,PRENOM,EMAIL, 
+                PASSEWORD, ID_PROFIL  
+                FROM users u  
+                WHERE u.EMAIL='${email}'
+         `
+        var results = (await ExecQuery.readRequete(requete))[0];
+        user = results[0]
         if (user) {
             if (user.PASSEWORD == md5(password)) {
                 const notification = (await query('CALL searchToken(?,?)', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID]))[0]
-        
-                if (notification.length==0 && PUSH_NOTIFICATION_TOKEN) {
-                    await query('CALL insertToken(?, ?, ?, ?)', [PUSH_NOTIFICATION_TOKEN,user.USERS_ID ,user.ID_PROFIL,DEVICE]);
+
+                if (notification.length == 0 && PUSH_NOTIFICATION_TOKEN) {
+                    await query('CALL insertToken(?, ?, ?, ?)', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID, user.ID_PROFIL, DEVICE]);
                 }
                 const token = generateToken({ user: user.USERS_ID }, 3 * 12 * 30 * 24 * 3600)
                 const { PASSEWORD, USERNAME, ...other } = user
@@ -111,7 +120,7 @@ const login = async (req, res) => {
  */
 const createUser = async (req, res) => {
     try {
-        const { societe, plaque,departemant, NOM, PRENOM, EMAIL, TELEPHONE, PASSWORD: password, genre, profil, banque, compte, titulaire
+        const { societe, plaque, departemant, NOM, PRENOM, EMAIL, TELEPHONE, PASSWORD: password, genre, profil, banque, compte, titulaire
         } = req.body
 
         const permis = req.files?.permis
@@ -222,7 +231,7 @@ const createUser = async (req, res) => {
                 const newFile = await vehicule.mv(destination + fileName);
                 fileUrlvehicule = `${req.protocol}://${req.get("host")}/user/document/${fileName}`;
             }
-           
+
         }
         else if (profil == 2) {
             societeObjet = JSON.parse(societe)
@@ -253,7 +262,7 @@ const createUser = async (req, res) => {
             const newFile = await user.mv(destination + fileName);
             fileUrluser = `${req.protocol}://${req.get("host")}/user/document/${fileName}`;
         }
-        departemants=departemantObjet?.DEPARTEMENT_ID
+        departemants = departemantObjet?.DEPARTEMENT_ID
         const { insertId } = await users_model.createOne(
             departemants,
             profil,

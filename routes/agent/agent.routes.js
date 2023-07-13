@@ -3,9 +3,9 @@ const agent_controller = require('../../controllers/agent/agent.controller')
 const agent_routes = express.Router()
 
 /**
- * Une route pour controller la connnexion d'un client
+ * Une route pour recupere Agents superviseur archives
  *@method POST
- * @url /auth/users/login
+ * @url /agent/superviseur_archives/
  */
 agent_routes.get('/', agent_controller.findAll)
 

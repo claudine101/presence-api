@@ -13,7 +13,11 @@ const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
 const Folio = require('../../models/folio');
 const Users = require('../../models/Users');
 const Affectation_users = require('../../models/affectation_users');
+const ExecQuery = require('../../models/ExecQuery');
+
 const Aile = require('../../models/Aile');
+const { excludedProperties } = require('juice');
+const Batiment = require('../../models/Batiment');
 /**
  * Permet de recuperer les folio traitetement  par un users connecte
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -129,7 +133,7 @@ const findMaille = async (req, res) => {
  */
 const findBatiment = async (req, res) => {
     try {
-        var results = (await folio_model.findBatiment());
+        var results = (await Batiment.findAll());
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -156,7 +160,12 @@ const findBatiment = async (req, res) => {
 const findAile = async (req, res) => {
     try {
         const { ID_BATIMENT } = req.params
-        var results = (await folio_model.findAiles(ID_BATIMENT));
+
+        var results = await Aile.findAll({
+            where:{
+                ID_BATIMENT:ID_BATIMENT
+            }
+        });
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -183,23 +192,30 @@ const findAile = async (req, res) => {
 const findAgentDistributeurAile = async (req, res) => {
     try {
         const { ID_AILE } = req.params
-        const results = await Users.findAll({
-            where: {
-                ID_AILE: ID_AILE
-            },
-            include: {
-                    model: Affectation_users,
-                    as: 'users',
-                    required: false,
-                    include: {
-                        model: Aile,
-                        as: 'aile',
-                        required: false,
-                        attributes: ['ID_AILE', 'NUMERO_AILE'],
-                }
-            },
+        var requete=`
+        SELECT * FROM affectation_users au 
+        LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
+         WHERE au.ID_AILE=${ID_AILE} AND  u.ID_PROFIL=29
+           `
+           const results = await ExecQuery.readRequete(requete)
+           
+    //     const results = await Users.findAll({
+    //         where: {
+    //             ID_AILE: ID_AILE
+    //         },
+    //         include: {
+    //                 model: Affectation_users,
+    //                 as: 'users',
+    //                 required: false,
+    //                 include: {
+    //                     model: Aile,
+    //                     as: 'aile',
+    //                     required: false,
+    //                     attributes: ['ID_AILE', 'NUMERO_AILE'],
+    //             }
+    //         },
             
-    })
+    // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
