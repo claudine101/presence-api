@@ -74,7 +74,7 @@ const update = async (NOMBRE_DOSSIER,ID_USERS,ID_VOLUME) => {
  */
 const create = async (NUMERO_VOLUME,CODE_VOLUME,ID_USERS) => {
     try {
-        var values =`${NUMERO_VOLUME},${CODE_VOLUME},${ID_USERS}`
+        var values =`'${NUMERO_VOLUME}','${CODE_VOLUME}',${ID_USERS}`
         var tables =`volume`
         var sqlQuery =`CALL insertLastIdIntoTable(?,?)`;
         return query(sqlQuery, [tables,values]);
