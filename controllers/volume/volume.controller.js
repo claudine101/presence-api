@@ -57,10 +57,10 @@ const findBy = async (req, res) => {
                 USER_TRAITEMENT:req.userId
             }
         })
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Vous êtes connecté avec succès",
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les volumes",
             result: results
         })
     } catch (error) {

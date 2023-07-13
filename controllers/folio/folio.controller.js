@@ -30,10 +30,10 @@ const Nature_folio = require('../../models/Nature_folio');
 const findById = async (req, res) => {
     try {
         var results = (await folio_model.findFolio(req.userId));
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Vous êtes connecté avec succès",
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios",
             result: results
         })
     } catch (error) {
@@ -56,10 +56,10 @@ const findById = async (req, res) => {
 const findAll = async (req, res) => {
     try {
         var results = (await folio_model.findAll());
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Vous êtes connecté avec succès",
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios",
             result: results
         })
     } catch (error) {

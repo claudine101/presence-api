@@ -22,10 +22,10 @@ const Users = require('../../models/Users');
 const findById = async (req, res) => {
     try {
         var results = (await agent_model.findAgent(req.userId));
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Vous êtes connecté avec succès",
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les agents",
             result: results
         })
     } catch (error) {
