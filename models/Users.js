@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Profil = require('./Profil');
+const Profils = require('./Profils');
 
 const Users = sequelize.define('users', {
     USERS_ID: {
@@ -58,6 +58,6 @@ const Users = sequelize.define('users', {
     });
 
 
-Users.belongsTo(Profil, { foreignKey: "ID_PROFIL", as: 'profil' })
+Users.belongsTo(Profils, { foreignKey: "ID_PROFIL", as: 'profil' })
 
 module.exports = Users;

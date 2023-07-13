@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Users = require('./Users');
 
 /**
 * fonction model pour la creation de la table devise
@@ -33,4 +34,5 @@ const Folio_pv = sequelize.define("folio_pv", {
     tableName: 'folio_pv',
     timestamps: false,
 })
+Folio_pv.belongsTo(Users, { foreignKey: "USERS_ID", as: 'users' })
 module.exports = Folio_pv
