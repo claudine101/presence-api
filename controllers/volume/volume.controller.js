@@ -132,11 +132,13 @@ const createVolume = async (req, res) => {
         volumeObjet = JSON.parse(volume)
         // volumeObjet = volume
         await Promise.all(volumeObjet.map(async (volume) => {
+        const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
             await volume_model.create(
                 volume.NUMERO_VOLUME,
                 CODE_REFERENCE,
-                req.userId
+                req.userId,
+                date
             )
         }))
         const pvUpload = new VolumePvUpload()
