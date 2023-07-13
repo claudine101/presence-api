@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
 
 const Role = sequelize.define('nature_folio', {
     ID_NATURE_FOLIO: {

@@ -9,7 +9,11 @@ const md5 = require('md5')
 const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
-const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
+const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
+const Folio = require('../../models/folio');
+const Users = require('../../models/Users');
+const Affectation_users = require('../../models/affectation_users');
+const Aile = require('../../models/Aile');
 /**
  * Permet de recuperer les folio traitetement  par un users connecte
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -151,7 +155,7 @@ const findBatiment = async (req, res) => {
  */
 const findAile = async (req, res) => {
     try {
-        const{ID_BATIMENT}=req.params
+        const { ID_BATIMENT } = req.params
         var results = (await folio_model.findAiles(ID_BATIMENT));
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -178,8 +182,24 @@ const findAile = async (req, res) => {
  */
 const findAgentDistributeurAile = async (req, res) => {
     try {
-        const{ID_AILE}=req.params
-        var results = (await folio_model.findAgentDistributeurAile(ID_AILE));
+        const { ID_AILE } = req.params
+        const results = await Users.findAll({
+            where: {
+                ID_AILE: ID_AILE
+            },
+            include: {
+                    model: Affectation_users,
+                    as: 'users',
+                    required: false,
+                    include: {
+                        model: Aile,
+                        as: 'aile',
+                        required: false,
+                        attributes: ['ID_AILE', 'NUMERO_AILE'],
+                }
+            },
+            
+    })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -239,13 +259,15 @@ const createFalio = async (req, res) => {
         await Promise.all(folioObjet.map(async (folio) => {
             const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            await folio_model.create(
-                ID_VOLUME,
-                folio.ID_NATURE,
-                folio.NUMERO_FOLIO,
-                folio.NUMERO_DOSSIERS,
-                req.userId,
-                dateinsert
+            await Folio.create(
+                {
+                    ID_VOLUME: ID_VOLUME,
+                    ID_NATURE: folio.ID_NATURE,
+                    NUMERO_FOLIO: folio.NUMERO_FOLIO,
+                    CODE_FOLIO:CODE_REFERENCE,
+                    NUMERO_DOSSIERS: folio.NUMERO_DOSSIERS,
+                    ID_USERS: req.userId
+                }
             )
         }))
         const pvUpload = new VolumePvUpload()
@@ -256,7 +278,7 @@ const createFalio = async (req, res) => {
             // filename = fileInfo_1
             // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
 
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv"+ path.sep
+            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
             console.log(destination)
             const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
             const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;

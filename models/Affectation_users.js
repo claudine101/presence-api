@@ -1,7 +1,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
 const Users = require('./Users');
 const Aile = require('./Aile');
+const Role = require('./Role');
 /**
 * fonction model pour la creation de la table affectation_users
 * @author NDAYISABA claudined <claudined@mediabox.bi>
@@ -15,7 +16,7 @@ const Affectation_users = sequelize.define('affectation_users', {
         autoIncrement: true,
         allowNull: false
     },
-    ID_USERS: {
+    USERS_ID: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -34,7 +35,7 @@ const Affectation_users = sequelize.define('affectation_users', {
         tableName: 'affectation_users',
         timestamps: false
     });
-Affectation_users.belongsTo(Users, { foreignKey: "ID_USERS", as: 'users' })
+Affectation_users.belongsTo(Users, { foreignKey: "USERS_ID", as: 'users' })
 Affectation_users.belongsTo(Aile, { foreignKey: "ID_AILE", as: 'aile' })
 Affectation_users.belongsTo(Role, { foreignKey: "ID_ROLE", as: 'role' })
 

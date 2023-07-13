@@ -9,7 +9,8 @@ const md5 = require('md5')
 const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
-const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
+const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
+const Users = require('../../models/Users');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -46,7 +47,11 @@ const findById = async (req, res) => {
  */
 const findAll = async (req, res) => {
     try {
-        var results = (await agent_model.findAll());
+        var results = (await Users.findAll(
+           { where: {
+            ID_PROFIL:3
+            }}
+        ));
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
