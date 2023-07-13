@@ -18,6 +18,7 @@ const ExecQuery = require('../../models/ExecQuery');
 const Aile = require('../../models/Aile');
 const { excludedProperties } = require('juice');
 const Batiment = require('../../models/Batiment');
+const Nature_folio = require('../../models/Nature_folio');
 /**
  * Permet de recuperer les folio traitetement  par un users connecte
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -80,7 +81,7 @@ const findAll = async (req, res) => {
  */
 const findNature = async (req, res) => {
     try {
-        var results = (await folio_model.findNature());
+        var results = (await Nature_folio.findAll());
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,

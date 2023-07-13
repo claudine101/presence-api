@@ -43,6 +43,36 @@ const findById = async (req, res) => {
     }
 }
 /**
+ * Permet de vérifier la connexion dun utilisateur
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  11/07/2023
+ * 
+ */
+const findBy = async (req, res) => {
+    try {
+        const results = await Volume.findAll({
+            where: {
+                USER_TRAITEMENT:req.userId
+            }
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "Vous êtes connecté avec succès",
+            result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet de recuper un volume
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
  * @param {express.Request} req
@@ -83,7 +113,11 @@ const findOne = async (req, res) => {
  */
 const findAll = async (req, res) => {
     try {
-        var results = await Volume.findAll();
+        var results = await Volume.findAll({
+            where:{
+                NOMBRE_DOSSIER:null,USER_TRAITEMENT:null
+            }
+        });
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -280,6 +314,7 @@ module.exports = {
     findAll,
     update,
     findOne,
-    getPv
+    getPv,
+    findBy
 
 }

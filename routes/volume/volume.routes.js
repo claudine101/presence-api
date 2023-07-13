@@ -6,7 +6,13 @@ const volume_routes = express.Router()
  *@method GET
  * @url /volume/dossiers/volume
  */
-volume_routes.get('/volume', volume_controller.findById)
+volume_routes.get('/myVolume', volume_controller.findById)
+/**
+ * Une route  recuperer  les volumes d'un agent  superviseurs archives
+ *@method GET
+ * @url /volume/dossiers/volume
+ */
+ volume_routes.get('/volume', volume_controller.findById)
 /**
  * Une route  recuperer  les volumes d'un chef  de divisions des archives
  *@method GET

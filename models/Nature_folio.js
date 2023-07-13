@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 
-const Role = sequelize.define('nature_folio', {
+const Nature_folio = sequelize.define('nature_folio', {
     ID_NATURE_FOLIO: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -18,4 +18,4 @@ const Role = sequelize.define('nature_folio', {
         tableName: 'nature_folio',
         timestamps: false
     });
-module.exports = Role;
+module.exports = Nature_folio;
