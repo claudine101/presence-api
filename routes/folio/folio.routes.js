@@ -45,7 +45,7 @@ folio_routes.get('/folio', folio_controller.findById)
  /**
  * Une route  recuperer  tous les agents de distribution par  aile
  *@method GET
- * @url /folio/dossiers/aile
+ * @url /folio/dossiers/agent
  */
  folio_routes.get('/agent/:ID_AILE', folio_controller.findAgentDistributeurAile)
 
