@@ -2,7 +2,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Utilisateurs = require('./Users');
-const Volume = require('./Volume');
+// const Volume = require('./Volume');
 const Users = require('./Users');
 
 /**
@@ -48,7 +48,7 @@ const Folio = sequelize.define("folio", {
     tableName: 'folio',
     timestamps: false,
 })
-Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
+// Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Users, { foreignKey: "ID_USERS", as: 'users' })
 
 

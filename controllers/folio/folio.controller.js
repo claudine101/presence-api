@@ -139,7 +139,7 @@ const findBatiment = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les batiments",
-            result: results[0]
+            result: results
         })
     } catch (error) {
         console.log(error)
