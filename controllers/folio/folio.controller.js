@@ -198,7 +198,7 @@ const findAgentDistributeurAile = async (req, res) => {
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE au.ID_AILE=${ID_AILE} AND  u.ID_PROFIL=29
            `
-           const results = await ExecQuery.readRequete(requete)
+           const [results] = await ExecQuery.readRequete(requete)
            
     //     const results = await Users.findAll({
     //         where: {
