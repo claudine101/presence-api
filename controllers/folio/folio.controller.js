@@ -171,7 +171,7 @@ const findAile = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les ailes",
-            result: results[0]
+            result: results
         })
     } catch (error) {
         console.log(error)
@@ -221,7 +221,7 @@ const findAgentDistributeurAile = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les agents de distribution",
-            result: results[0]
+            result: results
         })
     } catch (error) {
         console.log(error)
