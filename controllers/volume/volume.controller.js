@@ -171,8 +171,8 @@ const createVolume = async (req, res) => {
         //     })
         // }
         var volumeObjet = {}
-        // volumeObjet = JSON.parse(volume)
-        volumeObjet = volume
+        volumeObjet = JSON.parse(volume)
+        // volumeObjet = volume
         await Promise.all(volumeObjet.map(async (volume) => {
             const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
