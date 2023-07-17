@@ -408,6 +408,7 @@ const update = async (req, res) => {
             NOMBRE_DOSSIER,
             USER_TRAITEMENT: ID_USERS,
             PV_PATH: fileUrl,
+            ID_ETAPE_VOLUME:2
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
