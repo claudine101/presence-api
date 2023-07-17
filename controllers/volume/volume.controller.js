@@ -158,7 +158,7 @@ const createVolume = async (req, res) => {
         const PV = req.files?.PV
         const resPv=null
         var  fileUrl
-        if (PV) {
+        if (PV){
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
             // filename = fileInfo_1
             // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
@@ -169,7 +169,7 @@ const createVolume = async (req, res) => {
             fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;    
         }
         const  histo = await Volume_pv.create(
-            { PV_PATH:fileUrl?fileUrl:"uploads",
+            { PV_PATH:fileUrl?fileUrl:null,
              USERS_ID:req.userId}
          )
          const histoPv=histo.toJSON()
