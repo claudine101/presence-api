@@ -157,6 +157,7 @@ const createVolume = async (req, res) => {
         const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
         const PV = req.files?.PV
         const resPv=null
+        var  fileUrl
         if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
             // filename = fileInfo_1
@@ -173,8 +174,8 @@ const createVolume = async (req, res) => {
          )
          const histoPv=histo.toJSON()
          var volumeObjet = {}
-        // volumeObjet = JSON.parse(volume)
-        volumeObjet = volume
+        volumeObjet = JSON.parse(volume)
+        // volumeObjet = volume
         await Promise.all(volumeObjet.map(async (volume) => {
             const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
@@ -275,6 +276,7 @@ const affectationSuperviseur = async (req, res) => {
         const pvUpload = new VolumePvUpload()
         var filename,fileUrl
         const PV = req.files?.PV
+        var fileUrl
         if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
             // filename = fileInfo_1
@@ -331,6 +333,7 @@ const affectationPlateau = async (req, res) => {
         const pvUpload = new VolumePvUpload()
         var filename,fileUrl
         const PV = req.files?.PV
+        var fileUrl
         if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
             // filename = fileInfo_1
@@ -388,6 +391,7 @@ const update = async (req, res) => {
         var filename
         const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
         const PV = req.files?.PV
+        var fileUrl
         if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
             // filename = fileInfo_1
