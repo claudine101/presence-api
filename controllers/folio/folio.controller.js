@@ -114,7 +114,7 @@ const findNature = async (req, res) => {
  */
 const findMaille = async (req, res) => {
     try {
-        var results = (await folio_model.findMaille());
+        var [results] = (await folio_model.findMaille());
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
