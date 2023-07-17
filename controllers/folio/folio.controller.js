@@ -24,6 +24,7 @@ const Folio_aile_preparation = require('../../models/Folio_aile_preparation');
 const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques');
 const Folio_aile_agent_preparation = require('../../models/Folio_aile_agent_preparation');
 const Volume = require('../../models/volume');
+const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 /**
  * Permet de recuperer les folio traitetement  par un users connecte
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
