@@ -48,13 +48,67 @@ folio_routes.get('/folio', folio_controller.findById)
  * @url /folio/dossiers/agent
  */
  folio_routes.get('/agent/:ID_AILE', folio_controller.findAgentDistributeurAile)
+ /**
+ * Une route  recuperer  tous les agents superviseur aile par  aile
+ *@method GET
+ * @url /folio/dossiers/agentSuperviseur
+ */
+ folio_routes.get('/agentSuperviseur', folio_controller.findAgentSuperviseur)
+
+  /**
+ * Une route  recuperer  tous les chef plateau phase preparation par  aile
+ *@method GET
+ * @url /folio/dossiers/chefPlateau
+ */
+ folio_routes.get('/chefPlateau', folio_controller.findChefPlateau)
+
+ /**
+ * Une route  recuperer  tous les agents superviseur phase preparation  par  aile
+ *@method GET
+ * @url /folio/dossiers/agentSuperviseurPreparation
+ */
+ folio_routes.get('/agentSuperviseurPreparation', folio_controller.findAgentPreparation)
+
+  /**
+ * Une route  recuperer  tous les agents preparation  par  aile
+ *@method GET
+ * @url /folio/dossiers/agentPreparation
+ */
+ folio_routes.get('/agentPreparation', folio_controller.findAgentsPreparation)
+
 
 
  /**
  * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
  *@method POST
- * @url /folio/dossiers
+ * @url /folio
  */
 folio_routes.post('/', folio_controller.createFalio)
+
+/**
+ * Une route  permet  a un chef de plateau  de donner 
+ *  les folio   a un agent superviseur  phase preparation
+ *@method PUT
+ * @url /folio/dossiers/superviser
+ */
+ folio_routes.put('/superviser', folio_controller.superviser)
+
+ /**
+ * Une route  permet  a un agent superviseur  de donner 
+ *  les folio   a un agent preparation
+ *@method PUT
+ * @url /folio/dossiers/preparation
+ */
+ folio_routes.put('/preparation', folio_controller.preparation)
+
+ /**
+ * Une route  permet  a un agent superviseur  de donner 
+ *  les folio   a un agent preparation
+ *@method PUT
+ * @url /folio/dossiers/addDetails
+ */
+ folio_routes.put('/addDetails', folio_controller.preparation)
+
+
 
 module.exports = folio_routes

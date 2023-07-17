@@ -18,6 +18,10 @@ const Folio = sequelize.define("folio", {
         primaryKey: true,
         autoIncrement: true
     },
+    ID_FOLIO_PV: {
+        type: Sequelize.INTEGER(),
+        allowNull: false
+    },
     ID_VOLUME: {
         type: Sequelize.INTEGER(),
         allowNull: false
@@ -26,7 +30,7 @@ const Folio = sequelize.define("folio", {
         type: Sequelize.INTEGER(),
         allowNull: false
     },
-    NUMERO_FOLIO	: {
+    NUMERO_FOLIO: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
@@ -38,11 +42,51 @@ const Folio = sequelize.define("folio", {
         type: Sequelize.INTEGER(),
         allowNull: false
     },
+    ID_FOLIO_AILE_PREPARATION: {
+        type: Sequelize.INTEGER(),
+        allowNull:true
+    },
+    ID_FOLIO_AILE_AGENT_PREPARATION :{
+        type: Sequelize.INTEGER(),
+        allowNull:true
+    },
+    NUMERO_PARCELLE: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    ID_COLLINE:{
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    LOCALITE: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    NOM_PROPRIETAIRE: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    PRENOM_PROPRIETAIRE: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    PHOTO_DOSSIER: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    NUMERO_FEUILLE: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    NOMBRE_DOUBLON:{
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-}
+    }
 }, {
     freezeTableName: true,
     tableName: 'folio',

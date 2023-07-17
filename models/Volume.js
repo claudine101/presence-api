@@ -35,6 +35,58 @@ const Volume = sequelize.define("volume", {
         type: Sequelize.INTEGER(),
         allowNull: true
     },
+    ID_VOLUME_PV: {
+        type: Sequelize.INTEGER(),
+        allowNull: false
+    },
+    PV_PATH: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    PV_PATH_RETOUR: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    ID_MALLE: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_USER_AILE_DISTRIBUTEUR: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    PATH_PV_DISTRIBUTEUR: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    PATH_PV_DISTRIBUTEUR_RETOUR: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    ID_USER_AILE_SUPERVISEUR: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    PV_PATH_SUPERVISEUR: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    PV_PATH_SUPERVISEUR_RETOUR: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    ID_USER_AILE_PLATEAU: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    PV_PATH_PLATEAU: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    ID_ETAPE_VOLUME: {
+        type: Sequelize.INTEGER(),
+        allowNull: false
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,

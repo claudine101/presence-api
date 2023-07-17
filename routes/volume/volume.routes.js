@@ -43,5 +43,34 @@ volume_routes.get('/myVolume', volume_controller.findBy)
  * @url /volume/dossiers
  */
 volume_routes.post('/', volume_controller.createVolume)
+/**
+ * Une route  permet  un d'affecte un volume à un agent distributeur 
+ *@method put
+ * @url /volume/dossiers/affectationDistributeur
+ */
+ volume_routes.put('/affectationDistributeur/:ID_VOLUME', volume_controller.affectation)
+
+ /**
+ * Une route  permet  un d'affecte un volume à un agent superviseur  aile 
+ *@method put
+ * @url /volume/dossiers/affectationSuperviseur
+ */
+ volume_routes.put('/affectationSuperviseur/:ID_VOLUME', volume_controller.affectationSuperviseur)
+
+ /**
+ * Une route  permet  un d'affecte un volume à un agent superviseur  aile 
+ *@method put
+ * @url /volume/dossiers/affectationSuperviseur
+ */
+ volume_routes.put('/affectationSuperviseur/:ID_VOLUME', volume_controller.affectationSuperviseur)
+
+ /**
+ * Une route  permet  un d'affecte un volume à un  chef plateau
+ *@method put
+ * @url /volume/dossiers/affectationSuperviseur
+ */
+ volume_routes.put('/affectationPlateau/:ID_VOLUME', volume_controller.affectationPlateau)
+
+
 
 module.exports = volume_routes
