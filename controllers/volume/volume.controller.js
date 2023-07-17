@@ -13,6 +13,8 @@ const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
 const Volume_pv = require('../../models/volume_pv');
 const Volume = require('../../models/volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
+const ExecQuery = require('../../models/ExecQuery');
+
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -462,6 +464,43 @@ const getPv = async (req, res) => {
         })
     }
 }
+/**
+ * Permet recuperer agent  distributeur par  ailes
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 12/07/2023
+ * 
+ */
+const findVolume = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        var requete = `SELECT b.NUMERO_BATIMENT,
+                        a.NUMERO_AILE,
+                        m.NUMERO_MAILLE
+                    FROM volume v
+                        LEFT JOIN user_ailes au ON au.ID_USER_AILE = v.ID_USER_AILE_DISTRIBUTEUR
+                        LEFT JOIN aile a ON a.ID_AILE = au.ID_AILE
+                        LEFT JOIN batiment b ON b.ID_BATIMENT = a.ID_BATIMENT
+                        LEFT JOIN maille m on m.ID_MAILLE = v.ID_MALLE
+                    WHERE v.ID_VOLUME = ${ID_VOLUME}
+       `
+        const [results] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les batiments ,ailes et mailles",
+            result: results[0]
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     findById,
     createVolume,
@@ -472,6 +511,7 @@ module.exports = {
     findBy,
     affectation,
     affectationSuperviseur,
-    affectationPlateau
+    affectationPlateau,
+    findVolume
 
 }

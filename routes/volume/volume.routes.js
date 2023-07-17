@@ -31,6 +31,13 @@ volume_routes.get('/myVolume', volume_controller.findBy)
  * @url /volume/dossiers/volumes
  */
  volume_routes.get('/volumes', volume_controller.findAll)
+
+ /**
+ * Une route  recuperer  batiment  ailes et  mailles d'un volume
+ *@method GET
+ * @url /volume/dossiers/batimentAile
+ */
+ volume_routes.get('/batimentAile/:ID_VOLUME', volume_controller.findVolume)
 /**
  * Une route  permet  un chef  de divisions des archives d'ajouter   les volumes 
  *@method POST

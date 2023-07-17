@@ -634,15 +634,15 @@ const superviser = async (req, res) => {
                 {
                     ID_FOLIO_AILE_PREPARATION: histoPv.ID_FOLIO_AILE_PREPARATION,
                 }, {
-                    where: {
-                        ID_FOLIO: folio.ID_FOLIO
-                    }
-                })
+                where: {
+                    ID_FOLIO: folio.ID_FOLIO
+                }
+            })
         }))
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
             ID_FOLIO_AILE_PREPARATION: histoPv.ID_FOLIO_AILE_PREPARATION,
-            ID_ETAPE_FOLIO:1
+            ID_ETAPE_FOLIO: 1
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -722,23 +722,23 @@ const preparation = async (req, res) => {
         var folioObjet = {}
         // folioObjet = JSON.parse(folio)
         folioObjet = folio
-        
+
 
         await Promise.all(folioObjet.map(async (folio) => {
             await Folio.update(
                 {
                     ID_FOLIO_AILE_AGENT_PREPARATION: histoPv.ID_FOLIO_AILE_AGENT_PREPARATION,
                 }, {
-                    where: {
-                        ID_FOLIO: folio.ID_FOLIO
-                    }
-                })
+                where: {
+                    ID_FOLIO: folio.ID_FOLIO
+                }
+            })
         }))
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
             ID_FOLIO_AILE_PREPARATION: folioObjet[0].ID_FOLIO_AILE_PREPARATION,
             ID_FOLIO_AILE_AGENT_PREPARATION: histoPv.ID_FOLIO_AILE_AGENT_PREPARATION,
-            ID_ETAPE_FOLIO:2
+            ID_ETAPE_FOLIO: 2
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -823,23 +823,30 @@ const addDetails = async (req, res) => {
         var folioObjet = {}
         // folioObjet = JSON.parse(folio)
         folioObjet = folio
-        
+
 
         await Promise.all(folioObjet.map(async (folio) => {
             await Folio.update(
                 {
-                    ID_FOLIO_AILE_AGENT_PREPARATION: histoPv.ID_FOLIO_AILE_AGENT_PREPARATION,
+                    NUMERO_PARCELLE: NUMERO_PARCELLE,
+                    ID_COLLINE: ID_COLLINE,
+                    LOCALITE: LOCALITE,
+                    NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
+                    PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
+                    PHOTO_DOSSIER: PHOTO_DOSSIER,
+                    NUMERO_FEUILLE: NUMERO_FEUILLE,
+                    NOMBRE_DOUBLON: NOMBRE_DOUBLON
                 }, {
-                    where: {
-                        ID_FOLIO: folio.ID_FOLIO
-                    }
-                })
+                where: {
+                    ID_FOLIO: folio.ID_FOLIO
+                }
+            })
         }))
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
             ID_FOLIO_AILE_PREPARATION: folioObjet[0].ID_FOLIO_AILE_PREPARATION,
             ID_FOLIO_AILE_AGENT_PREPARATION: histoPv.ID_FOLIO_AILE_AGENT_PREPARATION,
-            ID_ETAPE_FOLIO:2
+            ID_ETAPE_FOLIO: 2
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
