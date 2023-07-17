@@ -517,8 +517,8 @@ const createFalio = async (req, res) => {
         )
         const histoPv = histo.toJSON()
         var folioObjet = {}
-        // folioObjet = JSON.parse(folio)
-        folioObjet = folio
+        folioObjet = JSON.parse(folio)
+        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
             const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
