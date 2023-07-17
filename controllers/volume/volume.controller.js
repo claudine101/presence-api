@@ -477,7 +477,8 @@ const findVolume = async (req, res) => {
         const { ID_VOLUME } = req.params
         var requete = `SELECT b.NUMERO_BATIMENT,
                         a.NUMERO_AILE,
-                        m.NUMERO_MAILLE
+                        m.NUMERO_MAILLE,
+                        v.NOMBRE_DOSSIER
                     FROM volume v
                         LEFT JOIN user_ailes au ON au.ID_USER_AILE = v.ID_USER_AILE_DISTRIBUTEUR
                         LEFT JOIN aile a ON a.ID_AILE = au.ID_AILE
