@@ -15,6 +15,13 @@ folio_routes.get('/folio', folio_controller.findById)
  folio_routes.get('/folios', folio_controller.findAll)
 
  /**
+ * Une route  recuperer  tous les folios
+ *@method GET
+ * @url /folio/dossiers/allFolio
+ */
+ folio_routes.get('/allFolio/:ID_VOLUME', folio_controller.findAlls)
+
+ /**
  * Une route  recuperer  tous les nature du  folios
  *@method GET
  * @url /folio/dossiers/nature
@@ -100,6 +107,13 @@ folio_routes.post('/', folio_controller.createFalio)
  * @url /folio/dossiers/preparation
  */
  folio_routes.put('/preparation', folio_controller.preparation)
+
+ /**
+ * Une route  permet  retour d'agent preparation
+ *@method PUT
+ * @url /folio/dossiers/preparation
+ */
+ folio_routes.put('/RetourPreparation/:ID_USER_AILE_AGENT_PREPARATION', folio_controller.RetourPreparation)
 
  /**
  * Une route  permet  a un agent superviseur  de donner 

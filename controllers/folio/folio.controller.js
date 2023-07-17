@@ -77,6 +77,38 @@ const findAll = async (req, res) => {
         })
     }
 }
+
+/**
+ * Permet de recuperer  tous folio d'un  volume
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 17/07/2023
+ * 
+ */
+const findAlls = async (req, res) => {
+    try {
+        const  { ID_VOLUME}=req.params
+        var results = (await Folio.findAll(
+           { where: {
+            ID_VOLUME: ID_VOLUME
+            }}
+        ));
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios",
+            result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 /**
  * Permet recuperer  nature du folio
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -756,6 +788,80 @@ const preparation = async (req, res) => {
     }
 }
 /**
+ *   Retour  agent  preparation
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  17/07/2023
+ * 
+ */
+const RetourPreparation = async (req, res) => {
+    try {
+        const {
+            AGENT_PREPARATION
+        } = req.body;
+        const { ID_USER_AILE_AGENT_PREPARATION } = req.params
+        const pvUpload = new VolumePvUpload()
+        const PV = req.files?.PV
+        var fileUrl
+        if (PV) {
+            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
+            // filename = fileInfo_1
+            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
+            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
+            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
+            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
+            const newFile = await PV.mv(destination + fileName);
+            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+        }
+        var requete = `
+                SELECT F.ID_FOLIO_AILE_PREPARATION,
+                    FAAP.ID_FOLIO_AILE_AGENT_PREPARATION
+                FROM folio_aile_agent_preparation FAAP
+                    LEFT JOIN folio F ON f.ID_FOLIO_AILE_AGENT_PREPARATION = FAAP.ID_FOLIO_AILE_AGENT_PREPARATION
+                WHERE FAAP.ID_USER_AILE_AGENT_PREPARATION = ${ID_USER_AILE_AGENT_PREPARATION}
+                    AND FAAP.ID_ETAPE_FOLIO = 2
+              `
+        const [results] = await ExecQuery.readRequete(requete)
+        console.log(results)
+        await Folio.update(
+            {
+                ID_ETAPE_FOLIO: 3,
+            }, {
+            where: {
+                ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION
+            }
+        })
+        await Folio_aile_agent_preparation.update(
+            {
+                ID_ETAPE_FOLIO: 3,
+            }, {
+            where: {
+                ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION
+            }
+        })
+        await Etapes_folio_historiques.create({
+            ID_USER: req.userId,
+            ID_FOLIO_AILE_PREPARATION: results[0].ID_FOLIO_AILE_PREPARATION,
+            ID_FOLIO_AILE_AGENT_PREPARATION:  results[0].ID_FOLIO_AILE_AGENT_PREPARATION,
+            ID_ETAPE_FOLIO: 3
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Modification faite  avec succès",
+            // result: histoPv
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet   un agent  superviseur  de nommer  agent  preparation
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
  * @param {express.Request} req
@@ -880,5 +986,7 @@ module.exports = {
     findAgentSuperviseur,
     findChefPlateau,
     findAgentPreparation,
-    findAgentsPreparation
+    findAgentsPreparation,
+    RetourPreparation,
+    findAlls
 }
