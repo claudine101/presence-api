@@ -26,7 +26,7 @@ const Etapes_folio_historiques = sequelize.define("etapes_folio_historiques", {
     },
     ID_FOLIO_AILE_AGENT_PREPARATION: {
         type: Sequelize.INTEGER(),
-        allowNull: false
+        allowNull: true
     },
     ID_ETAPE_FOLIO:{
         type: Sequelize.INTEGER(),
