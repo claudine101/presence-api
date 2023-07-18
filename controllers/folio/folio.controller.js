@@ -762,6 +762,7 @@ const preparation = async (req, res) => {
             await Folio.update(
                 {
                     ID_FOLIO_AILE_AGENT_PREPARATION: histoPv.ID_FOLIO_AILE_AGENT_PREPARATION,
+                    ID_ETAPE_FOLIO: 2
                 }, {
                 where: {
                     ID_FOLIO: folio.ID_FOLIO
