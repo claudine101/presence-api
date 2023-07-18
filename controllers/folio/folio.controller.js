@@ -91,7 +91,8 @@ const findAlls = async (req, res) => {
         const  { ID_VOLUME}=req.params
         var results = (await Folio.findAll(
            { where: {
-            ID_VOLUME: ID_VOLUME
+            ID_VOLUME: ID_VOLUME,
+            ID_FOLIO_AILE_PREPARATION:null
             }}
         ));
         res.status(RESPONSE_CODES.OK).json({
@@ -657,8 +658,8 @@ const superviser = async (req, res) => {
         )
         const histoPv = histo.toJSON()
         var folioObjet = {}
-        // folioObjet = JSON.parse(folio)
-        folioObjet = folio
+        folioObjet = JSON.parse(folio)
+        // folioObjet = folio
         console.log(folioObjet)
 
         await Promise.all(folioObjet.map(async (folio) => {
