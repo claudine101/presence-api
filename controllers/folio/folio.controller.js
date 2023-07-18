@@ -841,6 +841,7 @@ const RetourPreparation = async (req, res) => {
                 ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION
             }
         })
+        
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
             ID_FOLIO_AILE_PREPARATION: results[0].ID_FOLIO_AILE_PREPARATION,
@@ -1017,7 +1018,7 @@ const findNbre = async (req, res) => {
 const findAllFolio= async (req, res) => {
     try {
         var requete = `
-        SELECT F.ID_FOLIO ,F.NUMERO_FOLIO 
+        SELECT F.ID_FOLIO,F.NUMERO_FOLIO ,F.CODE_FOLIO
         FROM folio F
             LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
             LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
