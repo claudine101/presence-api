@@ -973,7 +973,8 @@ const findNbre = async (req, res) => {
 const findAllFolio= async (req, res) => {
     try {
         var requete = `
-        SELECT F.ID_FOLIO,F.NUMERO_FOLIO ,F.CODE_FOLIO
+
+        SELECT F.ID_FOLIO,F.NUMERO_FOLIO ,F.CODE_FOLIO,F.ID_FOLIO_AILE_PREPARATION
         FROM folio F
             LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
             LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME

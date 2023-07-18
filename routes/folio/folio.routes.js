@@ -139,7 +139,7 @@ folio_routes.post('/', folio_controller.createFalio)
  *@method PUT
  * @url /folio/dossiers/addDetails
  */
- folio_routes.put('/addDetails', folio_controller.preparation)
+ folio_routes.put('/addDetails', folio_controller.addDetails)
 
 
 
