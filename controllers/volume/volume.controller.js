@@ -14,6 +14,7 @@ const Volume_pv = require('../../models/volume_pv');
 const Volume = require('../../models/volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 const ExecQuery = require('../../models/ExecQuery');
+const Users = require('../../models/Users');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -27,7 +28,7 @@ const findById = async (req, res) => {
     try {
         const results = await Volume.findAll({
             where: {
-                ID_USERS:req.userId
+                ID_USERS: req.userId
             }
         })
         res.status(RESPONSE_CODES.CREATED).json({
@@ -55,17 +56,38 @@ const findById = async (req, res) => {
  */
 const findBy = async (req, res) => {
     try {
-        const results = await Volume.findAll({
+        const user = await Users.findOne({
             where: {
-                USER_TRAITEMENT:req.userId
+                USERS_ID: req.userId
             }
         })
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Les volumes",
-            result: results
-        })
+        if (user?.ID_PROFIL == 29) {
+            var requete = `SELECT * FROM  volume 
+            v LEFT JOIN user_ailes ua ON
+             ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
+            WHERE ua.USERS_ID=${req.userId}`
+            const [results] = await ExecQuery.readRequete(requete)
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
+        else {
+            const results = await Volume.findAll({
+                where: {
+                    USER_TRAITEMENT: req.userId
+                }
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
+        
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
@@ -119,11 +141,11 @@ const findAll = async (req, res) => {
         // var orderColumn='DATE_INSERTION DESC'
         // var orderDirection=' '
         var results = await Volume.findAll({
-        //     order: [
-        //         [orderColumn]
-        // ],
-            where:{
-                NOMBRE_DOSSIER:null,USER_TRAITEMENT:null ,ID_ETAPE_VOLUME:1
+            //     order: [
+            //         [orderColumn]
+            // ],
+            where: {
+                NOMBRE_DOSSIER: null, USER_TRAITEMENT: null, ID_ETAPE_VOLUME: 1
             }
         });
         res.status(RESPONSE_CODES.OK).json({
@@ -154,13 +176,13 @@ const createVolume = async (req, res) => {
         const {
             volume,
         } = req.body;
-        
+
         const pvUpload = new VolumePvUpload()
         const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
         const PV = req.files?.PV
-        const resPv=null
-        var  fileUrl
-        if (PV){
+        const resPv = null
+        var fileUrl
+        if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
             // filename = fileInfo_1
             // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
@@ -168,14 +190,16 @@ const createVolume = async (req, res) => {
             const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
             const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
             const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;    
+            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
         }
-        const  histo = await Volume_pv.create(
-            { PV_PATH:fileUrl?fileUrl:null,
-             USERS_ID:req.userId}
-         )
-         const histoPv=histo.toJSON()
-         var volumeObjet = {}
+        const histo = await Volume_pv.create(
+            {
+                PV_PATH: fileUrl ? fileUrl : null,
+                USERS_ID: req.userId
+            }
+        )
+        const histoPv = histo.toJSON()
+        var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         // volumeObjet = volume
         await Promise.all(volumeObjet.map(async (volume) => {
@@ -185,8 +209,8 @@ const createVolume = async (req, res) => {
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
                 CODE_VOLUME: CODE_REFERENCE,
                 ID_USERS: req.userId,
-                ID_ETAPE_VOLUME:1,
-                ID_VOLUME_PV:histoPv.ID_VOLUME_PV
+                ID_ETAPE_VOLUME: 1,
+                ID_VOLUME_PV: histoPv.ID_VOLUME_PV
             }
             )
         }))
@@ -194,7 +218,7 @@ const createVolume = async (req, res) => {
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "Insertion faite  avec succès",
-            result:histoPv
+            result: histoPv
         })
     } catch (error) {
         console.log(error)
@@ -216,10 +240,10 @@ const createVolume = async (req, res) => {
 const affectation = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { MAILLE, AGENT_DISTRIBUTEUR  } = req.body
-        
+        const { MAILLE, AGENT_DISTRIBUTEUR } = req.body
+
         const pvUpload = new VolumePvUpload()
-        var filename,fileUrl
+        var filename, fileUrl
         const PV = req.files?.PV
         if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
@@ -232,20 +256,20 @@ const affectation = async (req, res) => {
             fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
         }
         const results = await Volume.update({
-            ID_MALLE:MAILLE,
+            ID_MALLE: MAILLE,
             ID_USER_AILE_DISTRIBUTEUR: AGENT_DISTRIBUTEUR,
             PATH_PV_DISTRIBUTEUR: fileUrl,
-            ID_ETAPE_VOLUME:4
+            ID_ETAPE_VOLUME: 4
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
             }
         })
         await Etapes_volume_historiques.create({
-            USERS_ID:req.userId,
-            USER_TRAITEMENT:AGENT_DISTRIBUTEUR,
-            ID_VOLUME:ID_VOLUME,
-            ID_ETAPE_VOLUME:4
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: AGENT_DISTRIBUTEUR,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: 4
         })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
@@ -273,10 +297,10 @@ const affectation = async (req, res) => {
 const affectationSuperviseur = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { AGENT_SUPERVISEUR  } = req.body
-        
+        const { AGENT_SUPERVISEUR } = req.body
+
         const pvUpload = new VolumePvUpload()
-        var filename,fileUrl
+        var filename, fileUrl
         const PV = req.files?.PV
         var fileUrl
         if (PV) {
@@ -292,17 +316,17 @@ const affectationSuperviseur = async (req, res) => {
         const results = await Volume.update({
             ID_USER_AILE_SUPERVISEUR: AGENT_SUPERVISEUR,
             PV_PATH_SUPERVISEUR: fileUrl,
-            ID_ETAPE_VOLUME:5
+            ID_ETAPE_VOLUME: 5
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
             }
         })
         await Etapes_volume_historiques.create({
-            USERS_ID:req.userId,
-            USER_TRAITEMENT:AGENT_SUPERVISEUR,
-            ID_VOLUME:ID_VOLUME,
-            ID_ETAPE_VOLUME:5
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: AGENT_SUPERVISEUR,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: 5
         })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
@@ -331,9 +355,9 @@ const affectationPlateau = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { CHEF_PLATEAU } = req.body
-        
+
         const pvUpload = new VolumePvUpload()
-        var filename,fileUrl
+        var filename, fileUrl
         const PV = req.files?.PV
         var fileUrl
         if (PV) {
@@ -349,17 +373,17 @@ const affectationPlateau = async (req, res) => {
         const results = await Volume.update({
             ID_USER_AILE_PLATEAU: CHEF_PLATEAU,
             PV_PATH_PLATEAU: fileUrl,
-            ID_ETAPE_VOLUME:6
+            ID_ETAPE_VOLUME: 6
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
             }
         })
         await Etapes_volume_historiques.create({
-            USERS_ID:req.userId,
-            USER_TRAITEMENT:CHEF_PLATEAU,
-            ID_VOLUME:ID_VOLUME,
-            ID_ETAPE_VOLUME:6
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: CHEF_PLATEAU,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: 6
         })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
@@ -388,7 +412,7 @@ const update = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { NOMBRE_DOSSIER, ID_USERS } = req.body
-        
+
         const pvUpload = new VolumePvUpload()
         var filename
         const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
@@ -410,17 +434,17 @@ const update = async (req, res) => {
             NOMBRE_DOSSIER,
             USER_TRAITEMENT: ID_USERS,
             PV_PATH: fileUrl,
-            ID_ETAPE_VOLUME:2
+            ID_ETAPE_VOLUME: 2
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
             }
         })
         await Etapes_volume_historiques.create({
-            USERS_ID:req.userId,
-            USER_TRAITEMENT:ID_USERS,
-            ID_VOLUME:ID_VOLUME,
-            ID_ETAPE_VOLUME:2
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: ID_USERS,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: 2
         })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
