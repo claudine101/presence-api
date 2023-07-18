@@ -753,10 +753,8 @@ const preparation = async (req, res) => {
         )
         const histoPv = histo.toJSON()
         var folioObjet = {}
-        // folioObjet = JSON.parse(folio)
-        folioObjet = folio
-
-
+        folioObjet = JSON.parse(folio)
+        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
             await Folio.update(
                 {
@@ -881,59 +879,17 @@ const addDetails = async (req, res) => {
             PRENOM_PROPRIETAIRE,
             PHOTO_DOSSIER,
             NUMERO_FEUILLE,
-            NOMBRE_DOUBLON
+            NOMBRE_DOUBLON,
+            ID_FOLIO
+
         } = req.body;
-        // const validation = new Validation({ ...req.body, ...req.files },
-        //     {
-        //         PV: {
-        //             PV: 21000000
-        //         },
-
-        //     },
-        //     {
-        //         PV: {
-        //             PV: "La taille invalide"
-        //         }
-        //     }
-        // )
-        // await validation.run();
-        // const isValide = await validation.isValidate()
-        // const errors = await validation.getErrors()
-        // if (!isValide) {
-        //     return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-        //         statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-        //         httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-        //         message: "Probleme de validation des donnees",
-        //         result: errors
-        //     })
-        // }
-        const pvUpload = new VolumePvUpload()
-        const PV = req.files?.PV
-        var fileUrl
-        if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
-        }
-        const histo = await Folio_aile_agent_preparation.create(
-            {
-                ID_USER_AILE_AGENT_PREPARATION: AGENT_PREPARATION,
-                PATH_PV_PREPARATION: fileUrl ? fileUrl : "local",
-                ID_ETAPE_FOLIO: 2
-            }
-        )
-        const histoPv = histo.toJSON()
-        var folioObjet = {}
-        // folioObjet = JSON.parse(folio)
-        folioObjet = folio
-
-
-        await Promise.all(folioObjet.map(async (folio) => {
+        var requete = `
+        SELECT 	ID_FOLIO_AILE_PREPARATION,
+        ID_FOLIO_AILE_AGENT_PREPARATION
+        FROM folio 
+        WHERE ID_FOLIO = ${ID_FOLIO}
+        `
+        const [results] = await ExecQuery.readRequete(requete)
             await Folio.update(
                 {
                     NUMERO_PARCELLE: NUMERO_PARCELLE,
@@ -946,10 +902,9 @@ const addDetails = async (req, res) => {
                     NOMBRE_DOUBLON: NOMBRE_DOUBLON
                 }, {
                 where: {
-                    ID_FOLIO: folio.ID_FOLIO
+                    ID_FOLIO: ID_FOLIO
                 }
             })
-        }))
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
             ID_FOLIO_AILE_PREPARATION: folioObjet[0].ID_FOLIO_AILE_PREPARATION,
