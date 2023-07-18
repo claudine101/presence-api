@@ -567,7 +567,8 @@ const createFalio = async (req, res) => {
                     CODE_FOLIO: CODE_REFERENCE,
                     NUMERO_DOSSIERS: folio.NUMERO_DOSSIERS,
                     ID_USERS: req.userId,
-                    ID_FOLIO_PV: histoPv.ID_FOLIO_PV
+                    ID_FOLIO_PV: histoPv.ID_FOLIO_PV,
+                    ID_ETAPE_FOLIO:1
                 }
             )
         }))
