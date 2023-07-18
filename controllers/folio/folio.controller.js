@@ -876,12 +876,12 @@ const addDetails = async (req, res) => {
             LOCALITE,
             NOM_PROPRIETAIRE,
             PRENOM_PROPRIETAIRE,
-            PHOTO_DOSSIER,
             NUMERO_FEUILLE,
             NOMBRE_DOUBLON,
             ID_FOLIO
 
         } = req.body;
+        const PHOTO_DOSSIER=req.files?.PHOTO_DOSSIER
         var requete = `
         SELECT 	ID_FOLIO_AILE_PREPARATION,
         ID_FOLIO_AILE_AGENT_PREPARATION
