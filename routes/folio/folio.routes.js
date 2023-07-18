@@ -14,12 +14,22 @@ folio_routes.get('/folio', folio_controller.findById)
  */
  folio_routes.get('/folios', folio_controller.findAll)
 
+ 
+
  /**
- * Une route  recuperer  tous les folios
+ * Une route  recuperer  tous les folios d'un  volume
  *@method GET
  * @url /folio/dossiers/allFolio
  */
  folio_routes.get('/allFolio/:ID_VOLUME', folio_controller.findAlls)
+
+ /**
+ * Une route  recuperer  nbre  les folios d'un agent  superviseur  phase preparation
+ *@method GET
+ * @url /folio/dossiers/allFolio
+ */
+ folio_routes.get('/nbreFolio', folio_controller.findNbre)
+
 
  /**
  * Une route  recuperer  tous les nature du  folios
