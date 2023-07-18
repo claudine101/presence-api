@@ -88,12 +88,14 @@ const findAll = async (req, res) => {
  */
 const findAlls = async (req, res) => {
     try {
-        const  { ID_VOLUME}=req.params
+        const { ID_VOLUME } = req.params
         var results = (await Folio.findAll(
-           { where: {
-            ID_VOLUME: ID_VOLUME,
-            ID_FOLIO_AILE_PREPARATION:null
-            }}
+            {
+                where: {
+                    ID_VOLUME: ID_VOLUME,
+                    ID_FOLIO_AILE_PREPARATION: null
+                }
+            }
         ));
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -747,7 +749,7 @@ const preparation = async (req, res) => {
         const histo = await Folio_aile_agent_preparation.create(
             {
                 ID_USER_AILE_AGENT_PREPARATION: AGENT_PREPARATION,
-                PATH_PV_PREPARATION: fileUrl ? fileUrl : "local",
+                PATH_PV_AGENT_PREPARATION: fileUrl ? fileUrl : null,
                 ID_ETAPE_FOLIO: 2
             }
         )
@@ -839,11 +841,11 @@ const RetourPreparation = async (req, res) => {
                 ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION
             }
         })
-        
+
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
             ID_FOLIO_AILE_PREPARATION: results[0].ID_FOLIO_AILE_PREPARATION,
-            ID_FOLIO_AILE_AGENT_PREPARATION:  results[0].ID_FOLIO_AILE_AGENT_PREPARATION,
+            ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION,
             ID_ETAPE_FOLIO: 3
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -890,32 +892,34 @@ const addDetails = async (req, res) => {
         WHERE ID_FOLIO = ${ID_FOLIO}
         `
         const [results] = await ExecQuery.readRequete(requete)
-            await Folio.update(
-                {
-                    NUMERO_PARCELLE: NUMERO_PARCELLE,
-                    ID_COLLINE: ID_COLLINE,
-                    LOCALITE: LOCALITE,
-                    NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
-                    PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
-                    PHOTO_DOSSIER: PHOTO_DOSSIER,
-                    NUMERO_FEUILLE: NUMERO_FEUILLE,
-                    NOMBRE_DOUBLON: NOMBRE_DOUBLON
-                }, {
-                where: {
-                    ID_FOLIO: ID_FOLIO
-                }
-            })
+        await Folio.update(
+            {
+                NUMERO_PARCELLE: NUMERO_PARCELLE,
+                ID_COLLINE: ID_COLLINE,
+                LOCALITE: LOCALITE,
+                NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
+                PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
+                PHOTO_DOSSIER: PHOTO_DOSSIER,
+                NUMERO_FEUILLE: NUMERO_FEUILLE,
+                NOMBRE_DOUBLON: NOMBRE_DOUBLON,
+                ID_ETAPE_FOLIO: 4
+
+            }, {
+            where: {
+                ID_FOLIO: ID_FOLIO
+            }
+        })
         await Etapes_folio_historiques.create({
             ID_USER: req.userId,
-            ID_FOLIO_AILE_PREPARATION: folioObjet[0].ID_FOLIO_AILE_PREPARATION,
-            ID_FOLIO_AILE_AGENT_PREPARATION: histoPv.ID_FOLIO_AILE_AGENT_PREPARATION,
-            ID_ETAPE_FOLIO: 2
+            ID_FOLIO_AILE_PREPARATION: results[0].ID_FOLIO_AILE_PREPARATION,
+            ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION,
+            ID_ETAPE_FOLIO: 4
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Modification faite  avec succès",
-            result: histoPv
+            // result: histoPv
         })
     } catch (error) {
         console.log(error)
@@ -970,10 +974,9 @@ const findNbre = async (req, res) => {
  * @date 18/07/2023
  * 
  */
-const findAllFolio= async (req, res) => {
+const findAllFolio = async (req, res) => {
     try {
         var requete = `
-
         SELECT F.ID_FOLIO,F.NUMERO_FOLIO ,F.CODE_FOLIO,F.ID_FOLIO_AILE_PREPARATION
         FROM folio F
             LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
