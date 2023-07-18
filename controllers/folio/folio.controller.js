@@ -872,7 +872,7 @@ const addDetails = async (req, res) => {
     try {
         const {
             NUMERO_PARCELLE,
-            ID_COLLINE,
+            // ID_COLLINE,
             LOCALITE,
             NOM_PROPRIETAIRE,
             PRENOM_PROPRIETAIRE,
@@ -892,7 +892,7 @@ const addDetails = async (req, res) => {
         await Folio.update(
             {
                 NUMERO_PARCELLE: NUMERO_PARCELLE,
-                ID_COLLINE: ID_COLLINE,
+                // ID_COLLINE: ID_COLLINE,
                 LOCALITE: LOCALITE,
                 NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
                 PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
@@ -1021,7 +1021,7 @@ const findAllFolios = async (req, res) => {
         `
         if (AGENT_PREPARATION && AGENT_PREPARATION != "") {
             requete +=
-                `AND  FAAP.ID_USER_AILE_AGENT_PREPARATION  =${AGENT_PREPARATION}`;
+                `AND  FAAP.ID_USER_AILE_AGENT_PREPARATION=${AGENT_PREPARATION}`;
         }
         const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
@@ -1039,7 +1039,32 @@ const findAllFolios = async (req, res) => {
         })
     }
 }
-
+/**
+ * Permet de recuperer  tous folio
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 12/07/2023
+ * 
+ */
+const getDetails = async (req, res) => {
+    try {
+        var results = (await Folio.findAll());
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios",
+            result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 module.exports = {
     findById,
@@ -1061,5 +1086,6 @@ module.exports = {
     findAlls,
     findNbre,
     findAllFolio,
-    findAllFolios
+    findAllFolios,
+    getDetails
 }
