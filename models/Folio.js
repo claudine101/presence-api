@@ -42,6 +42,10 @@ const Folio = sequelize.define("folio", {
         type: Sequelize.INTEGER(),
         allowNull: false
     },
+    ID_ETAPE_FOLIO  :{
+        type: Sequelize.INTEGER(),
+        allowNull: false
+    },
     ID_FOLIO_AILE_PREPARATION: {
         type: Sequelize.INTEGER(),
         allowNull:true

@@ -37,6 +37,12 @@ folio_routes.get('/folio', folio_controller.findById)
  */
  folio_routes.get('/getFolio', folio_controller.findAllFolio)
 
+/**
+ * Une route  recuperer   les folios d'un agent  superviseur  phase preparation EN REOUR
+ *@method GET
+ * @url /folio/dossiers/getFolios
+ */
+ folio_routes.get('/getFolios', folio_controller.findAllFolios)
 
 
  /**
@@ -131,7 +137,7 @@ folio_routes.post('/', folio_controller.createFalio)
  *@method PUT
  * @url /folio/dossiers/preparation
  */
- folio_routes.put('/RetourPreparation/:ID_USER_AILE_AGENT_PREPARATION', folio_controller.RetourPreparation)
+ folio_routes.put('/RetourPreparation/:AGENT_PREPARATION', folio_controller.RetourPreparation)
 
  /**
  * Une route  permet  a un agent superviseur  de donner 

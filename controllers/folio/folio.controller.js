@@ -798,10 +798,7 @@ const preparation = async (req, res) => {
  */
 const RetourPreparation = async (req, res) => {
     try {
-        const {
-            AGENT_PREPARATION
-        } = req.body;
-        const { ID_USER_AILE_AGENT_PREPARATION } = req.params
+        const { AGENT_PREPARATION } = req.params
         const pvUpload = new VolumePvUpload()
         const PV = req.files?.PV
         var fileUrl
@@ -820,11 +817,10 @@ const RetourPreparation = async (req, res) => {
                     FAAP.ID_FOLIO_AILE_AGENT_PREPARATION
                 FROM folio_aile_agent_preparation FAAP
                     LEFT JOIN folio F ON f.ID_FOLIO_AILE_AGENT_PREPARATION = FAAP.ID_FOLIO_AILE_AGENT_PREPARATION
-                WHERE FAAP.ID_USER_AILE_AGENT_PREPARATION = ${ID_USER_AILE_AGENT_PREPARATION}
+                WHERE FAAP.ID_USER_AILE_AGENT_PREPARATION = ${AGENT_PREPARATION}
                     AND FAAP.ID_ETAPE_FOLIO = 2
               `
         const [results] = await ExecQuery.readRequete(requete)
-        console.log(results)
         await Folio.update(
             {
                 ID_ETAPE_FOLIO: 3,
@@ -836,6 +832,7 @@ const RetourPreparation = async (req, res) => {
         await Folio_aile_agent_preparation.update(
             {
                 ID_ETAPE_FOLIO: 3,
+                PATH_PV_AGENT_PREPARATION_RETOUR: fileUrl
             }, {
             where: {
                 ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION
@@ -1001,6 +998,48 @@ const findAllFolio = async (req, res) => {
     }
 }
 
+/**
+ * Permet recuperer les  folios d'un agent  superviseur phase preparation en retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 18/07/2023
+ * 
+ */
+const findAllFolios = async (req, res) => {
+    try {
+        var { AGENT_PREPARATION } = req.query
+        var requete = `
+        SELECT F.ID_FOLIO,F.NUMERO_FOLIO ,F.CODE_FOLIO,F.ID_FOLIO_AILE_PREPARATION
+        FROM folio F
+            LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
+            LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
+            LEFT JOIN folio_aile_agent_preparation	FAAP 	ON
+             FAAP.ID_FOLIO_AILE_AGENT_PREPARATION=F.ID_FOLIO_AILE_AGENT_PREPARATION
+        WHERE FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION = ${req.userId}
+            AND FAP.ID_ETAPE_FOLIO = 3
+        `
+        if (AGENT_PREPARATION && AGENT_PREPARATION != "") {
+            requete +=
+                `AND  FAAP.ID_USER_AILE_AGENT_PREPARATION  =${AGENT_PREPARATION}`;
+        }
+        const [results] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios ",
+            result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     findById,
@@ -1021,5 +1060,6 @@ module.exports = {
     RetourPreparation,
     findAlls,
     findNbre,
-    findAllFolio
+    findAllFolio,
+    findAllFolios
 }
