@@ -26,9 +26,17 @@ folio_routes.get('/folio', folio_controller.findById)
  /**
  * Une route  recuperer  nbre  les folios d'un agent  superviseur  phase preparation
  *@method GET
- * @url /folio/dossiers/allFolio
+ * @url /folio/dossiers/nbreFolio
  */
  folio_routes.get('/nbreFolio', folio_controller.findNbre)
+
+ /**
+ * Une route  recuperer   les folios d'un agent  superviseur  phase preparation
+ *@method GET
+ * @url /folio/dossiers/getFolio
+ */
+ folio_routes.get('/getFolio', folio_controller.findAllFolio)
+
 
 
  /**

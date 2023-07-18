@@ -994,6 +994,41 @@ const findNbre = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Nombre folio ",
+            result: results[0]
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet recuperer les nbre des folios d'un agent  superviseur phase preparation
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 18/07/2023
+ * 
+ */
+const findAllFolio= async (req, res) => {
+    try {
+        var requete = `
+        SELECT F.ID_FOLIO ,F.NUMERO_FOLIO 
+        FROM folio F
+            LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
+            LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
+        WHERE FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION = ${req.userId}
+            AND FAP.ID_ETAPE_FOLIO = 1
+        `
+        const [results] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios ",
             result: results
         })
     } catch (error) {
@@ -1025,5 +1060,6 @@ module.exports = {
     findAgentsPreparation,
     RetourPreparation,
     findAlls,
-    findNbre
+    findNbre,
+    findAllFolio
 }
