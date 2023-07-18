@@ -45,9 +45,22 @@ const findById = async (req, res) => {
             })
         }
         else if (user?.ID_PROFIL == 3) {
+            const results = await Volume.findAll({
+                where: {
+                    USER_TRAITEMENT: req.userId
+                }
+            })
+            res.status(RESPONSE_CODES.CREATED).json({
+                statusCode: RESPONSE_CODES.CREATED,
+                httpStatus: RESPONSE_STATUS.CREATED,
+                message: "Vous êtes connecté avec succès",
+                result: results
+            })
+        }
+        else if (user?.ID_PROFIL == 29) {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
-             ua.ID_USER_AILE=v.ID_USER_AILE_SUPERVISEUR
+             ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
             WHERE ua.USERS_ID=${req.userId}`
             const [results] = await ExecQuery.readRequete(requete)
             res.status(RESPONSE_CODES.OK).json({
@@ -57,7 +70,7 @@ const findById = async (req, res) => {
                 result: results
             })
         }
-        else if (user?.ID_PROFIL == 29) {
+        else if (user?.ID_PROFIL == 7) {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
              ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
