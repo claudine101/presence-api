@@ -889,6 +889,17 @@ const addDetails = async (req, res) => {
         WHERE ID_FOLIO = ${ID_FOLIO}
         `
         const [results] = await ExecQuery.readRequete(requete)
+        var fileUrl
+        if (PHOTO_DOSSIER) {
+            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
+            // filename = fileInfo_1
+            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
+            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
+            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
+            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PHOTO_DOSSIER.name)}`;
+            const newFile = await PHOTO_DOSSIER.mv(destination + fileName);
+            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+        }
         await Folio.update(
             {
                 NUMERO_PARCELLE: NUMERO_PARCELLE,
@@ -896,7 +907,7 @@ const addDetails = async (req, res) => {
                 LOCALITE: LOCALITE,
                 NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
                 PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
-                PHOTO_DOSSIER: PHOTO_DOSSIER,
+                PHOTO_DOSSIER: fileUrl,
                 NUMERO_FEUILLE: NUMERO_FEUILLE,
                 NOMBRE_DOUBLON: NOMBRE_DOUBLON,
                 ID_ETAPE_FOLIO: 4
