@@ -994,7 +994,7 @@ const findAllFolio = async (req, res) => {
             LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
             LEFT JOIN user_ailes au ON au.ID_USER_AILE=FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
         WHERE au.USERS_ID= ${req.userId}
-            AND FAP.ID_ETAPE_FOLIO = 1
+            AND F.ID_ETAPE_FOLIO = 1
         `
         const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
