@@ -34,7 +34,7 @@ const findById = async (req, res) => {
         if (user?.ID_PROFIL == 2) {
             const results = await Volume.findAll({
                 where: {
-                    ID_VOLUME_PV: 1
+                    ID_ETAPE_VOLUME: 1
                 }
             })
             res.status(RESPONSE_CODES.CREATED).json({
