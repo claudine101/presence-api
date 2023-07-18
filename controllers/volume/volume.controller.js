@@ -73,7 +73,7 @@ const findById = async (req, res) => {
         else if (user?.ID_PROFIL == 7) {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
-             ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
+             ua.ID_USER_AILE=v.ID_USER_AILE_SUPERVISEUR
             WHERE ua.USERS_ID=${req.userId}`
             const [results] = await ExecQuery.readRequete(requete)
             res.status(RESPONSE_CODES.OK).json({
