@@ -26,17 +26,38 @@ const Users = require('../../models/Users');
  */
 const findById = async (req, res) => {
     try {
-        const results = await Volume.findAll({
+        const user = await Users.findOne({
             where: {
-                ID_USERS: req.userId
+                USERS_ID: req.userId
             }
         })
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Vous êtes connecté avec succès",
-            result: results
-        })
+        if (user?.ID_PROFIL == 2) {
+            const results = await Volume.findAll({
+                where: {
+                    ID_VOLUME_PV: 1
+                }
+            })
+            res.status(RESPONSE_CODES.CREATED).json({
+                statusCode: RESPONSE_CODES.CREATED,
+                httpStatus: RESPONSE_STATUS.CREATED,
+                message: "Vous êtes connecté avec succès",
+                result: results
+            })
+        }
+        else {
+            const results = await Volume.findAll({
+                where: {
+                    ID_USERS: req.userId
+                }
+            })
+            res.status(RESPONSE_CODES.CREATED).json({
+                statusCode: RESPONSE_CODES.CREATED,
+                httpStatus: RESPONSE_STATUS.CREATED,
+                message: "Vous êtes connecté avec succès",
+                result: results
+            })
+        }
+
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
@@ -76,7 +97,7 @@ const findBy = async (req, res) => {
             })
         }
         //Agents des superviseur Aile
-        else if(user?.ID_PROFIL == 7){
+        else if (user?.ID_PROFIL == 7) {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
              ua.ID_USER_AILE=v.ID_USER_AILE_SUPERVISEUR
@@ -90,7 +111,7 @@ const findBy = async (req, res) => {
             })
         }
         //Chef Plateau Phase de preparation
-        else if(user?.ID_PROFIL == 15){
+        else if (user?.ID_PROFIL == 15) {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
              ua.ID_USER_AILE=v.ID_USER_AILE_PLATEAU
@@ -116,7 +137,7 @@ const findBy = async (req, res) => {
                 result: results
             })
         }
-        
+
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({

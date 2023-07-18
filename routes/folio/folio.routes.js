@@ -2,7 +2,7 @@ const express = require('express')
 const folio_controller = require('../../controllers/folio/folio.controller')
 const folio_routes = express.Router()
 /**
- * Une route  recuperer  les folios d'un chef  de divisions des archives
+ * Une route  recuperer  les folios d'un agent  superviseur  phase preparation
  *@method GET
  * @url /folio/dossiers/folio
  */
