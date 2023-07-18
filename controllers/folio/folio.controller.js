@@ -955,7 +955,8 @@ const findNbre = async (req, res) => {
         FROM folio F
             LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
             LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
-        WHERE FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION = ${req.userId}
+            LEFT JOIN user_ailes ua ON ua.ID_USER_AILE=FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
+        WHERE ua.USERS_ID = ${req.userId}
             AND FAP.ID_ETAPE_FOLIO = 1
         `
         const [results] = await ExecQuery.readRequete(requete)
