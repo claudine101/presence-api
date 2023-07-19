@@ -1074,7 +1074,6 @@ const findAllFolios = async (req, res) => {
         LEFT JOIN folio_aile_agent_preparation FAAP ON FAAP.ID_FOLIO_AILE_AGENT_PREPARATION = F.ID_FOLIO_AILE_AGENT_PREPARATION
     WHERE F.ID_ETAPE_FOLIO = 3
         AND ua.USERS_ID = ${req.userId}
-
         `
         if (AGENT_PREPARATION && AGENT_PREPARATION != "") {
             requete +=
