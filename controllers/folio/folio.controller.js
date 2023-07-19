@@ -35,12 +35,22 @@ const Etapes_volume_historiques = require('../../models/Etapes_volume_historique
  */
 const findById = async (req, res) => {
     try {
-        var results = (await Folio.findFolio(req.userId));
+        var requete = `
+        SELECT F.ID_FOLIO,
+            F.ID_VOLUME,
+            F.NUMERO_FOLIO,
+            F.CODE_FOLIO,
+            FAP.DATE_INSERTION
+        FROM folio F
+            LEFT JOIN folio_aile_preparation FAP ON FAP.ID_FOLIO_AILE_PREPARATION = F.ID_FOLIO_AILE_PREPARATION
+            LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
+        WHERE UA.USERS_ID= ${req.userId} `
+        const [folio] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les folios",
-            result: results
+            result: folio
         })
     } catch (error) {
         console.log(error)
@@ -1139,7 +1149,7 @@ const agentPreparations = async (req, res) => {
                 ON FAAP.ID_FOLIO_AILE_AGENT_PREPARATION = F.ID_FOLIO_AILE_AGENT_PREPARATION
                 LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAAP.ID_USER_AILE_AGENT_PREPARATION
                 LEFT JOIN users U ON U.USERS_ID = UA.USERS_ID
-            WHERE F.ID_FOLIO_AILE_PREPARATION = ${agentSuperviseur[0].ID_FOLIO_AILE_PREPARATION}
+            WHERE F.ID_FOLIO_AILE_AGENT_PREPARATION!=0  AND  F.ID_FOLIO_AILE_PREPARATION = ${agentSuperviseur[0].ID_FOLIO_AILE_PREPARATION}
             GROUP BY F.ID_FOLIO_AILE_AGENT_PREPARATION
         `
 
