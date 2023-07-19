@@ -1063,15 +1063,18 @@ const findAllFolios = async (req, res) => {
     try {
         var { AGENT_PREPARATION } = req.query
         var requete = `
-        SELECT F.ID_FOLIO,F.NUMERO_FOLIO ,F.CODE_FOLIO,F.ID_FOLIO_AILE_PREPARATION
-        FROM folio F
-            LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
-            LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
-            LEFT JOIN folio_aile_agent_preparation	FAAP 	ON
-             FAAP.ID_FOLIO_AILE_AGENT_PREPARATION=F.ID_FOLIO_AILE_AGENT_PREPARATION
-             LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAAP.ID_USER_AILE_AGENT_PREPARATION
-        WHERE UA.USERS_ID = ${req.userId}
-            AND FAP.ID_ETAPE_FOLIO = 3
+        SELECT F.ID_FOLIO,
+        F.NUMERO_FOLIO,
+        F.CODE_FOLIO,
+        F.ID_FOLIO_AILE_PREPARATION,
+        F.ID_ETAPE_FOLIO
+    FROM folio F
+        LEFT JOIN folio_aile_preparation FAP ON F.ID_FOLIO_AILE_PREPARATION = FAP.ID_FOLIO_AILE_PREPARATION
+        LEFT JOIN user_ailes ua ON ua.ID_USER_AILE = FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
+        LEFT JOIN folio_aile_agent_preparation FAAP ON FAAP.ID_FOLIO_AILE_AGENT_PREPARATION = F.ID_FOLIO_AILE_AGENT_PREPARATION
+    WHERE F.ID_ETAPE_FOLIO = 3
+        AND ua.USERS_ID = ${req.userId}
+
         `
         if (AGENT_PREPARATION && AGENT_PREPARATION != "") {
             requete +=
