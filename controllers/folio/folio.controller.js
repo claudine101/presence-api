@@ -26,7 +26,7 @@ const Folio_aile_agent_preparation = require('../../models/Folio_aile_agent_prep
 const Volume = require('../../models/volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 /**
- * Permet de recuperer les folio traitetement  par un users connecte
+ * Permet de recuperer les folio par un agent  superviseur  phase preparation
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
  * @param {express.Request} req
  * @param {express.Response} res 
@@ -1169,6 +1169,41 @@ const agentPreparations = async (req, res) => {
         })
     }
 }
+/**
+ * Permet de recuperer les folio traitetement  par un users connecte
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  11/07/2023
+ * 
+ */
+const folioPreparations = async (req, res) => {
+    try {
+        const {	ID_FOLIO_AILE_AGENT_PREPARATION}=req.params
+        var requete = `
+        SELECT F.ID_FOLIO,
+            F.ID_VOLUME,
+            F.NUMERO_FOLIO,
+            F.CODE_FOLIO,
+            F.DATE_INSERTION
+        FROM folio F 
+        WHERE F.ID_FOLIO_AILE_AGENT_PREPARATION= ${ID_FOLIO_AILE_AGENT_PREPARATION} `
+        const [folio] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios",
+            result: folio
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     findById,
     createFalio,
@@ -1191,5 +1226,6 @@ module.exports = {
     findAllFolio,
     findAllFolios,
     getDetails,
-    agentPreparations
+    agentPreparations,
+    folioPreparations
 }
