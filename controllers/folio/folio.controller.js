@@ -1235,6 +1235,7 @@ const chefPlateaus = async (req, res) => {
             F.ID_FOLIO_AILE_PREPARATION,
             COUNT(F.ID_FOLIO) AS nbre_folio,
             FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION,
+            F
             FAP.DATE_INSERTION
         FROM folio F
             LEFT JOIN folio_aile_preparation FAP ON FAP.ID_FOLIO_AILE_PREPARATION = F.ID_FOLIO_AILE_PREPARATION
