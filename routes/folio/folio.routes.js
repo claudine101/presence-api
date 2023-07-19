@@ -178,6 +178,14 @@ folio_routes.get('/superviseurPreparations', folio_controller.chefPlateaus)
 */
 folio_routes.get('/folioPreparations/:ID_FOLIO_AILE_AGENT_PREPARATION', folio_controller.folioPreparations)
 
+/**
+* Une route  permet  a un  chef plateau de voir 
+*  tous les folio equ'il a donné  a un  agent superviseur  phase preparation
+*@method GET
+* @url /folio/dossiers/folioSuperviseur
+*/
+folio_routes.get('/folioSuperviseur/:ID_FOLIO_AILE_PREPARATION', folio_controller.folioPreparation)
+
 
 
 module.exports = folio_routes

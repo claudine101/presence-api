@@ -1234,6 +1234,7 @@ const chefPlateaus = async (req, res) => {
             F.ID_FOLIO_AILE_AGENT_PREPARATION,
             F.ID_FOLIO_AILE_PREPARATION,
             COUNT(F.ID_FOLIO) AS nbre_folio,
+            FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION,
             FAP.DATE_INSERTION
         FROM folio F
             LEFT JOIN folio_aile_preparation FAP ON FAP.ID_FOLIO_AILE_PREPARATION = F.ID_FOLIO_AILE_PREPARATION
@@ -1248,6 +1249,41 @@ const chefPlateaus = async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les folios ",
             result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de recuperer les folio traitetement  par un users connecte
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  11/07/2023
+ * 
+ */
+const folioPreparation = async (req, res) => {
+    try {
+        const { ID_FOLIO_AILE_PREPARATION } = req.params
+        var requete = `
+        SELECT F.ID_FOLIO,
+            F.ID_VOLUME,
+            F.NUMERO_FOLIO,
+            F.CODE_FOLIO,
+            F.DATE_INSERTION
+        FROM folio F 
+        WHERE F.ID_FOLIO_AILE_PREPARATION= ${ID_FOLIO_AILE_PREPARATION} `
+        const [folio] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios",
+            result: folio
         })
     } catch (error) {
         console.log(error)
@@ -1282,5 +1318,6 @@ module.exports = {
     getDetails,
     agentPreparations,
     folioPreparations,
-    chefPlateaus
+    chefPlateaus,
+    folioPreparation
 }
