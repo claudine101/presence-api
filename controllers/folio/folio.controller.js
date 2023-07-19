@@ -1269,7 +1269,7 @@ const chefPlateaus = async (req, res) => {
  */
 const folioPreparation = async (req, res) => {
     try {
-        const { ID_FOLIO_AILE_PREPARATION } = req.params
+        const {ID_FOLIO_AILE_PREPARATION } = req.params
         var requete = `
         SELECT F.ID_FOLIO,
             F.ID_VOLUME,
