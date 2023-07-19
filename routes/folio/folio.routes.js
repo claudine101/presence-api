@@ -167,9 +167,9 @@ folio_routes.get('/agentPreparations', folio_controller.agentPreparations)
 * Une route  permet  a un chef plateau de voir 
 *  nbre  folio e qu'il a donné  a chaque  agent superviseur  phase preparation
 *@method GET
-* @url /folio/dossiers/agentPreparations
+* @url /folio/dossiers/superviseurPreparations
 */
-folio_routes.get('/superviseurPreparations', folio_controller.agentPreparations)
+folio_routes.get('/superviseurPreparations', folio_controller.chefPlateaus)
 /**
 * Une route  permet  a un  agent superviseur  phase preparation de voir 
 *  tous les folio equ'il a donné  a un agent preparartion

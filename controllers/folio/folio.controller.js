@@ -1182,7 +1182,7 @@ const agentPreparations = async (req, res) => {
  */
 const folioPreparations = async (req, res) => {
     try {
-        const {	ID_FOLIO_AILE_AGENT_PREPARATION}=req.params
+        const { ID_FOLIO_AILE_AGENT_PREPARATION } = req.params
         var requete = `
         SELECT F.ID_FOLIO,
             F.ID_VOLUME,
@@ -1223,25 +1223,23 @@ const chefPlateaus = async (req, res) => {
         FROM user_ailes ua
             LEFT JOIN volume v ON v.ID_USER_AILE_PLATEAU = ua.ID_USER_AILE
         WHERE ua.USERS_ID = ${req.userId} `
-        const [agentSuperviseur] = await ExecQuery.readRequete(reqUser)
+        const [volume] = await ExecQuery.readRequete(reqUser)
         var requete = `
-                SELECT F.NUMERO_FOLIO,
-                U.USERS_ID,
-                U.NOM,
-                U.PRENOM,
-                F.ID_FOLIO_AILE_AGENT_PREPARATION,
-                F.ID_FOLIO_AILE_PREPARATION,
-                COUNT(F.ID_FOLIO) AS nbre_folio,
-                FAAP.DATE_INSERTION
-            FROM folio F
-                LEFT JOIN folio_aile_agent_preparation FAAP 
-                ON FAAP.ID_FOLIO_AILE_AGENT_PREPARATION = F.ID_FOLIO_AILE_AGENT_PREPARATION
-                LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAAP.ID_USER_AILE_AGENT_PREPARATION
-                LEFT JOIN users U ON U.USERS_ID = UA.USERS_ID
-            WHERE F.ID_FOLIO_AILE_AGENT_PREPARATION!=0  AND  F.ID_FOLIO_AILE_PREPARATION = ${agentSuperviseur[0].ID_FOLIO_AILE_PREPARATION}
-            GROUP BY F.ID_FOLIO_AILE_AGENT_PREPARATION
-        `
-
+        SELECT F.NUMERO_FOLIO,
+            U.USERS_ID,
+            U.NOM,
+            U.PRENOM,
+            F.ID_FOLIO_AILE_AGENT_PREPARATION,
+            F.ID_FOLIO_AILE_PREPARATION,
+            COUNT(F.ID_FOLIO) AS nbre_folio,
+            FAP.DATE_INSERTION
+        FROM folio F
+            LEFT JOIN folio_aile_preparation FAP ON FAP.ID_FOLIO_AILE_PREPARATION = F.ID_FOLIO_AILE_PREPARATION
+            LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
+            LEFT JOIN users U ON U.USERS_ID = UA.USERS_ID
+        WHERE F.ID_FOLIO_AILE_PREPARATION != 0
+            AND F.ID_VOLUME = ${volume[0].ID_VOLUME}
+        GROUP BY F.ID_FOLIO_AILE_PREPARATION`
         const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -1282,4 +1280,5 @@ module.exports = {
     getDetails,
     agentPreparations,
     folioPreparations,
+    chefPlateaus
 }
