@@ -1069,7 +1069,8 @@ const findAllFolios = async (req, res) => {
             LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
             LEFT JOIN folio_aile_agent_preparation	FAAP 	ON
              FAAP.ID_FOLIO_AILE_AGENT_PREPARATION=F.ID_FOLIO_AILE_AGENT_PREPARATION
-        WHERE FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION = ${req.userId}
+             LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAAP.ID_USER_AILE_AGENT_PREPARATION
+        WHERE UA.USERS_ID = ${req.userId}
             AND FAP.ID_ETAPE_FOLIO = 3
         `
         if (AGENT_PREPARATION && AGENT_PREPARATION != "") {
@@ -1218,11 +1219,10 @@ const folioPreparations = async (req, res) => {
 const chefPlateaus = async (req, res) => {
     try {
         var reqUser = `
-                SELECT FAP.ID_FOLIO_AILE_PREPARATION
-                    FROM user_ailes ua
-                        LEFT JOIN folio_aile_preparation FAP 
-                        ON FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION = ua.ID_USER_AILE
-                    WHERE ua.USERS_ID= ${req.userId} `
+        SELECT v.ID_VOLUME
+        FROM user_ailes ua
+            LEFT JOIN volume v ON v.ID_USER_AILE_PLATEAU = ua.ID_USER_AILE
+        WHERE ua.USERS_ID = ${req.userId} `
         const [agentSuperviseur] = await ExecQuery.readRequete(reqUser)
         var requete = `
                 SELECT F.NUMERO_FOLIO,
