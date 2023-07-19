@@ -35,7 +35,7 @@ const Etapes_volume_historiques = require('../../models/Etapes_volume_historique
  */
 const findById = async (req, res) => {
     try {
-        var results = (await folio_model.findFolio(req.userId));
+        var results = (await Folio.findFolio(req.userId));
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -568,7 +568,7 @@ const createFalio = async (req, res) => {
                     NUMERO_DOSSIERS: folio.NUMERO_DOSSIERS,
                     ID_USERS: req.userId,
                     ID_FOLIO_PV: histoPv.ID_FOLIO_PV,
-                    ID_ETAPE_FOLIO:1
+                    ID_ETAPE_FOLIO: 1
                 }
             )
         }))
@@ -803,6 +803,34 @@ const RetourPreparation = async (req, res) => {
         const { AGENT_PREPARATION } = req.params
         const pvUpload = new VolumePvUpload()
         const PV = req.files?.PV
+        const validation = new Validation(
+            req.files,
+            {
+
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         var fileUrl
         if (PV) {
             // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
@@ -883,7 +911,7 @@ const addDetails = async (req, res) => {
             ID_FOLIO
 
         } = req.body;
-        const PHOTO_DOSSIER=req.files?.PHOTO_DOSSIER
+        const PHOTO_DOSSIER = req.files?.PHOTO_DOSSIER
         var requete = `
         SELECT 	ID_FOLIO_AILE_PREPARATION,
         ID_FOLIO_AILE_AGENT_PREPARATION
@@ -1080,7 +1108,57 @@ const getDetails = async (req, res) => {
         })
     }
 }
+/**
+ * Permet recuperer les  folios d'un agent  superviseur phase preparation en retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 18/07/2023
+ * 
+ */
+const agentPreparations = async (req, res) => {
+    try {
+        var reqUser = `
+                SELECT FAP.ID_FOLIO_AILE_PREPARATION
+                    FROM user_ailes ua
+                        LEFT JOIN folio_aile_preparation FAP 
+                        ON FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION = ua.ID_USER_AILE
+                    WHERE ua.USERS_ID= ${req.userId} `
+        const [agentSuperviseur] = await ExecQuery.readRequete(reqUser)
+        var requete = `
+                SELECT F.NUMERO_FOLIO,
+                U.USERS_ID,
+                U.NOM,
+                U.PRENOM,
+                F.ID_FOLIO_AILE_AGENT_PREPARATION,
+                F.ID_FOLIO_AILE_PREPARATION,
+                COUNT(F.ID_FOLIO) AS nbre_folio,
+                FAAP.DATE_INSERTION
+            FROM folio F
+                LEFT JOIN folio_aile_agent_preparation FAAP 
+                ON FAAP.ID_FOLIO_AILE_AGENT_PREPARATION = F.ID_FOLIO_AILE_AGENT_PREPARATION
+                LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAAP.ID_USER_AILE_AGENT_PREPARATION
+                LEFT JOIN users U ON U.USERS_ID = UA.USERS_ID
+            WHERE F.ID_FOLIO_AILE_PREPARATION = ${agentSuperviseur[0].ID_FOLIO_AILE_PREPARATION}
+            GROUP BY F.ID_FOLIO_AILE_AGENT_PREPARATION
+        `
 
+        const [results] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios ",
+            result: results
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     findById,
     createFalio,
@@ -1102,5 +1180,6 @@ module.exports = {
     findNbre,
     findAllFolio,
     findAllFolios,
-    getDetails
+    getDetails,
+    agentPreparations
 }

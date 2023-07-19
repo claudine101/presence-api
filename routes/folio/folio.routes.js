@@ -135,9 +135,9 @@ folio_routes.post('/', folio_controller.createFalio)
  /**
  * Une route  permet  retour d'agent preparation
  *@method PUT
- * @url /folio/dossiers/preparation
+ * @url /folio/dossiers/retourPreparation
  */
- folio_routes.put('/RetourPreparation/:AGENT_PREPARATION', folio_controller.RetourPreparation)
+ folio_routes.put('/retourPreparation/:AGENT_PREPARATION', folio_controller.RetourPreparation)
 
   /**
  * Une route  permet d'afficher  les details d'un folio
@@ -154,6 +154,14 @@ folio_routes.post('/', folio_controller.createFalio)
  * @url /folio/dossiers/addDetails
  */
  folio_routes.put('/addDetails', folio_controller.addDetails)
+
+/**
+ * Une route  permet  a un agent superviseur  phase preparation de voir 
+ *  nbre  folio e qu'il a donné  a chaque agent preparation
+ *@method PUT
+ * @url /folio/dossiers/agentPreparations
+ */
+ folio_routes.get('/agentPreparations', folio_controller.agentPreparations)
 
 
 

@@ -51,6 +51,11 @@ const Folio_aile_preparation = sequelize.define("folio_aile_preparation", {
         type: Sequelize.INTEGER(),
         allowNull: false
     },
+    DATE_INSERTION: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+    }
 }, {
     freezeTableName: true,
     tableName: 'folio_aile_preparation',
