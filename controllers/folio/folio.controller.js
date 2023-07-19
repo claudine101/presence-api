@@ -1143,6 +1143,7 @@ const agentPreparations = async (req, res) => {
                 F.ID_FOLIO_AILE_AGENT_PREPARATION,
                 F.ID_FOLIO_AILE_PREPARATION,
                 FAAP.ID_USER_AILE_AGENT_PREPARATION,
+                F.ID_ETAPE_FOLIO,
                 COUNT(F.ID_FOLIO) AS nbre_folio,
                 FAAP.DATE_INSERTION
             FROM folio F
