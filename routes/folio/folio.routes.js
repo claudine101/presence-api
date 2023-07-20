@@ -200,6 +200,12 @@ folio_routes.get('/folioSuperviseur/:ID_FOLIO_AILE_PREPARATION', folio_controlle
 */
 folio_routes.put('/retourSuperviseurPreparation/:ID_FOLIO_AILE_PREPARATION', folio_controller.RetourAgentSupervisuerPreparation)
 
+/**
+* Une route  permet  retour chef plateau phase preparation
+*@method PUT
+* @url /folio/dossiers/retourSuperviseurPreparation
+*/
+folio_routes.put('/retourCheftPlateau/:ID_VOLUME', folio_controller.RetourAgentSupervisuerPreparation)
 
 
 module.exports = folio_routes
