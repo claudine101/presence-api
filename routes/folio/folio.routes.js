@@ -174,9 +174,9 @@ folio_routes.get('/superviseurPreparations', folio_controller.chefPlateaus)
 * Une route  permet  a un chef plateau de voir 
 *  nbre  folio  non  prepare
 *@method GET
-* @url /folio/dossiers/superviseurPreparations
+* @url /folio/dossiers/folioNonPrepare
 */
-folio_routes.get('/folioNonPrepare/:ID_FOLIO_AILE_PREPARATION', folio_controller.RetourAgentSupervisuerPreparation)
+folio_routes.get('/folioNonPrepare/:ID_FOLIO_AILE_PREPARATION', folio_controller.folioNonPrepare)
 /**
 * Une route  permet  a un  agent superviseur  phase preparation de voir 
 *  tous les folio equ'il a donné  a un agent preparartion
@@ -192,6 +192,13 @@ folio_routes.get('/folioPreparations/:ID_FOLIO_AILE_AGENT_PREPARATION', folio_co
 * @url /folio/dossiers/folioSuperviseur
 */
 folio_routes.get('/folioSuperviseur/:ID_FOLIO_AILE_PREPARATION', folio_controller.folioPreparation)
+
+/**
+* Une route  permet  retour d'agent superviseur phase preparation
+*@method PUT
+* @url /folio/dossiers/retourSuperviseurPreparation
+*/
+folio_routes.put('/retourSuperviseurPreparation/:ID_FOLIO_AILE_PREPARATION', folio_controller.RetourAgentSupervisuerPreparation)
 
 
 
