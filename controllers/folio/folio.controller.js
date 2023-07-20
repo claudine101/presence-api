@@ -1295,6 +1295,40 @@ const folioPreparation = async (req, res) => {
         })
     }
 }
+/**
+ *   Retour  agent  preparation
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  17/07/2023
+ * 
+ */
+
+const RetourAgentSupervisuerPreparation = async (req, res) => {
+    try {
+        const {ID_FOLIO_AILE_PREPARATION}=req.params
+        var requete = `
+        SELECT COUNT(F.ID_FOLIO) AS nbre_folio
+        FROM folio F
+            LEFT JOIN folio_aile_preparation FAP ON FAP.ID_FOLIO_AILE_PREPARATION = F.ID_FOLIO_AILE_PREPARATION
+        WHERE F.ID_FOLIO_AILE_PREPARATION = ${ID_FOLIO_AILE_PREPARATION}
+            AND F.ID_ETAPE_FOLIO != 4`
+        const [results] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les folios ",
+            result: results[0]
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     findById,
     createFalio,
@@ -1320,5 +1354,6 @@ module.exports = {
     agentPreparations,
     folioPreparations,
     chefPlateaus,
-    folioPreparation
+    folioPreparation,
+    RetourAgentSupervisuerPreparation
 }
