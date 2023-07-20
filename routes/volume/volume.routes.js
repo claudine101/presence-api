@@ -85,6 +85,12 @@ volume_routes.post('/', volume_controller.createVolume)
  */
  volume_routes.put('/affectationPlateau/:ID_VOLUME', volume_controller.affectationPlateau)
 
+/**
+ * retour  d'un  chef plateau
+ *@method put
+ * @url /volume/dossiers/retournPlateau
+ */
+ volume_routes.put('/retournPlateau/:ID_USER_AILE_PLATEAU/:ID_VOLUME', volume_controller.retourPlateau)
 
 
 module.exports = volume_routes

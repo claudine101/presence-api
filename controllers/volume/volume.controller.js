@@ -544,7 +544,7 @@ const affectationPlateau = async (req, res) => {
     }
 }
 /**
- * Permet de vérifier la connexion dun utilisateur
+ * Permet d'ajouter  les nbres de folios
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
  * @param {express.Request} req
  * @param {express.Response} res 
@@ -669,6 +669,62 @@ const findVolume = async (req, res) => {
         })
     }
 }
+/**
+ * Permet le retour  un volume à un agent superviseur  aile
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 15/07/2023
+ * 
+ */
+const retourPlateau = async (req, res) => {
+    try {
+        const { ID_USER_AILE_PLATEAU ,ID_VOLUME} = req.params
+
+        const pvUpload = new VolumePvUpload()
+        var filename, fileUrl
+        const PV = req.files?.PV
+        var fileUrl
+        if (PV) {
+            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
+            // filename = fileInfo_1
+            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
+            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
+            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
+            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
+            const newFile = await PV.mv(destination + fileName);
+            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+        }
+        const results = await Volume.update({
+            PV_PATH_SUPERVISEUR_RETOUR: fileUrl,
+            ID_ETAPE_VOLUME: 7
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME,
+                ID_USER_AILE_PLATEAU:ID_USER_AILE_PLATEAU
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: ID_USER_AILE_PLATEAU,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: 7
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+            // result: results.toJSON()
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     findById,
     createVolume,
@@ -681,6 +737,7 @@ module.exports = {
     affectationSuperviseur,
     affectationPlateau,
     findVolume,
-    findChefPlateauVolume
+    findChefPlateauVolume,
+    retourPlateau
 
 }
