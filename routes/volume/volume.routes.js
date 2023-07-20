@@ -8,6 +8,13 @@ const volume_routes = express.Router()
  */
 volume_routes.get('/myVolume', volume_controller.findBy)
 /**
+ * Une route  recuperer  chef plateau et  leur  volumes
+ *@method GET
+ * @url /volume/dossiers/chefPlateauVolume
+ */
+ volume_routes.get('/chefPlateauVolume', volume_controller.findChefPlateauVolume)
+
+/**
  * Une route  recuperer  les volumes d'un agent  superviseurs archives
  *@method GET
  * @url /volume/dossiers/volume

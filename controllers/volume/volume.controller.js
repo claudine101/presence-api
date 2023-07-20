@@ -201,6 +201,46 @@ const findBy = async (req, res) => {
     }
 }
 /**
+ * Permet de vérifier la connexion dun utilisateur
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  11/07/2023
+ * 
+ */
+const findChefPlateauVolume = async (req, res) => {
+    try {
+        var reque = `SELECT ua.ID_USER_AILE FROM  user_ailes ua 
+        WHERE ua.USERS_ID=${req.userId}`
+        const [resuls] = await ExecQuery.readRequete(reque)
+        var requete = `
+        SELECT v.*,
+            u.NOM,
+            u.PRENOM
+        FROM volume v
+            LEFT JOIN user_ailes ua ON ua.ID_USER_AILE = v.ID_USER_AILE_PLATEAU
+            LEFT JOIN users u ON u.USERS_ID = ua.USERS_ID
+        WHERE v.ID_USER_AILE_SUPERVISEUR = ${resuls[0].ID_USER_AILE} AND v.ID_USER_AILE_PLATEAU!=0
+        `
+        const [resultans] = await ExecQuery.readRequete(requete)
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Les volumes",
+            result: resultans
+        })
+
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet de recuper un volume
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
  * @param {express.Request} req
@@ -640,6 +680,7 @@ module.exports = {
     affectation,
     affectationSuperviseur,
     affectationPlateau,
-    findVolume
+    findVolume,
+    findChefPlateauVolume
 
 }
