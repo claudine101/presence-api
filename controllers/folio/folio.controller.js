@@ -25,6 +25,7 @@ const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques'
 const Folio_aile_agent_preparation = require('../../models/Folio_aile_agent_preparation');
 const Volume = require('../../models/volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
+const DossiersUpload = require('../../class/uploads/DossiersUpload');
 /**
  * Permet de recuperer les folio par un agent  superviseur  phase preparation
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -250,24 +251,6 @@ const findAgentDistributeurAile = async (req, res) => {
          WHERE au.ID_AILE=${ID_AILE} AND  u.ID_PROFIL=29 AND au.IS_ACTIF=1
            `
         const [results] = await ExecQuery.readRequete(requete)
-
-        //     const results = await Users.findAll({
-        //         where: {
-        //             ID_AILE: ID_AILE
-        //         },
-        //         include: {
-        //                 model: Affectation_users,
-        //                 as: 'users',
-        //                 required: false,
-        //                 include: {
-        //                     model: Aile,
-        //                     as: 'aile',
-        //                     required: false,
-        //                     attributes: ['ID_AILE', 'NUMERO_AILE'],
-        //             }
-        //         },
-
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -298,31 +281,12 @@ const findAgentSuperviseur = async (req, res) => {
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
         const [user] = await ExecQuery.readRequete(reque)
-        // console.log(user[0].ID_AILE)
         var requete = `
         SELECT * FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=7 AND au.IS_ACTIF=1
            `
         const [results] = await ExecQuery.readRequete(requete)
-
-        //     const results = await Users.findAll({
-        //         where: {
-        //             ID_AILE: ID_AILE
-        //         },
-        //         include: {
-        //                 model: Affectation_users,
-        //                 as: 'users',
-        //                 required: false,
-        //                 include: {
-        //                     model: Aile,
-        //                     as: 'aile',
-        //                     required: false,
-        //                     attributes: ['ID_AILE', 'NUMERO_AILE'],
-        //             }
-        //         },
-
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -354,31 +318,12 @@ const findAgentPreparation = async (req, res) => {
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
         const [user] = await ExecQuery.readRequete(reque)
-        // console.log(user[0].ID_AILE)
         var requete = `
         SELECT * FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=8 AND au.IS_ACTIF=1
            `
         const [results] = await ExecQuery.readRequete(requete)
-
-        //     const results = await Users.findAll({
-        //         where: {
-        //             ID_AILE: ID_AILE
-        //         },
-        //         include: {
-        //                 model: Affectation_users,
-        //                 as: 'users',
-        //                 required: false,
-        //                 include: {
-        //                     model: Aile,
-        //                     as: 'aile',
-        //                     required: false,
-        //                     attributes: ['ID_AILE', 'NUMERO_AILE'],
-        //             }
-        //         },
-
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -410,31 +355,12 @@ const findAgentsPreparation = async (req, res) => {
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
         const [user] = await ExecQuery.readRequete(reque)
-        // console.log(user[0].ID_AILE)
         var requete = `
         SELECT * FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=22 AND au.IS_ACTIF=1
            `
         const [results] = await ExecQuery.readRequete(requete)
-
-        //     const results = await Users.findAll({
-        //         where: {
-        //             ID_AILE: ID_AILE
-        //         },
-        //         include: {
-        //                 model: Affectation_users,
-        //                 as: 'users',
-        //                 required: false,
-        //                 include: {
-        //                     model: Aile,
-        //                     as: 'aile',
-        //                     required: false,
-        //                     attributes: ['ID_AILE', 'NUMERO_AILE'],
-        //             }
-        //         },
-
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -465,29 +391,11 @@ const findChefPlateau = async (req, res) => {
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
         const [user] = await ExecQuery.readRequete(reque)
-        // console.log(user[0].ID_AILE)
         var requete = `
         SELECT * FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=15 AND au.IS_ACTIF=1`
         const [results] = await ExecQuery.readRequete(requete)
-        //     const results = await Users.findAll({
-        //         where: {
-        //             ID_AILE: ID_AILE
-        //         },
-        //         include: {
-        //                 model: Affectation_users,
-        //                 as: 'users',
-        //                 required: false,
-        //                 include: {
-        //                     model: Aile,
-        //                     as: 'aile',
-        //                     required: false,
-        //                     attributes: ['ID_AILE', 'NUMERO_AILE'],
-        //             }
-        //         },
-
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -517,48 +425,42 @@ const createFalio = async (req, res) => {
             ID_VOLUME,
             folio,
         } = req.body;
-        // const validation = new Validation({ ...req.body, ...req.files },
-        //     {
-        //         PV: {
-        //             PV: 21000000
-        //         },
-
-        //     },
-        //     {
-        //         PV: {
-        //             PV: "La taille invalide"
-        //         }
-        //     }
-        // )
-        // await validation.run();
-        // const isValide = await validation.isValidate()
-        // const errors = await validation.getErrors()
-        // if (!isValide) {
-        //     return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-        //         statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-        //         httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-        //         message: "Probleme de validation des donnees",
-        //         result: errors
-        //     })
-        // }
-        const pvUpload = new VolumePvUpload()
-        const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
         const PV = req.files?.PV
-        var fileUrl
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const histo = await Folio_pv.create(
             {
-                PV_PATH: fileUrl ? fileUrl : "local",
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                 USERS_ID: req.userId
             }
         )
@@ -624,48 +526,50 @@ const superviser = async (req, res) => {
             folio,
             AGENT_SUPERVISEUR
         } = req.body;
-        // const validation = new Validation({ ...req.body, ...req.files },
-        //     {
-        //         PV: {
-        //             PV: 21000000
-        //         },
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                AGENT_SUPERVISEUR: {
+                    required: true,
+                },
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
 
-        //     },
-        //     {
-        //         PV: {
-        //             PV: "La taille invalide"
-        //         }
-        //     }
-        // )
-        // await validation.run();
-        // const isValide = await validation.isValidate()
-        // const errors = await validation.getErrors()
-        // if (!isValide) {
-        //     return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-        //         statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-        //         httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-        //         message: "Probleme de validation des donnees",
-        //         result: errors
-        //     })
-        // }
-        const pvUpload = new VolumePvUpload()
+            },
+            {
+                AGENT_SUPERVISEUR: {
+                    required: "AGENT_SUPERVISEUR est obligatoire",
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const histo = await Folio_aile_preparation.create(
             {
                 ID_USER_AILE_SUPERVISEUR_PREPARATION: AGENT_SUPERVISEUR,
-                PATH_PV_SUPERVISEUR_PREPARATION: fileUrl ? fileUrl : "local",
+                PATH_PV_SUPERVISEUR_PREPARATION: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                 ID_ETAPE_FOLIO: 1
             }
         )
@@ -673,7 +577,6 @@ const superviser = async (req, res) => {
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         // folioObjet = folio
-        console.log(folioObjet)
 
         await Promise.all(folioObjet.map(async (folio) => {
             await Folio.update(
@@ -720,54 +623,62 @@ const preparation = async (req, res) => {
             folio,
             AGENT_PREPARATION
         } = req.body;
-        // const validation = new Validation({ ...req.body, ...req.files },
-        //     {
-        //         PV: {
-        //             PV: 21000000
-        //         },
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                AGENT_PREPARATION: {
+                    required: true,
+                },
+                folio: {
+                    required: true,
+                },
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
 
-        //     },
-        //     {
-        //         PV: {
-        //             PV: "La taille invalide"
-        //         }
-        //     }
-        // )
-        // await validation.run();
-        // const isValide = await validation.isValidate()
-        // const errors = await validation.getErrors()
-        // if (!isValide) {
-        //     return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-        //         statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-        //         httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-        //         message: "Probleme de validation des donnees",
-        //         result: errors
-        //     })
-        // }
-        const pvUpload = new VolumePvUpload()
+            },
+            {
+                AGENT_PREPARATION: {
+                    required: "AGENT_PREPARATION est obligatoire"
+                },
+                folio: {
+                    required: "folio est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const histo = await Folio_aile_agent_preparation.create(
             {
                 ID_USER_AILE_AGENT_PREPARATION: AGENT_PREPARATION,
-                PATH_PV_AGENT_PREPARATION: fileUrl ? fileUrl : null,
+                PATH_PV_AGENT_PREPARATION: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                 ID_ETAPE_FOLIO: 2
             }
         )
         const histoPv = histo.toJSON()
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
-        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
             await Folio.update(
                 {
@@ -841,16 +752,11 @@ const RetourPreparation = async (req, res) => {
                 result: errors
             })
         }
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         var requete = `
                 SELECT F.ID_FOLIO_AILE_PREPARATION,
@@ -872,7 +778,7 @@ const RetourPreparation = async (req, res) => {
         await Folio_aile_agent_preparation.update(
             {
                 ID_ETAPE_FOLIO: 3,
-                PATH_PV_AGENT_PREPARATION_RETOUR: fileUrl
+                PATH_PV_AGENT_PREPARATION_RETOUR: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             }, {
             where: {
                 ID_FOLIO_AILE_AGENT_PREPARATION: results[0].ID_FOLIO_AILE_AGENT_PREPARATION
@@ -922,6 +828,34 @@ const addDetails = async (req, res) => {
 
         } = req.body;
         const PHOTO_DOSSIER = req.files?.PHOTO_DOSSIER
+        const validation = new Validation(
+            req.files,
+            {
+
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         var requete = `
         SELECT 	ID_FOLIO_AILE_PREPARATION,
         ID_FOLIO_AILE_AGENT_PREPARATION
@@ -929,16 +863,12 @@ const addDetails = async (req, res) => {
         WHERE ID_FOLIO = ${ID_FOLIO}
         `
         const [results] = await ExecQuery.readRequete(requete)
-        var fileUrl
+
+        const dossiersUpload = new DossiersUpload()
+        var filename_dossiers
         if (PHOTO_DOSSIER) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PHOTO_DOSSIER.name)}`;
-            const newFile = await PHOTO_DOSSIER.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await dossiersUpload.upload(PV, false)
+            filename_dossiers = fileInfo_2
         }
         await Folio.update(
             {
@@ -947,7 +877,7 @@ const addDetails = async (req, res) => {
                 LOCALITE: LOCALITE,
                 NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
                 PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
-                PHOTO_DOSSIER: fileUrl,
+                PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_dossiers.fileName}` : null,
                 NUMERO_FEUILLE: NUMERO_FEUILLE,
                 NOMBRE_DOUBLON: NOMBRE_DOUBLON,
                 ID_ETAPE_FOLIO: 4
@@ -1270,7 +1200,7 @@ const chefPlateaus = async (req, res) => {
  */
 const folioPreparation = async (req, res) => {
     try {
-        const {ID_FOLIO_AILE_PREPARATION } = req.params
+        const { ID_FOLIO_AILE_PREPARATION } = req.params
         var requete = `
         SELECT F.ID_FOLIO,
             F.ID_VOLUME,
@@ -1306,7 +1236,7 @@ const folioPreparation = async (req, res) => {
 
 const folioNonPrepare = async (req, res) => {
     try {
-        const {ID_FOLIO_AILE_PREPARATION}=req.params
+        const { ID_FOLIO_AILE_PREPARATION } = req.params
         var requete = `
         SELECT COUNT(F.ID_FOLIO) AS nbre_folio
         FROM folio F
@@ -1341,7 +1271,7 @@ const folioNonPrepare = async (req, res) => {
 const RetourAgentSupervisuerPreparation = async (req, res) => {
     try {
         const { ID_FOLIO_AILE_PREPARATION } = req.params
-        const {MOTIF}=req.body
+        const { MOTIF } = req.body
         const pvUpload = new VolumePvUpload()
         const PV = req.files?.PV
         const validation = new Validation(
@@ -1383,20 +1313,20 @@ const RetourAgentSupervisuerPreparation = async (req, res) => {
             const newFile = await PV.mv(destination + fileName);
             fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
         }
-        
+
         await Folio.update(
             {
-                ID_ETAPE_FOLIO:5,
+                ID_ETAPE_FOLIO: 5,
             }, {
             where: {
-                ID_FOLIO_AILE_PREPARATION:ID_FOLIO_AILE_PREPARATION
+                ID_FOLIO_AILE_PREPARATION: ID_FOLIO_AILE_PREPARATION
             }
         })
         await Folio_aile_preparation.update(
             {
                 ID_ETAPE_FOLIO: 5,
-                PATH_PV_SUPERVISEUR_PREPARATION_RETOUR: fileUrl,
-                MOTIF_NO_FOLIO_PREPAREE:MOTIF?MOTIF:null
+                PATH_PV_SUPERVISEUR_PREPARATION_RETOUR: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                MOTIF_NO_FOLIO_PREPAREE: MOTIF ? MOTIF : null
             }, {
             where: {
                 ID_FOLIO_AILE_PREPARATION: ID_FOLIO_AILE_PREPARATION
@@ -1431,11 +1361,10 @@ const RetourAgentSupervisuerPreparation = async (req, res) => {
  * @date  20/07/2023
  * 
  */
-const retourCheftPlateau= async (req, res) => {
+const retourCheftPlateau = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const {MOTIF}=req.body
-        const pvUpload = new VolumePvUpload()
+        const { MOTIF } = req.body
         const PV = req.files?.PV
         const validation = new Validation(
             req.files,
@@ -1476,20 +1405,20 @@ const retourCheftPlateau= async (req, res) => {
             const newFile = await PV.mv(destination + fileName);
             fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
         }
-        
+
         await Folio.update(
             {
-                ID_ETAPE_FOLIO:5,
+                ID_ETAPE_FOLIO: 5,
             }, {
             where: {
-                ID_FOLIO_AILE_PREPARATION:ID_FOLIO_AILE_PREPARATION
+                ID_FOLIO_AILE_PREPARATION: ID_FOLIO_AILE_PREPARATION
             }
         })
         await Folio_aile_preparation.update(
             {
                 ID_ETAPE_FOLIO: 5,
-                PATH_PV_AGENT_PREPARATION_RETOUR: fileUrl,
-                MOTIF_NO_FOLIO_PREPAREE:MOTIF?MOTIF:null
+                PATH_PV_AGENT_PREPARATION_RETOUR: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                MOTIF_NO_FOLIO_PREPAREE: MOTIF ? MOTIF : null
             }, {
             where: {
                 ID_FOLIO_AILE_PREPARATION: ID_FOLIO_AILE_PREPARATION

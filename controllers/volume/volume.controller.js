@@ -319,25 +319,44 @@ const createVolume = async (req, res) => {
         const {
             volume,
         } = req.body;
+        const validation = new Validation(
+            req.files,
+            {
 
-        const pvUpload = new VolumePvUpload()
-        const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
-        const resPv = null
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const histo = await Volume_pv.create(
             {
-                PV_PATH: fileUrl ? fileUrl : null,
+                PV_PATH:filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                 USERS_ID: req.userId
             }
         )
@@ -384,24 +403,55 @@ const affectation = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { MAILLE, AGENT_DISTRIBUTEUR } = req.body
-
-        const pvUpload = new VolumePvUpload()
-        var filename, fileUrl
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                },
+                MAILLE: {
+                    required: true,
+                },
+                AGENT_DISTRIBUTEUR: {
+                    required: true,
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                },
+                MAILLE: {
+                    required:"MAILLE est obligatoire",
+                },
+                AGENT_DISTRIBUTEUR: {
+                    required:"AGENT_DISTRIBUTEUR est obligatoire",
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const results = await Volume.update({
             ID_MALLE: MAILLE,
             ID_USER_AILE_DISTRIBUTEUR: AGENT_DISTRIBUTEUR,
-            PATH_PV_DISTRIBUTEUR: fileUrl,
+            PATH_PV_DISTRIBUTEUR: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: 4
         }, {
             where: {
@@ -441,24 +491,48 @@ const affectationSuperviseur = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { AGENT_SUPERVISEUR } = req.body
-
-        const pvUpload = new VolumePvUpload()
-        var filename, fileUrl
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                },
+                AGENT_SUPERVISEUR: {
+                    required: true,
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                },
+                AGENT_SUPERVISEUR: {
+                    required:"AGENT_SUPERVISEUR est obligatoire",
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const results = await Volume.update({
             ID_USER_AILE_SUPERVISEUR: AGENT_SUPERVISEUR,
-            PV_PATH_SUPERVISEUR: fileUrl,
+            PV_PATH_SUPERVISEUR: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: 5
         }, {
             where: {
@@ -498,24 +572,48 @@ const affectationPlateau = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { CHEF_PLATEAU } = req.body
-
-        const pvUpload = new VolumePvUpload()
-        var filename, fileUrl
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                },
+                CHEF_PLATEAU: {
+                    required: true,
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                },
+                CHEF_PLATEAU: {
+                    required:"CHEF_PLATEAU est obligatoire",
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const results = await Volume.update({
             ID_USER_AILE_PLATEAU: CHEF_PLATEAU,
-            PV_PATH_PLATEAU: fileUrl,
+            PV_PATH_PLATEAU: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: 6
         }, {
             where: {
@@ -555,28 +653,56 @@ const update = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { NOMBRE_DOSSIER, ID_USERS } = req.body
+        const validation = new Validation(
+            {...req.body,...req.files},
+            {
+                NOMBRE_DOSSIER: {
+                    required: true,
+                },
+                ID_USERS: {
+                    required: true,
+                },
+                PV:{
+                    required: true,
+                    image: 21000000
+                }
 
-        const pvUpload = new VolumePvUpload()
-        var filename
-        const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            },
+            {
+                NOMBRE_DOSSIER: {
+                    required: "NOMBRE_DOSSIER est obligatoire"
+                },
+                ID_USERS: {
+                    required: "ID_USERS est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
         const PV = req.files?.PV
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            console.log(destination)
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
         const results = await Volume.update({
             NOMBRE_DOSSIER,
             USER_TRAITEMENT: ID_USERS,
-            PV_PATH: fileUrl,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: 2
         }, {
             where: {
@@ -681,22 +807,15 @@ const retourPlateau = async (req, res) => {
     try {
         const { ID_USER_AILE_PLATEAU ,ID_VOLUME} = req.params
 
-        const pvUpload = new VolumePvUpload()
-        var filename, fileUrl
         const PV = req.files?.PV
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
-        const results = await Volume.update({
-            PV_PATH_SUPERVISEUR_RETOUR: fileUrl,
+       const results = await Volume.update({
+            PV_PATH_SUPERVISEUR_RETOUR: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: 7
         }, {
             where: {
