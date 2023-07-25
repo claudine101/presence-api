@@ -832,7 +832,7 @@ const addDetails = async (req, res) => {
             req.files,
             {
 
-                PV: {
+                PHOTO_DOSSIER: {
                     required: true,
                     image: 21000000
                 }
