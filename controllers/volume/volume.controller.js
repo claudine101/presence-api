@@ -228,12 +228,25 @@ const findBy = async (req, res) => {
                 USERS_ID: req.userId
             }
         })
+         //Agents superviseur  archive
+         if (user?.ID_PROFIL == 3) {
+            var requete = `SELECT * FROM  volume 
+            v 
+            WHERE v.USER_TRAITEMENT=${req.userId} AND v.ID_ETAPE_VOLUME=2`
+            const [results] = await ExecQuery.readRequete(requete)
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
         //Agents de distribution
-        if (user?.ID_PROFIL == 29) {
+        else if (user?.ID_PROFIL == 29) {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
              ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
-            WHERE ua.USERS_ID=${req.userId}`
+            WHERE ua.USERS_ID=${req.userId} AND v.ID_ETAPE_VOLUME=3`
             const [results] = await ExecQuery.readRequete(requete)
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
