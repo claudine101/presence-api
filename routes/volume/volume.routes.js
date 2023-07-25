@@ -13,7 +13,7 @@ volume_routes.get('/myVolume', volume_controller.findBy)
  *@method GET
  * @url /volume/dossiers/myVolume 
  */
- volume_routes.get('/VolumesNoDetails', volume_controller.find)
+ volume_routes.get('/VolumesInMaille', volume_controller.find)
 /**
  * Une route  recuperer  chef plateau et  leur  volumes
  *@method GET

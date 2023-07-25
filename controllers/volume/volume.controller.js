@@ -135,25 +135,10 @@ const find = async (req, res) => {
                 USERS_ID: req.userId
             }
         })
-        //Agents de distribution
-        if (user?.ID_PROFIL == 29) {
-            var requete = `SELECT * FROM  volume 
-            v LEFT JOIN user_ailes ua ON
-             ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
-            WHERE ua.USERS_ID=${req.userId} AND v.ID_ETAPE_VOLUME=2`
-            const [results] = await ExecQuery.readRequete(requete)
-            res.status(RESPONSE_CODES.OK).json({
-                statusCode: RESPONSE_CODES.OK,
-                httpStatus: RESPONSE_STATUS.OK,
-                message: "Les volumes",
-                result: results
-            })
-        }
-        //Agents superviseur  archive
-        else if (user?.ID_PROFIL == 3) {
+        if (user?.ID_PROFIL == 3) {
             var requete = `SELECT * FROM  volume 
             v 
-            WHERE v.USER_TRAITEMENT=${req.userId} AND v.ID_ETAPE_VOLUME=2`
+            WHERE v.USER_TRAITEMENT=${req.userId} AND v.ID_ETAPE_VOLUME=3`
             const [results] = await ExecQuery.readRequete(requete)
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -162,48 +147,7 @@ const find = async (req, res) => {
                 result: results
             })
         }
-        //Agents des superviseur Aile
-        else if (user?.ID_PROFIL == 7) {
-            var requete = `SELECT * FROM  volume 
-            v LEFT JOIN user_ailes ua ON
-             ua.ID_USER_AILE=v.ID_USER_AILE_SUPERVISEUR
-            WHERE ua.USERS_ID=${req.userId}`
-            const [results] = await ExecQuery.readRequete(requete)
-            res.status(RESPONSE_CODES.OK).json({
-                statusCode: RESPONSE_CODES.OK,
-                httpStatus: RESPONSE_STATUS.OK,
-                message: "Les volumes",
-                result: results
-            })
-        }
-        //Chef Plateau Phase de preparation
-        else if (user?.ID_PROFIL == 15) {
-            var requete = `SELECT * FROM  volume 
-            v LEFT JOIN user_ailes ua ON
-             ua.ID_USER_AILE=v.ID_USER_AILE_PLATEAU
-            WHERE ua.USERS_ID=${req.userId}`
-            const [results] = await ExecQuery.readRequete(requete)
-            res.status(RESPONSE_CODES.OK).json({
-                statusCode: RESPONSE_CODES.OK,
-                httpStatus: RESPONSE_STATUS.OK,
-                message: "Les volumes",
-                result: results
-            })
-        }
-        else {
-            const results = await Volume.findAll({
-                where: {
-                    USER_TRAITEMENT: req.userId
-                }
-            })
-            res.status(RESPONSE_CODES.OK).json({
-                statusCode: RESPONSE_CODES.OK,
-                httpStatus: RESPONSE_STATUS.OK,
-                message: "Les volumes",
-                result: results
-            })
-        }
-
+       
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
