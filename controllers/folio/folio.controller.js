@@ -918,6 +918,7 @@ const addDetails = async (req, res) => {
  */
 const findNbre = async (req, res) => {
     try {
+        const {ID_VOLUME}=req.params
         var requete = `
         SELECT COUNT(F.ID_FOLIO) AS nbre,
             v.NUMERO_VOLUME
@@ -926,7 +927,7 @@ const findNbre = async (req, res) => {
             LEFT JOIN volume v ON v.ID_VOLUME = F.ID_VOLUME
             LEFT JOIN user_ailes ua ON ua.ID_USER_AILE=FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
         WHERE ua.USERS_ID = ${req.userId}
-            AND FAP.ID_ETAPE_FOLIO = 1
+            AND F.ID_ETAPE_FOLIO = 1
         `
         const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
