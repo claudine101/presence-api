@@ -839,7 +839,7 @@ const addDetails = async (req, res) => {
 
             },
             {
-                PV: {
+                PHOTO_DOSSIER: {
                     image: "La taille invalide",
                     required: "Le nom est obligatoire"
                 }
@@ -867,7 +867,7 @@ const addDetails = async (req, res) => {
         const dossiersUpload = new DossiersUpload()
         var filename_dossiers
         if (PHOTO_DOSSIER) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await dossiersUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await dossiersUpload.upload(PHOTO_DOSSIER, false)
             filename_dossiers = fileInfo_2
         }
         await Folio.update(
