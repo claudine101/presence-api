@@ -1085,11 +1085,12 @@ const agentPreparations = async (req, res) => {
                 ON FAAP.ID_FOLIO_AILE_AGENT_PREPARATION = F.ID_FOLIO_AILE_AGENT_PREPARATION
                 LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAAP.ID_USER_AILE_AGENT_PREPARATION
                 LEFT JOIN users U ON U.USERS_ID = UA.USERS_ID
-            WHERE F.ID_FOLIO_AILE_AGENT_PREPARATION!=0  AND  F.ID_FOLIO_AILE_PREPARATION = ${agentSuperviseur[0].ID_FOLIO_AILE_PREPARATION}
+            WHERE F.ID_FOLIO_AILE_AGENT_PREPARATION!=0  AND F.ID_FOLIO_AILE_PREPARATION = ${agentSuperviseur[0].ID_FOLIO_AILE_PREPARATION}
             GROUP BY F.ID_FOLIO_AILE_AGENT_PREPARATION
         `
 
         const [results] = await ExecQuery.readRequete(requete)
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1303,18 +1304,12 @@ const RetourAgentSupervisuerPreparation = async (req, res) => {
                 result: errors
             })
         }
-        var fileUrl
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
         if (PV) {
-            // const { fileInfo: fileInfo_1, thumbInfo: thumbInfo_1 } = await pvUpload.upload(PV, false)
-            // filename = fileInfo_1
-            // console.log(filename ? `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.pv}/${filename.fileName}` : null,)
-            const destination = path.resolve("./") + path.sep + "public" + path.sep + "uploads" + path.sep + "pv" + path.sep
-            const CODE_REFERENCE = `${moment().get("h")}${req.userId}${moment().get("M")}${moment().get("s")}`
-            const fileName = `${Date.now()}_${CODE_REFERENCE}${path.extname(PV.name)}`;
-            const newFile = await PV.mv(destination + fileName);
-            fileUrl = `${req.protocol}://${req.get("host")}/uploads/pv/${fileName}`;
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
-
         await Folio.update(
             {
                 ID_ETAPE_FOLIO: 5,
