@@ -260,7 +260,7 @@ const findBy = async (req, res) => {
             var requete = `SELECT * FROM  volume 
             v LEFT JOIN user_ailes ua ON
              ua.ID_USER_AILE=v.ID_USER_AILE_SUPERVISEUR
-            WHERE ua.USERS_ID=${req.userId}`
+            WHERE ua.USERS_ID=${req.userId}  v.ID_ETAPE_VOLUME=5`
             const [results] = await ExecQuery.readRequete(requete)
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
