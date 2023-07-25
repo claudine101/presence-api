@@ -128,6 +128,86 @@ const findById = async (req, res) => {
  * @date  11/07/2023
  * 
  */
+const find = async (req, res) => {
+    try {
+        const user = await Users.findOne({
+            where: {
+                USERS_ID: req.userId
+            }
+        })
+        //Agents de distribution
+        if (user?.ID_PROFIL == 29) {
+            var requete = `SELECT * FROM  volume 
+            v LEFT JOIN user_ailes ua ON
+             ua.ID_USER_AILE=v.ID_USER_AILE_DISTRIBUTEUR
+            WHERE ua.USERS_ID=${req.userId} v.ID_ETAPE_VOLUME=2`
+            const [results] = await ExecQuery.readRequete(requete)
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
+        //Agents des superviseur Aile
+        else if (user?.ID_PROFIL == 7) {
+            var requete = `SELECT * FROM  volume 
+            v LEFT JOIN user_ailes ua ON
+             ua.ID_USER_AILE=v.ID_USER_AILE_SUPERVISEUR
+            WHERE ua.USERS_ID=${req.userId}`
+            const [results] = await ExecQuery.readRequete(requete)
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
+        //Chef Plateau Phase de preparation
+        else if (user?.ID_PROFIL == 15) {
+            var requete = `SELECT * FROM  volume 
+            v LEFT JOIN user_ailes ua ON
+             ua.ID_USER_AILE=v.ID_USER_AILE_PLATEAU
+            WHERE ua.USERS_ID=${req.userId}`
+            const [results] = await ExecQuery.readRequete(requete)
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
+        else {
+            const results = await Volume.findAll({
+                where: {
+                    USER_TRAITEMENT: req.userId
+                }
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Les volumes",
+                result: results
+            })
+        }
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de vérifier la connexion dun utilisateur
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  11/07/2023
+ * 
+ */
 const findBy = async (req, res) => {
     try {
         const user = await Users.findOne({
@@ -857,6 +937,7 @@ module.exports = {
     affectationPlateau,
     findVolume,
     findChefPlateauVolume,
-    retourPlateau
+    retourPlateau,
+    find
 
 }

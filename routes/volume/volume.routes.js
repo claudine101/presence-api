@@ -7,6 +7,13 @@ const volume_routes = express.Router()
  * @url /volume/dossiers/myVolume 
  */
 volume_routes.get('/myVolume', volume_controller.findBy)
+
+/**
+ * Une route  recuperer  les volumes d'un chef  de divisions des archives qui  n'ont  pas la detailw
+ *@method GET
+ * @url /volume/dossiers/myVolume 
+ */
+ volume_routes.get('/VolumesNoDetails', volume_controller.find)
 /**
  * Une route  recuperer  chef plateau et  leur  volumes
  *@method GET
