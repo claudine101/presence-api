@@ -28,7 +28,7 @@ const Volume_pv = sequelize.define("volume_pv", {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW
-}
+    }
 }, {
     freezeTableName: true,
     tableName: 'volume_pv',

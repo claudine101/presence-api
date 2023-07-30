@@ -51,6 +51,22 @@ const Volume = sequelize.define("volume", {
         type: Sequelize.INTEGER(),
         allowNull: true
     },
+    ID_MALLE_NO_TRAITE: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_MALLE_NO_SCANNE: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_VOLUME_AILE_SUP: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_VOLUME_AILE_SUP: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
     ID_USER_AILE_DISTRIBUTEUR: {
         type: Sequelize.INTEGER(),
         allowNull: true
@@ -63,29 +79,37 @@ const Volume = sequelize.define("volume", {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    ID_USER_AILE_SUPERVISEUR: {
+    ID_VOLUME_CHEF_PLATEAU: {
         type: Sequelize.INTEGER(),
         allowNull: true
     },
-    PV_PATH_SUPERVISEUR: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-    },
-    PV_PATH_SUPERVISEUR_RETOUR: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-    },
-    ID_USER_AILE_PLATEAU: {
+    ID_VOLUME_CHEF_EQUIPE: {
         type: Sequelize.INTEGER(),
         allowNull: true
     },
-    PV_PATH_PLATEAU: {
-        type: DataTypes.STRING(255),
+    ID_VOLUME_AGENT_SUP_AILE_SCANNING: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_VOLUME_CHEF_PLATEAU_SCANNING: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_PV_VOLUME_RETOUR_CHEFEQUIPE: {
+        type: Sequelize.INTEGER(),
         allowNull: true
     },
     ID_ETAPE_VOLUME: {
         type: Sequelize.INTEGER(),
-        allowNull: false
+        allowNull: true
+    },
+    ID_VOLUME_AGENT_DESARCHIVAGE: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
+    },
+    ID_VOLUME_AGENT_DESARCHIVAGE: {
+        type: Sequelize.INTEGER(),
+        allowNull: true
     },
     DATE_INSERTION: {
         type: DataTypes.DATE,
