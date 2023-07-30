@@ -10,7 +10,7 @@ const Role = require('./Role');
 * @returns 
 */
 const User_ailes = sequelize.define('user_ailes', {
-    ID_AFFECTATION: {
+    ID_USER_AILE: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
