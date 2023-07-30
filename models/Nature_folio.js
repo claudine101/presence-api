@@ -9,7 +9,7 @@ const Nature_folio = sequelize.define('nature_folio', {
         allowNull: false
     },
     DESCRIPTION: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(255),
         allowNull: false
     }
 },

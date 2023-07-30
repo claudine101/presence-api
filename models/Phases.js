@@ -1,21 +1,21 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 
-const Profils = sequelize.define('profils', {
-    ID_PROFIL: {
+const Phases = sequelize.define('phases', {
+    ID_PHASE : {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
     },
-    DESCRIPTION: {
-        type: DataTypes.STRING(255),
+    NOM_PHASE: {
+        type: DataTypes.STRING(50),
         allowNull: false
     }
 },
     {
         freezeTableName: true,
-        tableName: 'profils',
+        tableName: 'phases',
         timestamps: false
     });
-module.exports = Profils;
+module.exports = Phases;
