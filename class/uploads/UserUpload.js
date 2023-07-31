@@ -6,7 +6,7 @@ class UserUpload extends Upload
 {
           constructor() {
                     super()
-                    this.destinationPath = path.resolve('./') + path.sep + 'public' + IMAGES_DESTINATIONS.products
+                    this.destinationPath = path.resolve('./') + path.sep + 'public' + IMAGES_DESTINATIONS.photousers
           }
 }
 module.exports = UserUpload
