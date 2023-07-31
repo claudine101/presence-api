@@ -351,7 +351,7 @@ const findAlluser = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
-        const result = await Payaments.findAndCountAll({
+        const result = await Users.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
             order: [
@@ -364,7 +364,7 @@ const findAlluser = async (req, res) => {
                 model: Profils,
                 as: 'profile',
                 required: false,
-                attributes: ['ID_PROFIL', 'DESCRIPTION']
+                attributes: ['ID_PROFIL','DESCRIPTION']
 
             }
            
