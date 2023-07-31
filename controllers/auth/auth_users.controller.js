@@ -21,7 +21,7 @@ const Users = require('../../models/Users');
  */
 const login = async (req, res) => {
     try {
-              const { email, PASSEWORD, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
+              const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
               const validation = new Validation(
                         req.body,
                         {
@@ -29,13 +29,13 @@ const login = async (req, res) => {
                                             required: true,
                                             email: true
                                   },
-                                  PASSEWORD:
+                                  password:
                                   {
                                             required: true,
                                   },
                         },
                         {
-                                  PASSEWORD:
+                                  password:
                                   {
                                             required: "Le mot de passe est obligatoire",
                                   },
@@ -62,9 +62,9 @@ const login = async (req, res) => {
               })
               if (userObject) {
                         const user = userObject.toJSON()
-                        if (user.PASSEWORD == md5(PASSEWORD)) {
+                        if (user.PASSEWORD == md5(password)) {
                                   const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL }, 3 * 12 * 30 * 24 * 3600)
-                                  const { PASSEWORD, ...other } = user
+                                  const { password, ...other } = user
                                   if (PUSH_NOTIFICATION_TOKEN) {
                                             // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
                                             // if (notification) {
@@ -120,7 +120,7 @@ const login = async (req, res) => {
  */
 const createUser = async (req, res) => {
     try {
-        const { societe, plaque, departemant, NOM, PRENOM, EMAIL, TELEPHONE, PASSEWORD: PASSEWORD, genre, profil, banque, compte, titulaire
+        const { societe, plaque, departemant, NOM, PRENOM, EMAIL, TELEPHONE, password: password, genre, profil, banque, compte, titulaire
         } = req.body
 
         const permis = req.files?.permis
@@ -151,7 +151,7 @@ const createUser = async (req, res) => {
                     email: true,
                     unique: "users,EMAIL"
                 },
-                PASSEWORD:
+                password:
                 {
                     required: true,
                 },
@@ -171,7 +171,7 @@ const createUser = async (req, res) => {
                     email: "Email invalide",
                     unique: "Email déjà utilisé"
                 },
-                PASSEWORD: {
+                password: {
                     required: "Le mot de passe est obligatoire"
                 },
             }
@@ -271,7 +271,7 @@ const createUser = async (req, res) => {
             PRENOM,
             EMAIL,
             TELEPHONE,
-            md5(PASSEWORD),
+            md5(password),
             fileUrlpermis,
             0,
             fileUrlconduite,
@@ -289,7 +289,7 @@ const createUser = async (req, res) => {
 
         // const user = (await users_model.findById(insertId))[0]
         // const token = generateToken({ user: user.USERS_ID }, 3 * 12 * 30 * 24 * 3600)
-        // const { PASSEWORD, USERNAME, ...other } = user
+        // const { password, USERNAME, ...other } = user
         // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM notification_tokens WHERE TOKEN = ? AND ID_UTILISATEUR = ?', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID]))[0]
         // if (!notification && PUSH_NOTIFICATION_TOKEN) {
         //     await query('INSERT INTO notification_tokens(ID_UTILISATEUR, DEVICE, TOKEN, ID_PROFIL) VALUES(?, ?, ?, ?)', [user.USERS_ID, DEVICE, PUSH_NOTIFICATION_TOKEN, user.ID_PROFIL]);
