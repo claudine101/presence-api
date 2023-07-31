@@ -25,7 +25,7 @@ const IDS_ETAPES_FOLIO = {
         /**
         * 5 - Selection equipe scanning
         */
-        SELECTION_AGENT_SUP_SCANNIMG: 5,
+        SELECTION_EQUIPE_SCANNIMG: 5,
         /**
          * 6 - Retour: Scan et reconcilie (equipe scanning vers agent sup. scanning)
          */
