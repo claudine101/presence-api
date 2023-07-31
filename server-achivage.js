@@ -9,6 +9,8 @@ const ip = require('ip')
 const fileUpload = require("express-fileupload");
 const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
+const adminRouter = require("./routes/administration/adminRouter");
+
 const app = express();
 const bindUser = require("./middleware/bindUser");
 dotenv.config({ path: path.join(__dirname, "./.env") });
@@ -21,6 +23,8 @@ app.use(express.static(__dirname + "/public"));
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileUpload());
+
+app.use('/admin', adminRouter)
 
 app.all('*', bindUser)
 app.use('/auth', authRouter)
