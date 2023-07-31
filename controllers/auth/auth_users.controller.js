@@ -21,93 +21,94 @@ const Users = require('../../models/Users');
  */
 const login = async (req, res) => {
     try {
-        const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE } = req.body;
-        const validation = new Validation(
-            req.body,
-            {
-                email: "required,email",
-                password:
-                {
-                    required: true,
-                },
-
-            }, {
-            password: {
-                required: "Mot de passe est obligatoire",
-            },
-            email: {
-                required: "L'email est obligatoire",
-                email: "Email invalide"
-            }
-        }
-        );
-
-        await validation.run();
-        const isValid = await validation.isValidate()
-        const errors = await validation.getErrors()
-        if (!isValid) {
-            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                message: "Probleme de validation des donnees",
-                result: errors
-            })
-        }
-        var user = {}
-        var requete = ""
-        var requete = `
-                SELECT USERS_ID, NOM,PRENOM,EMAIL, 
-                PASSEWORD, ID_PROFIL  
-                FROM users u  
-                WHERE u.EMAIL='${email}'
-         `
-        var results = (await Users.findAll())[0];
-        user = results[0]
-        if (user) {
-            if (user.PASSEWORD == md5(password)) {
-                const notification = (await query('CALL searchToken(?,?)', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID]))[0]
-
-                if (notification.length == 0 && PUSH_NOTIFICATION_TOKEN) {
-                    await query('CALL insertToken(?, ?, ?, ?)', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID, user.ID_PROFIL, DEVICE]);
-                }
-                const token = generateToken({ user: user.USERS_ID }, 3 * 12 * 30 * 24 * 3600)
-                const { PASSEWORD, USERNAME, ...other } = user
-                res.status(RESPONSE_CODES.CREATED).json({
-                    statusCode: RESPONSE_CODES.CREATED,
-                    httpStatus: RESPONSE_STATUS.CREATED,
-                    message: "Vous êtes connecté avec succès",
-                    result: {
-                        ...other,
-                        token
-                    }
-                })
-            } else {
-                validation.setError('main', 'Identifiants incorrects')
-                const errors = await validation.getErrors()
-                res.status(RESPONSE_CODES.NOT_FOUND).json({
-                    statusCode: RESPONSE_CODES.NOT_FOUND,
-                    httpStatus: RESPONSE_STATUS.NOT_FOUND,
-                    message: "Utilisateur n'existe pas",
-                    result: errors
-                })
-            }
-        } else {
-            validation.setError('main', 'Identifiants incorrects')
-            const errors = await validation.getErrors()
-            res.status(RESPONSE_CODES.NOT_FOUND).json({
-                statusCode: RESPONSE_CODES.NOT_FOUND,
-                httpStatus: RESPONSE_STATUS.NOT_FOUND,
-                message: "Utilisateur n'existe pas",
-                result: errors
-            })
-        }
+              const { email, PASSEWORD, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
+              const validation = new Validation(
+                        req.body,
+                        {
+                                  email: {
+                                            required: true,
+                                            email: true
+                                  },
+                                  PASSEWORD:
+                                  {
+                                            required: true,
+                                  },
+                        },
+                        {
+                                  PASSEWORD:
+                                  {
+                                            required: "Le mot de passe est obligatoire",
+                                  },
+                                  email: {
+                                            required: "L'email est obligatoire",
+                                            email: "Email invalide"
+                                  }
+                        }
+              );
+              await validation.run();
+              const isValid = await validation.isValidate()
+              const errors = await validation.getErrors()
+              if (!isValid) {
+                        return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                                  statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                                  httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                                  message: "Probleme de validation des donnees",
+                                  result: errors
+                        })
+              }
+              const userObject = await Users.findOne({
+                        where: { EMAIL: email },
+                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF']
+              })
+              if (userObject) {
+                        const user = userObject.toJSON()
+                        if (user.PASSEWORD == md5(PASSEWORD)) {
+                                  const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL }, 3 * 12 * 30 * 24 * 3600)
+                                  const { PASSEWORD, ...other } = user
+                                  if (PUSH_NOTIFICATION_TOKEN) {
+                                            // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
+                                            // if (notification) {
+                                            //           await query('UPDATE notification_tokens SET DEVICE = ?, TOKEN = ?, LOCALE = ? WHERE ID_NOTIFICATION_TOKEN = ?', [DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE, notification.ID_NOTIFICATION_TOKEN]);
+                                            // } else {
+                                            //           await query('INSERT INTO notification_tokens(ID_DRIVER, DEVICE, TOKEN, LOCALE) VALUES(?, ?, ?, ?)', [user.ID_DRIVER, DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE]);
+                                            // }
+                                  }
+                                  res.status(RESPONSE_CODES.CREATED).json({
+                                            statusCode: RESPONSE_CODES.CREATED,
+                                            httpStatus: RESPONSE_STATUS.CREATED,
+                                            message: "Vous êtes connecté avec succès",
+                                            result: {
+                                                      ...other,
+                                                      token
+                                            }
+                                  })
+                        } else {
+                                  validation.setError('main', 'Identifiants incorrects')
+                                  const errors = await validation.getErrors()
+                                  res.status(RESPONSE_CODES.NOT_FOUND).json({
+                                            statusCode: RESPONSE_CODES.NOT_FOUND,
+                                            httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                                            message: "Utilisateur n'existe pas",
+                                            result: errors
+                                  })
+                        }
+              } else {
+                        validation.setError('main', 'Identifiants incorrects')
+                        const errors = await validation.getErrors()
+                        res.status(RESPONSE_CODES.NOT_FOUND).json({
+                                  statusCode: RESPONSE_CODES.NOT_FOUND,
+                                  httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                                  message: "Utilisateur n'existe pas",
+                                  result: errors
+                        })
+              }
     } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
+              console.log(error)
+              res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                        message: "Erreur interne du serveur, réessayer plus tard",
+              })
     }
 }
 
@@ -119,7 +120,7 @@ const login = async (req, res) => {
  */
 const createUser = async (req, res) => {
     try {
-        const { societe, plaque, departemant, NOM, PRENOM, EMAIL, TELEPHONE, PASSWORD: password, genre, profil, banque, compte, titulaire
+        const { societe, plaque, departemant, NOM, PRENOM, EMAIL, TELEPHONE, PASSEWORD: PASSEWORD, genre, profil, banque, compte, titulaire
         } = req.body
 
         const permis = req.files?.permis
@@ -150,7 +151,7 @@ const createUser = async (req, res) => {
                     email: true,
                     unique: "users,EMAIL"
                 },
-                PASSWORD:
+                PASSEWORD:
                 {
                     required: true,
                 },
@@ -270,7 +271,7 @@ const createUser = async (req, res) => {
             PRENOM,
             EMAIL,
             TELEPHONE,
-            md5(password),
+            md5(PASSEWORD),
             fileUrlpermis,
             0,
             fileUrlconduite,
