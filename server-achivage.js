@@ -11,6 +11,9 @@ const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
 const app = express();
 const bindUser = require("./middleware/bindUser");
+const adminRouter = require("./routes/administration/administrationRouter");
+
+
 dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
@@ -21,6 +24,9 @@ app.use(express.static(__dirname + "/public"));
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileUpload());
+
+app.use("/admin", adminRouter)
+
 
 app.all('*', bindUser)
 app.use('/auth', authRouter)
