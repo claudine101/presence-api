@@ -15,9 +15,9 @@ dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
-const volumeRouter = require("./routes/volume/volumeRoutes");
-const folioRouter = require("./routes/folio/foliorRouter");
-const agentRouter = require("./routes/agent/agentRouter");
+// const volumeRouter = require("./routes/volume/volumeRoutes");
+// const folioRouter = require("./routes/folio/foliorRouter");
+// const agentRouter = require("./routes/agent/agentRouter");
 
 app.use(cors());
 app.set('view engine','ejs');
@@ -31,11 +31,6 @@ app.all('*', bindUser)
 // app.use('/folio', folioRouter)
 app.use('/auth', authRouter)
 // app.use('/agent', agentRouter)
-
-
-
-// app.use('/courrier',courrierRouter)
-
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,
