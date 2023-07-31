@@ -13,7 +13,6 @@ const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
 const Folio = require('../../models/Folio');
 const Users = require('../../models/Users');
 const Affectation_users = require('../../models/User_ailes');
-const ExecQuery = require('../../models/ExecQuery');
 
 const Aile = require('../../models/Aile');
 const { excludedProperties } = require('juice');
@@ -46,12 +45,12 @@ const findById = async (req, res) => {
             LEFT JOIN folio_aile_preparation FAP ON FAP.ID_FOLIO_AILE_PREPARATION = F.ID_FOLIO_AILE_PREPARATION
             LEFT JOIN user_ailes UA ON UA.ID_USER_AILE = FAP.ID_USER_AILE_SUPERVISEUR_PREPARATION
         WHERE UA.USERS_ID= ${req.userId} `
-        const [folio] = await ExecQuery.readRequete(requete)
+        // const [folio] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les folios",
-            result: folio
+            // result: folio
         })
     } catch (error) {
         console.log(error)
@@ -250,12 +249,12 @@ const findAgentDistributeurAile = async (req, res) => {
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE au.ID_AILE=${ID_AILE} AND  u.ID_PROFIL=29 AND au.IS_ACTIF=1
            `
-        const [results] = await ExecQuery.readRequete(requete)
+        // const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les agents de distribution",
-            result: results
+            // result: results
         })
     } catch (error) {
         console.log(error)
@@ -280,18 +279,18 @@ const findAgentSuperviseur = async (req, res) => {
         SELECT au.ID_AILE FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
-        const [user] = await ExecQuery.readRequete(reque)
-        var requete = `
-        SELECT * FROM user_ailes au 
-        LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
-         WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=7 AND au.IS_ACTIF=1
-           `
-        const [results] = await ExecQuery.readRequete(requete)
+        // const [user] = await ExecQuery.readRequete(reque)
+        // var requete = `
+        // SELECT * FROM user_ailes au 
+        // LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
+        //  WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=7 AND au.IS_ACTIF=1
+        //    `
+        // const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les agents superviseur aile",
-            result: results
+            // result: results
         })
     } catch (error) {
         console.log(error)
@@ -317,13 +316,13 @@ const findAgentPreparation = async (req, res) => {
         SELECT au.ID_AILE FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
-        const [user] = await ExecQuery.readRequete(reque)
-        var requete = `
-        SELECT * FROM user_ailes au 
-        LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
-         WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=8 AND au.IS_ACTIF=1
-           `
-        const [results] = await ExecQuery.readRequete(requete)
+        // const [user] = await ExecQuery.readRequete(reque)
+        // var requete = `
+        // SELECT * FROM user_ailes au 
+        // LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
+        //  WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=8 AND au.IS_ACTIF=1
+        //    `
+        // const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -354,13 +353,13 @@ const findAgentsPreparation = async (req, res) => {
         SELECT au.ID_AILE FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
-        const [user] = await ExecQuery.readRequete(reque)
-        var requete = `
-        SELECT * FROM user_ailes au 
-        LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
-         WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=22 AND au.IS_ACTIF=1
-           `
-        const [results] = await ExecQuery.readRequete(requete)
+        // const [user] = await ExecQuery.readRequete(reque)
+        // var requete = `
+        // SELECT * FROM user_ailes au 
+        // LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
+        //  WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=22 AND au.IS_ACTIF=1
+        //    `
+        // const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -390,12 +389,12 @@ const findChefPlateau = async (req, res) => {
         SELECT au.ID_AILE FROM user_ailes au 
         LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
          WHERE u.USERS_ID=${req.userId} `
-        const [user] = await ExecQuery.readRequete(reque)
-        var requete = `
-        SELECT * FROM user_ailes au 
-        LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
-         WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=15 AND au.IS_ACTIF=1`
-        const [results] = await ExecQuery.readRequete(requete)
+        // const [user] = await ExecQuery.readRequete(reque)
+        // var requete = `
+        // SELECT * FROM user_ailes au 
+        // LEFT JOIN  users u ON u.USERS_ID=au.USERS_ID
+        //  WHERE au.ID_AILE=${user[0].ID_AILE} AND  u.ID_PROFIL=15 AND au.IS_ACTIF=1`
+        // const [results] = await ExecQuery.readRequete(requete)
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,

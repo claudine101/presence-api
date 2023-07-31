@@ -2,7 +2,6 @@ const express = require('express');
 const VolumePvUpload = require('../../class/uploads/VolumePvUpload');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
-const volume_model = require('../../models/volume/volume.model');
 const { query } = require('../../utils/db');
 const generateToken = require('../../utils/generateToken');
 const md5 = require('md5')
@@ -10,10 +9,8 @@ const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
-const Volume_pv = require('../../models/volume_pv');
 const Volume = require('../../models/volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
-const ExecQuery = require('../../models/ExecQuery');
 const Users = require('../../models/Users');
 
 /**
@@ -404,12 +401,12 @@ const createVolume = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        const histo = await Volume_pv.create(
-            {
-                PV_PATH:filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                USERS_ID: req.userId
-            }
-        )
+        // const histo = await Volume_pv.create(
+        //     {
+        //         PV_PATH:filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+        //         USERS_ID: req.userId
+        //     }
+        // )
         const histoPv = histo.toJSON()
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)

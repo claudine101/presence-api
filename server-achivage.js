@@ -27,10 +27,10 @@ app.use(express.json())
 app.use(fileUpload());
 
 app.all('*', bindUser)
-app.use('/volume', volumeRouter)
-app.use('/folio', folioRouter)
+// app.use('/volume', volumeRouter)
+// app.use('/folio', folioRouter)
 app.use('/auth', authRouter)
-app.use('/agent', agentRouter)
+// app.use('/agent', agentRouter)
 
 
 

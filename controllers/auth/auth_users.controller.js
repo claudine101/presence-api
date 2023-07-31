@@ -3,12 +3,11 @@ const UserUpload = require('../../class/uploads/UserUpload');
 const Validation = require('../../class/Validation');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
-const users_model = require('../../models/app/users.model');
 const { query } = require('../../utils/db');
 const generateToken = require('../../utils/generateToken');
 const md5 = require('md5')
 const path = require('path')
-const ExecQuery = require('../../models/ExecQuery');
+const Users = require('../../models/Users');
 
 
 
@@ -62,7 +61,7 @@ const login = async (req, res) => {
                 FROM users u  
                 WHERE u.EMAIL='${email}'
          `
-        var results = (await ExecQuery.readRequete(requete))[0];
+        var results = (await Users.findAll())[0];
         user = results[0]
         if (user) {
             if (user.PASSEWORD == md5(password)) {
@@ -263,7 +262,7 @@ const createUser = async (req, res) => {
             fileUrluser = `${req.protocol}://${req.get("host")}/user/document/${fileName}`;
         }
         departemants = departemantObjet?.DEPARTEMENT_ID
-        const { insertId } = await users_model.createOne(
+        const { insertId } = await Users.create(
             departemants,
             profil,
             fileUrluser,
