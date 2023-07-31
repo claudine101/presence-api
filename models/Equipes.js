@@ -3,29 +3,33 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 
 /**
-* fonction model pour la creation de la table aile
+* fonction model pour la creation de la table equipes
 * @author Vanny Boy <vanny@mediabox.bi>
 * @date 31/07/2023
 * @returns 
 */
-const Aile = sequelize.define("aile", {
-        ID_AILE: {
+const Equipes = sequelize.define("equipes", {
+        ID_EQUIPE: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
                 autoIncrement: true
         },
-        ID_BATIMENT: {
-                type: Sequelize.INTEGER(),
+        NOM_EQUIPE: {
+                type: DataTypes.STRING(255),
                 allowNull: false
         },
-        NUMERO_AILE: {
-                type: Sequelize.INTEGER(),
+        CHAINE: {
+                type: DataTypes.STRING(255),
+                allowNull: false
+        },
+        ORDINATEUR: {
+                type: DataTypes.STRING(255),
                 allowNull: false
         }
 }, {
         freezeTableName: true,
-        tableName: 'aile',
+        tableName: 'equipes',
         timestamps: false,
 })
-module.exports = Aile
+module.exports = Equipes
