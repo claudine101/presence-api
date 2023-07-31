@@ -1,6 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
 
 /**
 * fonction model pour la creation de la table folio
@@ -18,12 +18,12 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_VOLUME: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 
     ID_NATURE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     NUMERO_FOLIO: {
@@ -35,11 +35,11 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
     ID_USERS: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_ETAPE_FOLIO: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     NUMERO_PARCELLE: {
@@ -47,7 +47,7 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
     ID_COLLINE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     LOCALITE: {
@@ -64,7 +64,7 @@ const Folio = sequelize.define("folio", {
     },
 
     PHOTO_DOSSIER: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: true
     },
     NUMERO_FEUILLE: {
@@ -78,11 +78,11 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_FOLIO_EQUIPE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_MALLE_NO_TRAITE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     IS_RECONCILIE: {
@@ -96,7 +96,7 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_MALLE_NO_SCANNE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_FLASH: {
@@ -110,7 +110,7 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_FLASH_INDEXE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 

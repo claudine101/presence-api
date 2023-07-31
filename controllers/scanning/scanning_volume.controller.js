@@ -12,6 +12,7 @@ const { excludedProperties } = require('juice');
 const DossiersUpload = require('../../class/uploads/DossiersUpload');
 const Volume = require('../../models/Volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
+const Folio = require('../../models/Folio');
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
@@ -191,6 +192,8 @@ const folioChefScanning = async (req, res) => {
         const {
             ID_VOLUME,
             folio,
+            ID_ETAPE_VOLUME, 
+            USER_TRAITEMENT
         } = req.body;
         const PV = req.files?.PV
         const validation = new Validation(
@@ -225,18 +228,11 @@ const folioChefScanning = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        const histo = await Folio_pv.create(
-            {
-                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                USERS_ID: req.userId
-            }
-        )
-        const histoPv = histo.toJSON()
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
-            const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
+            // const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.create(
                 {
