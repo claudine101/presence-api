@@ -8,6 +8,9 @@ utilisateurs_routes.put('/updateUser/:USERS_ID',utilisateurs_controller.Updateus
 utilisateurs_routes.get('/alluser',utilisateurs_controller.findAlluser)
 utilisateurs_routes.get('/oneuser/:USERS_ID',utilisateurs_controller.findOneuser)
 utilisateurs_routes.post('/deleteuser',utilisateurs_controller.deleteItemsuser)
+utilisateurs_routes.get('/profile',utilisateurs_controller.listeprofiles)
+
+
 
 module.exports = utilisateurs_routes
 

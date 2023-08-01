@@ -16,11 +16,11 @@ const Aile = sequelize.define("aile", {
                 autoIncrement: true
         },
         ID_BATIMENT: {
-                type: Sequelize.INTEGER(),
+                type: DataTypes.INTEGER(),
                 allowNull: false
         },
         NUMERO_AILE: {
-                type: Sequelize.INTEGER(),
+                type: DataTypes.INTEGER(),
                 allowNull: false
         }
 }, {

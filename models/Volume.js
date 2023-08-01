@@ -46,4 +46,5 @@ const Volume = sequelize.define("volume", {
     tableName: 'volume',
     timestamps: false,
 })
+
 module.exports = Volume

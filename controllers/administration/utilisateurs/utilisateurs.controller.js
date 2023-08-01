@@ -1,8 +1,7 @@
 const express = require("express")
-
-const RESPONSE_CODES =require('../../../constants/RESPONSE_CODES')
+const RESPONSE_CODES = require('../../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require("../../../constants/RESPONSE_STATUS")
-const Validation = require("../../../class/Validation")
+const Validation=require("../../../class/Validation")
 const { Op } = require("sequelize")
 const { query } = require('../../../utils/db')
 // const { EMPTY } = require("sqlite3")
@@ -37,18 +36,21 @@ const createuser = async (req, res) => {
                 length: [1, 50],
                 alpha: true
             },
-            PASSWORD: {
-                required: true,
-                alpha: true
-            },
+            // PASSWORD: {
+            //     required: true,
+            //     length: [1, 8],
+            //     alpha: true
+            // },
             EMAIL: {
                 required: true,
-                length: [1, 50],
-                alpha: true
+                length: [1, 255],
+                email: true,
+                unique: "users,EMAIL"
             },
+            
             TELEPHONE: {
                 required: true,
-                length: [1, 50],
+                number: [1, 50],
                 alpha: true
             },
             ID_PROFIL: {
@@ -56,15 +58,19 @@ const createuser = async (req, res) => {
                 number: true,
                 exists: "profils,ID_PROFIL"
             },
-           
+
             PHOTO_USER: {
                 required: true,
                 image: 4000000
             }
-            
 
+
+        }, {
+            EMAIL: {
+                unique: "L'email doit etre unique"
+            },
         })
-     
+
         await validation.run()
         const isValid = await validation.isValidate()
         if (!isValid) {
@@ -82,14 +88,14 @@ const createuser = async (req, res) => {
 
         const creptePswd = md5(PASSEWORD);
         const user = await Users.create({
-            NOM, 
-            PRENOM, 
-            EMAIL, 
-            TELEPHONE, 
-            ID_PROFIL, 
-            PASSEWORD:creptePswd,
-            PHOTO_USER:filename,
-            IS_ACTIF:0
+            NOM,
+            PRENOM,
+            EMAIL,
+            TELEPHONE,
+            ID_PROFIL,
+            PASSEWORD: creptePswd,
+            PHOTO_USER: filename,
+            IS_ACTIF: 0
         })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
@@ -107,6 +113,7 @@ const createuser = async (req, res) => {
     }
 }
 
+
 /**
  * Permet de faire une modification d'un utilisateur 
  * @param {express.Request} req 
@@ -117,7 +124,7 @@ const createuser = async (req, res) => {
 const Updateuser = async (req, res) => {
     try {
         const { USERS_ID } = req.params
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD,IS_ACTIF} = req.body
+        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
 
         const files = req.files || {}
         const { PHOTO_USER } = files
@@ -131,40 +138,41 @@ const Updateuser = async (req, res) => {
         const validation = new Validation(data, {
             NOM: {
                 required: true,
-                length: [1, 50],
-                alpha: true
+                alpha: true,
+                length: [2, 50]
             },
             PRENOM: {
                 required: true,
-                length: [1, 50],
-                alpha: true
-            },
-            PASSWORD: {
-                required: true,
-                alpha: true
+                alpha: true,
+                length: [2, 50]
             },
             EMAIL: {
                 required: true,
-                length: [1, 50],
-                alpha: true
+                email: true,
+                length: [2, 250]
             },
             TELEPHONE: {
                 required: true,
-                length: [1, 50],
-                alpha: true
+                number: true,
+                length: [2, 50]
             },
+            PASSEWORD: {
+                required: true,
+                length: [8]
+            },
+            
             ID_PROFIL: {
                 required: true,
                 number: true,
                 exists: "profils,ID_PROFIL"
             },
-           
-            PHOTO_USER: {
-                required: true,
-                image: 4000000
-            }
+            // PHOTO_USER: {
+            //     required: true,
+            //     image: 4000000
+            // }
 
         })
+       
         await validation.run()
         const isValid = await validation.isValidate()
         if (!isValid) {
@@ -183,14 +191,14 @@ const Updateuser = async (req, res) => {
             filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         }
 
-        const ctptage=md5(PASSEWORD)
+        const ctptage = md5(PASSEWORD)
         const userUpdate = await Users.update({
-            NOM, 
-            PRENOM, 
-            EMAIL, 
+            NOM,
+            PRENOM,
+            EMAIL,
             TELEPHONE,
-            ID_PROFIL, 
-            PASSEWORD:ctptage,
+            ID_PROFIL,
+            PASSEWORD: ctptage,
             PHOTO_USER: filename ? filename : user.PHOTO_USER
         }, {
             where: {
@@ -216,7 +224,6 @@ const Updateuser = async (req, res) => {
     }
 }
 
-
 /**
  * Permet de recuperer un utilisateur 
  * @param {express.Request} req 
@@ -236,17 +243,17 @@ const findOneuser = async (req, res) => {
                 model: Profils,
                 as: 'profile',
                 required: false,
-                attributes: ['ID_PROFIL', 'DESCRIPTION']
+                attributes: ['ID_PROFIL','DESCRIPTION']
 
             }
-           ]
+            ]
         })
         if (userone) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
                 httpStatus: RESPONSE_STATUS.OK,
                 message: "L'utilisateur trouvee",
-                result: payementone
+                result: userone
             })
         } else {
             res.status(RESPONSE_CODES.NOT_FOUND).json({
@@ -281,9 +288,9 @@ const findAlluser = async (req, res) => {
             users: {
                 as: "users",
                 fields: {
-                    NOM: 'NOM',
-                    PRENOM: 'PRENOM',
-                    EMAIL: 'EMAIL',
+                    NOM:'NOM',
+                    PRENOM:'PRENOM',
+                    EMAIL:'EMAIL',
                     TELEPHONE:'TELEPHONE'
 
                 }
@@ -294,8 +301,6 @@ const findAlluser = async (req, res) => {
                     DESCRIPTION: 'DESCRIPTION'
                 }
             }
-         
-          
         }
 
         var orderColumn, orderDirection
@@ -332,11 +337,11 @@ const findAlluser = async (req, res) => {
         }
 
         // searching
-        const globalSearchColumns = [ 
-           ' NOM',
-           ' PRENOM',
-           ' EMAIL',
-           ' TELEPHONE',
+        const globalSearchColumns = [
+            'NOM',
+            'PRENOM',
+            'EMAIL',
+            'TELEPHONE',
             '$profile.DESCRIPTION$'
         ]
         var globalSearchWhereLike = {}
@@ -360,16 +365,13 @@ const findAlluser = async (req, res) => {
             where: {
                 ...globalSearchWhereLike,
             },
-            include: [{
+            include: {
                 model: Profils,
                 as: 'profile',
                 required: false,
                 attributes: ['ID_PROFIL','DESCRIPTION']
 
             }
-           
-          
-           ]
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -426,67 +428,22 @@ const deleteItemsuser = async (req, res) => {
 }
 
 /**
- * Permet de lister les payements types
+ * Permet de lister les profiles
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author leonard <leonard@mdiabox.bi>
- * @date 05/07/2023
+ * @date 31/07/2023
  */
-const listepayementtype = async (req, res) => {
-    try {
-        const payementtype = await query('SELECT * FROM payement_type ORDER BY TYPE_PAYEMENT')
-        res.status(200).json(payementtype)
-    } catch (error) {
-        console.log(error)
-        res.status(500).send('Server error')
-    }
-}
 
-const listepayementtype1 = async (req, res) => {
+const listeprofiles = async (req, res) => {
     try {
-        const payementtype = await Payement_type.findAll()
+        const permistype = await Profils.findAll({
+            attributes: ['ID_PROFIL', 'DESCRIPTION']
+        })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Les payements types a bien trouvee",
-            result: payementtype
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
-}
-
-
-/**
- * Permet de lister les demandes permis types
- * @param {express.Request} req 
- * @param {express.Response} res 
- * @author leonard <leonard@mdiabox.bi>
- * @date 05/07/2023
- */
-
-
-const listedemandepermis = async (req, res) => {
-    try {
-        const permistype = await query('SELECT * FROM type_demande_permis ORDER BY DESCRIPTION_DEMANDE')
-        res.status(200).json(permistype)
-    } catch (error) {
-        console.log(error)
-        res.status(500).send('Server error')
-    }
-}
-const listedemandepermis1 = async (req, res) => {
-    try {
-        const permistype = await Type_demande_permis.findAll()
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Les demandes permis types a bien trouvee",
+            message: "Listes des profiles",
             result: permistype
         })
     } catch (error) {
@@ -499,99 +456,11 @@ const listedemandepermis1 = async (req, res) => {
     }
 }
 
-/**
- * Permet de lister les devise
- * @param {express.Request} req 
- * @param {express.Response} res 
- * @author leonard <leonard@mdiabox.bi>
- * @date 05/07/2023
- */
-
-
-const listedevise = async (req, res) => {
-    try {
-        const devis = await query('SELECT * FROM devise ORDER BY CODE_DEVISE')
-        res.status(200).json(devis)
-    } catch (error) {
-        console.log(error)
-        res.status(500).send('Server error')
-    }
-}
-const listedevise1 = async (req, res) => {
-    try {
-        const devis = await Devise.findAll()
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Les devises a bien trouvee",
-            result: devis
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
-}
-
-/**
- * Permet de lister et effectuer des requerant
- * @param {express.Request} req 
- * @param {express.Response} res 
- * @author leonard <leonard@mdiabox.bi>
- * @date 05/07/2023
- */
-const listrequerant = async (req, res) => {
-    try {
-        const reqerant = await query('SELECT ID_REQUERENT, NOM, PRENOM FROM requerant WHERE ID_STATUT_VALIDATION = ? ORDER BY NOM', [ETAPES_STATUTS.ETTENTE_PAIEMENT])
-        res.status(200).json(reqerant)
-    } catch (error) {
-        console.log(error)
-        res.status(500).send('Server error')
-    }
-}
-
-/**
- * Permet de lister et effectuer des requerant
- * @param {express.Request} req 
- * @param {express.Response} res 
- * @author leonard <leonard@mdiabox.bi>
- * @date 05/07/2023
- */
-
-const listrequerant1 = async (req, res) => {
-    try {
-        const reqerant = await Requerant.findAll()
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Les requerants a bien trouvee",
-            result: reqerant
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
-}
 module.exports = {
     createuser,
     Updateuser,
     findOneuser,
     findAlluser,
     deleteItemsuser,
-    // findAllpayement,
-    // listrequerant,
-    // listepayementtype,
-    // listedemandepermis,
-    // listedevise,
-    // findOnepayement,
-    // Updatepayement,
-    // deleteItemspayement
-
+    listeprofiles
 }
