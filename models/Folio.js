@@ -1,6 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
 
 /**
 * fonction model pour la creation de la table folio
@@ -18,12 +18,12 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_VOLUME: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 
     ID_NATURE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     NUMERO_FOLIO: {
@@ -35,93 +35,93 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
     ID_USERS: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_ETAPE_FOLIO: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     ID_COLLINE: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     LOCALITE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     NOM_PROPRIETAIRE: {
         type: DataTypes.STRING(25),
-        allowNull: false
+        allowNull: true
     },
     PRENOM_PROPRIETAIRE: {
         type: DataTypes.STRING(25),
-        allowNull: false
+        allowNull: true
     },
 
     PHOTO_DOSSIER: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: true
     },
     NUMERO_FEUILLE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
 
     NOMBRE_DOUBLON: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
 
     ID_FOLIO_EQUIPE: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     ID_MALLE_NO_TRAITE: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     IS_RECONCILIE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     IS_VALIDE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     ID_MALLE_NO_SCANNE: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     ID_FLASH: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
 
     IS_INDEXE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     ID_FLASH_INDEXE: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
 
     IS_UPLOADED_EDRMS: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     IS_DOCUMENT_BIEN_ENREGISTRE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     DATE_INSERTION: {

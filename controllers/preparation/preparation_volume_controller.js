@@ -14,6 +14,8 @@ const Etapes_volume_historiques = require('../../models/Etapes_volume_historique
 const Users = require('../../models/Users');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
+const Nature_folio = require('../../models/Nature_folio');
+const Folio = require('../../models/folio');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -203,66 +205,7 @@ const findVolume = async (req, res) => {
             attributes: ['ID_PROFIL', 'USERS_ID']
         })
         const user = userObject.toJSON()
-        const defaultSortField = "date_insertion"
-        const defaultSortDirection = "DESC"
-        const sortColumns = {
-            requerant: {
-                as: "volume",
-                fields: {
-                    DATE_INSERTION: 'volume.DATE_INSERTION',
-                }
-            }
-        }
-
-        var orderColumn, orderDirection
-        // sorting
-        var sortModel
-        if (sortField) {
-            for (let key in sortColumns) {
-                if (sortColumns[key].fields.hasOwnProperty(sortField)) {
-                    sortModel = {
-                        model: key,
-                        as: sortColumns[key].as
-                    }
-                    orderColumn = sortColumns[key].fields[sortField]
-                    break
-                }
-            }
-        }
-        if (!orderColumn || !sortModel) {
-            orderColumn = sortColumns.requerant.fields.DATE_INSERTION
-            sortModel = {
-                model: 'volume',
-                as: sortColumns.requerant.as
-            }
-        }
-
-        // ordering
-        if (sortOrder == 1) {
-            orderDirection = 'ASC'
-        } else if (sortOrder == -1) {
-            orderDirection = 'DESC'
-        } else {
-            orderDirection = defaultSortDirection
-        }
-
-        // searching
-        const globalSearchColumns = [
-            "NUMERO_VOLUME",
-        ]
-        var globalSearchWhereLike = {}
-        if (search && search.trim() != "") {
-            const searchWildCard = {}
-            globalSearchColumns.forEach(column => {
-                searchWildCard[column] = {
-                    [Op.substring]: search
-                }
-            })
-            globalSearchWhereLike = {
-                [Op.or]: searchWildCard
-            }
-        }
-        var conditionVolume = {}
+       
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_DIVISION_ARCHIGES) {
@@ -284,7 +227,7 @@ const findVolume = async (req, res) => {
             condition = { ID_ETAPE_VOLUME:ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,USER_TRAITEMENT: req.userId}
         }
         const result = await Etapes_volume_historiques.findAndCountAll({
-            attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
             where: {
                 ...condition
             },
@@ -293,9 +236,7 @@ const findVolume = async (req, res) => {
                 model: Volume,
                 as: 'volume',
                 required: false,
-                attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
-                
-               
+                attributes: ['ID_VOLUME','NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
       }]
 
         })
@@ -405,8 +346,66 @@ const updateVolume = async (req, res) => {
             })
     }
 }
+/**
+ * Permet de afficher tous nature du folio
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findNature = async (req, res) => {
+    try {
+        const { search } = req.query
+        const natures = await Nature_folio.findAll()
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des natures du folio",
+            result: natures
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher nbre  folio
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findCount = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const natures = await Folio.findAndCountAll(
+            {
+                where:{ID_VOLUME:ID_VOLUME}
+            }
+        )
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Nombre folio",
+            result:natures.count
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     createVolume,
     findAll,
-    updateVolume
+    updateVolume,
+    findNature,
+    findCount
 }

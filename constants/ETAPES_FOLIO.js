@@ -99,7 +99,12 @@ const IDS_ETAPES_FOLIO = {
         /**
           * 21 - Folio no enregistre to EDRMS
           */
-        FOLIO_ENREG_TO_EDRMS: 21
+        FOLIO_ENREG_TO_EDRMS: 21,
+
+        /**
+          * 22 - Folio  enregistre
+          */
+        FOLIO_ENREG: 22
 }
 
 module.exports = IDS_ETAPES_FOLIO

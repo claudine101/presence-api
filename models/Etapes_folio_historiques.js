@@ -15,20 +15,20 @@ const Etapes_folio_historiques = sequelize.define("etapes_folio_historiques", {
         primaryKey: true,
         autoIncrement: true
     },
-    USERS_ID: {
-        type: Sequelize.INTEGER(),
+    ID_USER: {
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     USER_TRAITEMENT: {
-        type: Sequelize.INTEGER(),
-        allowNull: false
+        type: DataTypes.INTEGER(),
+        allowNull: true
     },
-    ID_VOLUME: {
-        type: Sequelize.INTEGER(),
+    ID_FOLIO: {
+        type: DataTypes.INTEGER(),
         allowNull: true
     },
     ID_ETAPE_FOLIO: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     PV_PATH: {

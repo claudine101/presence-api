@@ -17,6 +17,7 @@ const PROFILS = require('../../constants/PROFILS');
 const Batiment = require('../../models/Batiment');
 const Aile = require('../../models/Aile');
 const User_ailes = require('../../models/User_ailes');
+const Maille = require('../../models/Maille');
 
 
 
@@ -38,6 +39,34 @@ const findAll = async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des batiment",
             result: batiment
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous batiment
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findMailles = async (req, res) => {
+    try {
+        const { search } = req.query
+        const mailles = await Maille.findAll({
+            attributes: ['ID_MAILLE', 'NUMERO_MAILLE']
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des mailles",
+            result: mailles
         })
     } catch (error) {
         console.log(error)
@@ -87,14 +116,15 @@ const findAile = async (req, res) => {
 const findDistributeur = async (req, res) => {
     try {
         const { ID_AILE } = req.params
-        const distributeur = await User_ailes.findAll({
-            where: { ID_AILE: ID_AILE, IS_ACTIF: 1 },
+        const distributeur = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.AGENTS_DISTRIBUTEUR },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
             include: {
-                model: Users,
+                model: User_ailes,
                 as: 'userAile',
                 required: false,
-                where: { D_PROFIL: PROFILS.AGENTS_DISTRIBUTEUR },
-                attributes: ['USERS_ID', 'NOM', 'PRENOM'],
+            where: { ID_AILE: ID_AILE, IS_ACTIF: 1 },
+
 
             }
         })
@@ -145,5 +175,6 @@ module.exports = {
     findAll,
     findAile,
     findDistributeur,
-    findAgentArchive
+    findAgentArchive,
+    findMailles
 }

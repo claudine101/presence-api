@@ -17,6 +17,20 @@ const preparation_volume_routes = express.Router()
  preparation_volume_routes.get('/', preparation_volume_controller.findAll)
 
  /**
+ * Une route  permet  recupere les nature du folio
+ *@method GET
+ * @url /preparation/volume/nature
+ */
+ preparation_volume_routes.get('/nature', preparation_volume_controller.findNature)
+
+ /**
+ * Une route  permet  recupere les nature du folio
+ *@method GET
+ * @url /preparation/volume/count
+ */
+ preparation_volume_routes.get('/count/:ID_VOLUME', preparation_volume_controller.findCount)
+
+ /**
  * Une route  permet  de nommer  agent superviseur  archive
  *@method PUT
  * @url /preparation/volume/modifier

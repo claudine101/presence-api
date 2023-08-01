@@ -10,6 +10,14 @@ const preparation_batiment_routes = express.Router()
  preparation_batiment_routes.get('/', preparation_batiment_controller.findAll)
 
  /**
+ * Une route  permet recuperer  les mailles
+ *@method GET
+ * @url /preparation/batiment/mailles
+ */
+ preparation_batiment_routes.get('/mailles', preparation_batiment_controller.findMailles)
+
+
+ /**
  * Une route  permet  recupere les ailes d'un batiment
  *@method GET
  * @url /preparation/batiment/aile
