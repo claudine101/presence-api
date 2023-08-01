@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Folio = require('./Folio');
 
 /**
 * fonction model pour la creation de la table etapes_folio
@@ -29,4 +30,8 @@ const Etapes_folio = sequelize.define("etapes_folio", {
         tableName: 'etapes_folio',
         timestamps: false,
 })
+
+
+
+
 module.exports = Etapes_folio

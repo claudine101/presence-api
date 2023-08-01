@@ -9,20 +9,23 @@ const sequelize = require('../utils/sequelize');
 * @returns 
 */
 const Nature_folio = sequelize.define("nature_folio", {
-    ID_NATURE_FOLIO : {
+        ID_NATURE_FOLIO: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
-                autoIncrement: true
+                autoIncrement: true,
+                field: 'ID_NATURE_FOLIO'
         },
         DESCRIPTION: {
-                type: Sequelize.STRING(255),
+                type: DataTypes.STRING(255),
                 allowNull: false
         },
-       
+
 }, {
         freezeTableName: true,
         tableName: 'nature_folio',
-        timestamps: false,
+        timestamps: false
 })
+
+
 module.exports = Nature_folio

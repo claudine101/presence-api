@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Folio = require('./Folio');
 
 /**
 * fonction model pour la creation de la table volume
@@ -46,4 +47,6 @@ const Volume = sequelize.define("volume", {
     tableName: 'volume',
     timestamps: false,
 })
+
+
 module.exports = Volume

@@ -1,6 +1,13 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
+
+const Nature_folio = require("./Nature_folio");
+const Volume = require('./Volume');
+const Users = require('./Users');
+const Etapes_folio= require('./Etapes_folio');
+const Syst_collines = require('./Syst_collines');
+const Equipes = require ('./Equipes');
 
 /**
 * fonction model pour la creation de la table folio
@@ -16,15 +23,14 @@ const Folio = sequelize.define("folio", {
         primaryKey: true,
         autoIncrement: true
     },
-
     ID_VOLUME: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
-
     ID_NATURE: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: false,
+       // field: 'ID_NATURE'
     },
     NUMERO_FOLIO: {
         type: DataTypes.STRING(50),
@@ -35,19 +41,19 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
     ID_USERS: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_ETAPE_FOLIO: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    ID_COLLINE: {
-        type: Sequelize.INTEGER,
+    COLLINE_ID: {
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     LOCALITE: {
@@ -64,7 +70,7 @@ const Folio = sequelize.define("folio", {
     },
 
     PHOTO_DOSSIER: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING(255),
         allowNull: true
     },
     NUMERO_FEUILLE: {
@@ -77,12 +83,12 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
 
-    ID_FOLIO_EQUIPE: {
-        type: Sequelize.INTEGER,
+    ID_EQUIPE: {
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_MALLE_NO_TRAITE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     IS_RECONCILIE: {
@@ -96,11 +102,11 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_MALLE_NO_SCANNE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_FLASH: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 
@@ -110,7 +116,7 @@ const Folio = sequelize.define("folio", {
     },
 
     ID_FLASH_INDEXE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 
@@ -134,6 +140,13 @@ const Folio = sequelize.define("folio", {
     tableName: 'folio',
     timestamps: false
 })
+
+Folio.belongsTo(Nature_folio, { foreignkey: "ID_NATURE", as: 'nature' })
+Folio.belongsTo(Volume, { foreignkey: "ID_VOLUME", as: 'volum' })
+Folio.belongsTo(Syst_collines, { foreignKey: "COLLINE_ID", as: 'colline' })
+Folio.belongsTo(Equipes, { foreignkey: "ID_EQUIPE", as: 'equipe' })
+
+
 
 
 module.exports = Folio
