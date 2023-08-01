@@ -16,7 +16,7 @@ const Nature_folio = sequelize.define("nature_folio", {
                 autoIncrement: true
         },
         DESCRIPTION: {
-                type: Sequelize.STRING(255),
+                type: DataTypes.STRING(255),
                 allowNull: false
         },
        
