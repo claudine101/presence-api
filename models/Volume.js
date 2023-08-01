@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+// const Etapes_volume_historiques = require('./Etapes_volume_historiques');
 
 /**
 * fonction model pour la creation de la table volume
@@ -36,6 +37,11 @@ const Volume = sequelize.define("volume", {
         allowNull: false,
         defaultValue: 1
     },
+    USERS_ID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -46,4 +52,6 @@ const Volume = sequelize.define("volume", {
     tableName: 'volume',
     timestamps: false,
 })
+// Volume.hasMany(Etapes_volume_historiques, { foreignKey: 'ID_VOLUME', as: 'historiques' })
+
 module.exports = Volume

@@ -1,7 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-
 /**
 * fonction model pour la creation de la table users
 * @author NIREMA ELOGE <nirema.eloge@mediabox.bi>

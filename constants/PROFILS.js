@@ -58,7 +58,7 @@ const PROFILS = {
     * 12-Chef plateau (phase scanning)
     * 
     */
-    CHEF_PLATEAU: 12,
+    CHEF_PLATEAU_SCANNING: 12,
     /**
     * 13-Agent superviseur (phase scanning)
     * 
