@@ -74,7 +74,11 @@ const ETAPES_VOLUME = {
     /**
      * 17-Retour:agent sup. archive vers agent de desarchivage 
      */
-      RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE: 17
+      RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE: 17,
+       /**
+     * 18-Retour:agent sup aile vers chef d'equipe (phase preparation) 
+     */
+       RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE: 18
 }
 
 module.exports = ETAPES_VOLUME

@@ -12,10 +12,13 @@ const { excludedProperties } = require('juice');
 const DossiersUpload = require('../../class/uploads/DossiersUpload');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
+const PROFILS = require('../../constants/PROFILS');
 const Volume = require('../../models/Volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 const Folio = require('../../models/Folio');
 const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques');
+const Users = require('../../models/Users');
+const User_ailes = require('../../models/User_ailes');
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
@@ -29,7 +32,7 @@ const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques'
 const volumeScanning = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { USER_TRAITEMENT} = req.body
+        const { USER_TRAITEMENT } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -111,7 +114,7 @@ const volumeScanning = async (req, res) => {
 const volumeAileScanning = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const {USER_TRAITEMENT} = req.body
+        const { USER_TRAITEMENT } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -153,7 +156,7 @@ const volumeAileScanning = async (req, res) => {
         }
 
         const results = await Volume.update({
-            ID_ETAPE_VOLUME:ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
@@ -282,7 +285,7 @@ const folioChefScanning = async (req, res) => {
  * @author Vanny Boy <vanny@mediabox.bi>
  * @param {express.Request} req
  * @param {express.Response} res 
- * @date  31/07/2023
+ * @date  1/08/2023
  * 
  */
 
@@ -371,9 +374,120 @@ const folioSupScanning = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuperer la liste des volumes par rapport a un agent connecter
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  1/08/2023
+ * 
+ */
+
+const findAll = async (req, res) => {
+    try {
+        const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const user = userObject.toJSON()
+        console.log(user)
+
+        var condition = {}
+
+        if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_PLATEAU }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
+        }
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH'],
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                }]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                data: result.rows,
+                totalRecords: result.count
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer les agents superviseur ailles avec leurs volumes
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  1/08/2023
+ * 
+ */
+
+const findAllSuperviseur = async (req, res) => {
+    try{
+        const {} = req.params
+        const userObject = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
+            attributes: ['USERS_ID','ID_PROFIL', 'NOM', 'PRENOM', 'EMAIL', ],
+            include: [
+                {
+                    model: Etapes_volume_historiques,
+                    as: 'histo',
+                    required: false,
+                    attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH'],
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            required: false,
+                            attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                        }]
+                }]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                userObject
+            }
+        })
+        
+    }
+    catch(error){
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     volumeScanning,
     volumeAileScanning,
     folioChefScanning,
-    folioSupScanning
+    folioSupScanning,
+    findAll,
+    findAllSuperviseur
 }

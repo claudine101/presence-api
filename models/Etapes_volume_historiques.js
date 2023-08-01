@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Volume = require('./Volume');
 
 /**
 * fonction model pour la creation de la table etapes_volume_historiques
@@ -16,19 +17,19 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
         autoIncrement: true
     },
     USERS_ID: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     USER_TRAITEMENT: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     ID_VOLUME: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     ID_ETAPE_VOLUME: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     PV_PATH: {
@@ -45,4 +46,6 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
     tableName: 'etapes_volume_historiques',
     timestamps: false,
 })
+Etapes_volume_historiques.belongsTo(Volume,{foreignKey:'ID_VOLUME', as:'volume'});
+
 module.exports = Etapes_volume_historiques

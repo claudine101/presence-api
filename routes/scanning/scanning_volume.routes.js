@@ -30,4 +30,18 @@ scanning_volume_routes.put('/folio/plateau', scanning_volume_controller.folioChe
 */
 scanning_volume_routes.put('/folio/equipe', scanning_volume_controller.folioSupScanning)
 
+/**
+ * Une route  recuperer  les volumes d'un chef d'equipe archives aille
+ *@method GET
+ * @url /scanning/volume
+ */
+ scanning_volume_routes.get('/', scanning_volume_controller.findAll)
+
+ /**
+ * Une route  recuperer  la listes des agent superviseur aille avec leurs volumes
+ *@method GET
+ * @url /scanning/volume/sup/aille
+ */
+ scanning_volume_routes.get('/sup/aille', scanning_volume_controller.findAllSuperviseur)
+
 module.exports = scanning_volume_routes
