@@ -116,13 +116,18 @@ const findAll = async (req, res) => {
             where: {
                 ...globalSearchWhereLike,
             },
-            include: 
+            include:[
+                { model:Etapes_volumes,
+                as: 'etapes_volumes',
+                attributes: ['NOM_ETAPE'],
+                required: false
+                 }, 
                
                  { model:maille,
                   as: 'malle',
                   attributes: ['NUMERO_MAILLE'],
                   required: false
-                }
+                }]
             
         })
         res.status(RESPONSE_CODES.OK).json({

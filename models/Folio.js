@@ -1,6 +1,11 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize')
+const Nature= require('./Nature_folio');
+const Etapes_volumes =require('./Etapes_folio');
+const Volume= require('./Volume')
+
+
 
 /**
 * fonction model pour la creation de la table folio
@@ -135,5 +140,8 @@ const Folio = sequelize.define("folio", {
     timestamps: false
 })
 
+Folio.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes_folio' })
+Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
+Folio.belongsTo(Volume, { foreignKey:"ID_VOLUME", as: 'volume' })
 
 module.exports = Folio
