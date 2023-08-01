@@ -445,7 +445,7 @@ const findAll = async (req, res) => {
 const findAllSuperviseur = async (req, res) => {
     try{
         const {} = req.params
-        const userObject = await Users.findAll({
+        const result = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
             attributes: ['USERS_ID','ID_PROFIL', 'NOM', 'PRENOM', 'EMAIL', ],
             include: [
@@ -467,9 +467,7 @@ const findAllSuperviseur = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
-            result: {
-                userObject
-            }
+            result
         })
         
     }
