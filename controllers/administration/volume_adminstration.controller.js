@@ -92,8 +92,6 @@ const findAll = async (req, res) => {
         // searching
         const globalSearchColumns = [
 
-           
-
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
