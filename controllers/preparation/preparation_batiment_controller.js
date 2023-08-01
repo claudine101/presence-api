@@ -171,10 +171,95 @@ const findDistributeur = async (req, res) => {
         })
     }
 }
+/**
+ * Permet de afficher tous agent  superviseur  aile
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAgentSuperviseurAile= async (req, res) => {
+    try {
+        const userObject = await User_ailes.findOne({
+            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            attributes: ['ID_AILE']
+            })
+        const userAile = userObject.toJSON()
+        const superviseurAile = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            include: {
+                model: User_ailes,
+                as: 'userAile',
+                required: false,
+            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+
+
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des agents superviseurs ailes",
+            result: superviseurAile
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous agent  chefPlateau
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findChefPlateau= async (req, res) => {
+    try {
+        const userObject = await User_ailes.findOne({
+            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            attributes: ['ID_AILE']
+            })
+        const userAile = userObject.toJSON()
+        const superviseurAile = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.CHEF_PLATEAU },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            include: {
+                model: User_ailes,
+                as: 'userAile',
+                required: false,
+            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+
+
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des agents superviseurs ailes",
+            result: superviseurAile
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     findAll,
     findAile,
     findDistributeur,
     findAgentArchive,
-    findMailles
+    findMailles,
+    findAgentSuperviseurAile,
+    findChefPlateau
 }

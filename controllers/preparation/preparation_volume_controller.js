@@ -16,6 +16,7 @@ const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/folio');
+const { Op } = require("sequelize")
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -215,17 +216,22 @@ const findVolume = async (req, res) => {
             condition = { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.PLANIFICATION }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
-            condition =  { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO, USER_TRAITEMENT: req.userId }
+            condition =  { 
+                
+                    [Op.or]:[ {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO},
+                    {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.DETAILLER_LES_FOLIO }],
+                     USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
-            condition =  { ID_ETAPE_VOLUME:ETAPES_VOLUME.CHOIX_DES_AILES,USER_TRAITEMENT: req.userId }
+            condition =  { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_DES_AILES,USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
-            condition = { ID_ETAPE_VOLUME:ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES, USER_TRAITEMENT: req.userId }
+            condition = { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES, USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
-            condition = { ID_ETAPE_VOLUME:ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,USER_TRAITEMENT: req.userId}
+            condition = {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,USER_TRAITEMENT: req.userId}
         }
+        console.log(condition)
         const result = await Etapes_volume_historiques.findAndCountAll({
             // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
             where: {
@@ -346,6 +352,250 @@ const updateVolume = async (req, res) => {
             })
     }
 }
+
+/**
+ * Permet permet  de nommer  agent distributeur
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 1/08/2023
+ */
+const nommerDistributeur = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const { AGENT_DISTRIBUTEUR } = req.body
+        const validation = new Validation(
+            {...req.body,...req.files},
+            {
+                AGENT_DISTRIBUTEUR: {
+                    required: true,
+                },
+                PV:{
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                AGENT_DISTRIBUTEUR: {
+                    required: "AGENT_DISTRIBUTEUR est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+            await validation.run()
+            const isValid = await validation.isValidate()
+            if (!isValid) {
+                    const errors = await validation.getErrors()
+                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                            message: "Probleme de validation des donnees",
+                            result: errors
+                    })
+            }
+            const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: AGENT_DISTRIBUTEUR,
+            ID_VOLUME: ID_VOLUME,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+           
+        })
+
+    } catch (error) {
+            console.log(error)
+            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                    message: "Erreur interne du serveur, réessayer plus tard",
+            })
+    }
+}
+/**
+ * Permet permet  de nommer  agent superviseur  aile
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 1/08/2023
+ */
+const nommerSuperviseurAile = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const { AGENT_SUPERVISEUR } = req.body
+        const validation = new Validation(
+            {...req.body,...req.files},
+            {
+                AGENT_SUPERVISEUR: {
+                    required: true,
+                },
+                PV:{
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                AGENT_DISTRIBUTEUR: {
+                    required: "AGENT_SUPERVISEUR est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+            await validation.run()
+            const isValid = await validation.isValidate()
+            if (!isValid) {
+                    const errors = await validation.getErrors()
+                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                            message: "Probleme de validation des donnees",
+                            result: errors
+                    })
+            }
+            const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: AGENT_SUPERVISEUR,
+            ID_VOLUME: ID_VOLUME,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+           
+        })
+
+    } catch (error) {
+            console.log(error)
+            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                    message: "Erreur interne du serveur, réessayer plus tard",
+            })
+    }
+}
+/**
+ * Permet permet  de nommer  chef plateau
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 1/08/2023
+ */
+const nommerChefPlateau = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const { CHEF_PLATEAU } = req.body
+        const validation = new Validation(
+            {...req.body,...req.files},
+            {
+                CHEF_PLATEAU: {
+                    required: true,
+                },
+                PV:{
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                CHEF_PLATEAU: {
+                    required: "CHEF_PLATEAU est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+            await validation.run()
+            const isValid = await validation.isValidate()
+            if (!isValid) {
+                    const errors = await validation.getErrors()
+                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                            message: "Probleme de validation des donnees",
+                            result: errors
+                    })
+            }
+            const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: CHEF_PLATEAU,
+            ID_VOLUME: ID_VOLUME,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+           
+        })
+
+    } catch (error) {
+            console.log(error)
+            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                    message: "Erreur interne du serveur, réessayer plus tard",
+            })
+    }
+}
 /**
  * Permet de afficher tous nature du folio
  *@author NDAYISABA Claudine<claudine@mediabox.bi>
@@ -407,5 +657,8 @@ module.exports = {
     findAll,
     updateVolume,
     findNature,
-    findCount
+    findCount,
+    nommerDistributeur,
+    nommerSuperviseurAile,
+    nommerChefPlateau
 }

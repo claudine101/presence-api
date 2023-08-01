@@ -16,6 +16,9 @@ const ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/folio');
+const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
+const Volume = require('../../models/volume');
+const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -90,6 +93,20 @@ const createfolio = async (req, res) => {
                     ID_ETAPE_FOLIO:ETAPES_FOLIO.FOLIO_ENREG}
             )
         }))
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+        }, {
+            where: {
+                ID_VOLUME:ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            // USER_TRAITEMENT: ID_USERS,
+            ID_VOLUME: ID_VOLUME,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+        })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,

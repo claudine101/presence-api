@@ -32,6 +32,21 @@ const preparation_batiment_routes = express.Router()
  preparation_batiment_routes.get('/distributeur/:ID_AILE', preparation_batiment_controller.findDistributeur)
 
   /**
+ * Une route  permet  recupere les agent  superviseur par  aile
+ *@method GET
+ * @url /preparation/batiment/superviseurAile
+ */
+ preparation_batiment_routes.get('/superviseurAile', preparation_batiment_controller.findAgentSuperviseurAile)
+
+  /**
+ * Une route  permet  recupere les chef plateau
+ *@method GET
+ * @url /preparation/batiment/chefPlateau
+ */
+ preparation_batiment_routes.get('/chefPlateau', preparation_batiment_controller.findChefPlateau)
+
+
+  /**
  *  Une route pour recupere Agents superviseur archives
  *@method GET
  * @url /preparation/batiment/agentArchive

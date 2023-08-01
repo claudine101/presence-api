@@ -37,4 +37,25 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.put('/modifier/:ID_VOLUME', preparation_volume_controller.updateVolume)
 
+ /**
+ * Une route  permet  de nommer  agent distributeur
+ *@method PUT
+ * @url /preparation/volume/nommerDistributeur
+ */
+ preparation_volume_routes.put('/nommerDistributeur/:ID_VOLUME', preparation_volume_controller.nommerDistributeur)
+
+ /**
+ * Une route  permet  de nommer  agent superviseur aile
+ *@method PUT
+ * @url /preparation/volume/nommerSuperviseurAile
+ */
+ preparation_volume_routes.put('/nommerSuperviseurAile/:ID_VOLUME', preparation_volume_controller.nommerSuperviseurAile)
+
+  /**
+ * Une route  permet  de nommer  chef plateau
+ *@method PUT
+ * @url /preparation/volume/nommerChefPlateau
+ */
+ preparation_volume_routes.put('/nommerChefPlateau/:ID_VOLUME', preparation_volume_controller.nommerChefPlateau)
+
 module.exports = preparation_volume_routes
