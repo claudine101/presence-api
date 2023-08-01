@@ -3,6 +3,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Maille = require('./Maille') 
 const Etape_Volume= require('./Etapes_volumes')
+const Etapes_volume_historiques = require('./Etapes_volume_historiques')
 /**
 * fonction model pour la creation de la table volume
 * @author NIREMA ELOGE <nirema.eloge@mediabox.bi>
@@ -50,6 +51,14 @@ const Volume = sequelize.define("volume", {
 
 Volume.belongsTo(Maille, {foreignKey: "ID_MALLE", as: 'maille' })
 Volume.belongsTo(Etape_Volume, {foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volume'})
+Volume.belongsTo(Etapes_volume_historiques, {foreignKey: "ID_VOLUME", as: 'etapes_volume_historiques'})
+
+
+
+
+
+// Volume.belongsTo(Etape_Volume, {foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volume'})
+
 
 
 

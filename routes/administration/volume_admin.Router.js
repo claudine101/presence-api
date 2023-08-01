@@ -10,6 +10,14 @@ const volumes_routes = express.Router()
  * @url /admin/DetailVolume/
  */
  volumes_routes.get("/DetailVolume/:ID_VOLUME",volume_routes_controller.getDetail);
+
+  /**
+ * Une route pour la detail des volumes 
+ *@method GET
+ * @url /admin/DetailVolume/
+ */
+ volumes_routes.get("/HistoVolume/:ID_VOLUME",volume_routes_controller.getHistoriqueVolume);
+
  
 
 module.exports = volumes_routes
