@@ -24,10 +24,10 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileUpload());
 
-app.use('/admin', adminRouter)
 
 app.all('*', bindUser)
 app.use('/auth', authRouter)
+app.use('/admin', adminRouter)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,

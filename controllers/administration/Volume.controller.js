@@ -5,6 +5,7 @@ const Validation = require("../../class/Validation")
 const { Op } = require("sequelize")
 const Volume = require("../../models/Volume")
 const Maille = require('../../models/Maille')
+const Etape_Volume =require('../../models/Etapes_volumes')
 
 
 /**
@@ -27,6 +28,11 @@ const getDetail = async (req, res) => {
                 as: 'maille',
                 attributes: ['ID_MAILLE','NUMERO_MAILLE'],
                 required: false
+            },{
+                model: Etape_Volume,
+                as: 'etapes_volume',
+                attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
+                required:false
             }
           ]
         })
