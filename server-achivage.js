@@ -9,6 +9,8 @@ const ip = require('ip')
 const fileUpload = require("express-fileupload");
 const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
+const adminRouter = require("./routes/administration/adminRouter");
+
 const app = express();
 const bindUser = require("./middleware/bindUser");
 const adminRouter = require("./routes/administration/administrationRouter");
@@ -30,6 +32,7 @@ app.use("/admin", adminRouter)
 
 app.all('*', bindUser)
 app.use('/auth', authRouter)
+app.use('/admin', adminRouter)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,
