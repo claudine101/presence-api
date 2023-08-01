@@ -1,6 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
 
 /**
 * fonction model pour la creation de la table folio

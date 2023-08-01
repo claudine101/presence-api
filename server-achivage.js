@@ -15,6 +15,7 @@ dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
+const indexationRouter = require("./routes/auth/indexation/indexationRouter");
 app.use(cors());
 app.set('view engine','ejs');
 app.use(express.static(__dirname + "/public"));
@@ -24,6 +25,7 @@ app.use(fileUpload());
 
 app.all('*', bindUser)
 app.use('/auth', authRouter)
+app.use('/indexation', indexationRouter)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,
