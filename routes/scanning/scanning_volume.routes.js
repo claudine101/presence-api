@@ -51,4 +51,18 @@ scanning_volume_routes.put('/folio/equipe', scanning_volume_controller.folioSupS
 */
 scanning_volume_routes.put('/chefEquipe/:ID_VOLUME', scanning_volume_controller.chefEquipeValide)
 
+ /**
+* Une route pour recuperer les agents superviseur aille scanning
+*@method GET
+* @url /scanning/volume/agentSupAille
+*/
+scanning_volume_routes.get('/agentSupAille', scanning_volume_controller.findAgentSupAilleScanning)
+
+ /**
+* Une route pour recuperer le maille dans laquelle contient le volume
+*@method GET
+* @url /scanning/volume/maille
+*/
+scanning_volume_routes.get('/maille/:ID_VOLUME', scanning_volume_controller.findAllMaille)
+
 module.exports = scanning_volume_routes

@@ -31,7 +31,7 @@ const PROFILS = {
     CHEF_PLATEAU: 6,
 
     /**
-      * 7 - Agent superviseur(phase preparation)
+    * 7 - Agent superviseur(phase preparation)
       */
     AGENT_SUPERVISEUR: 7,
 
