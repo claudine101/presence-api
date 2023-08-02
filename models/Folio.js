@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Volume = require('./Volume');
 
 /**
 * fonction model pour la creation de la table folio
@@ -135,5 +136,6 @@ const Folio = sequelize.define("folio", {
     timestamps: false
 })
 
+Folio.belongsTo(Volume,{foreignKey:'ID_VOLUME', as:'volume'});
 
 module.exports = Folio

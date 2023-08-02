@@ -10,7 +10,7 @@ const scanning_volume_routes = express.Router()
 scanning_volume_routes.put('/:ID_VOLUME', scanning_volume_controller.volumeScanning)
 
 /**
-* Une route pour envoyer le volumes chef un agent de plateau
+* Une route pour envoyer le volumes au chef de plateau
 *@method PUT
 * @url /scanning/volume/aile
 */
@@ -64,5 +64,26 @@ scanning_volume_routes.get('/agentSupAille', scanning_volume_controller.findAgen
 * @url /scanning/volume/maille
 */
 scanning_volume_routes.get('/maille/:ID_VOLUME', scanning_volume_controller.findAllMaille)
+
+ /**
+* Une route pour recuperer la liste des chef plateau scanning
+*@method GET
+* @url /scanning/volume
+*/
+scanning_volume_routes.get('/plateau', scanning_volume_controller.findChefPlateau)
+
+ /**
+* Une route pour recuperer la liste des superviseur scanning
+*@method GET
+* @url /scanning/volume/superviseur
+*/
+scanning_volume_routes.get('/superviseur', scanning_volume_controller.findSuperviseurScanning)
+
+ /**
+* Une route pour recuperer la liste des equipe scanning
+*@method GET
+* @url /scanning/volume/allEquipe
+*/
+scanning_volume_routes.get('/allEquipe', scanning_volume_controller.findEquipeScanning)
 
 module.exports = scanning_volume_routes

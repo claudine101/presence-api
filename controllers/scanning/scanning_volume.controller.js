@@ -20,6 +20,7 @@ const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques'
 const Users = require('../../models/Users');
 const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
+const Equipes = require('../../models/Equipes');
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
@@ -157,7 +158,7 @@ const volumeAileScanning = async (req, res) => {
         }
 
         const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
@@ -167,7 +168,7 @@ const volumeAileScanning = async (req, res) => {
             USERS_ID: req.userId,
             USER_TRAITEMENT: USER_TRAITEMENT,
             ID_VOLUME: ID_VOLUME,
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
             PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
         })
         res.status(RESPONSE_CODES.CREATED).json({
@@ -252,7 +253,7 @@ const folioChefScanning = async (req, res) => {
                 }, {
                 where: {
                     ID_VOLUME: ID_VOLUME,
-                    ID_NATURE: folio.ID_NATURE,
+                    // ID_NATURE: folio.ID_NATURE,
                     NUMERO_FOLIO: folio.NUMERO_FOLIO
                 }
             }
@@ -400,6 +401,9 @@ const findAll = async (req, res) => {
         else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, USER_TRAITEMENT:req.userId  }
         }
+        else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT:req.userId  }
+        }
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
             where: {
@@ -440,7 +444,6 @@ const findAll = async (req, res) => {
 
 const findAllSuperviseur = async (req, res) => {
     try{
-        const {} = req.params
         const result = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
             attributes: ['USERS_ID','ID_PROFIL', 'NOM', 'PRENOM', 'EMAIL', ],
@@ -612,6 +615,94 @@ const findAllMaille = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuperer la liste des chef plateau
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  2/08/2023
+ * 
+ */
+const findChefPlateau = async (req, res) => {
+    try {
+        const chefPlateaux = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.CHEF_PLATEAU },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des chefs plateau",
+            result: chefPlateaux
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer la liste des agents superviseur
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  2/08/2023
+ * 
+ */
+const findSuperviseurScanning = async (req, res) => {
+    try {
+        const chefPlateaux = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des chefs plateau",
+            result: chefPlateaux
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer la liste des equipe scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  2/08/2023
+ * 
+ */
+const findEquipeScanning = async (req, res) => {
+    try {
+        const equipe = await Equipes.findAll({
+            attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des equipe scanning",
+            result: equipe
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 
 module.exports = {
@@ -623,5 +714,9 @@ module.exports = {
     findAllSuperviseur,
     chefEquipeValide,
     findAgentSupAilleScanning,
-    findAllMaille
+    findAllMaille,
+    findChefPlateau, 
+    findSuperviseurScanning,
+    findEquipeScanning
+    
 }

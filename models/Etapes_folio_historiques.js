@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Folio = require('./Folio');
 
 /**
 * fonction model pour la creation de la table etapes_folio_historiques
@@ -45,4 +46,6 @@ const Etapes_folio_historiques = sequelize.define("etapes_folio_historiques", {
     tableName: 'etapes_folio_historiques',
     timestamps: false,
 })
+
+Etapes_folio_historiques.belongsTo(Folio,{foreignKey:'ID_FOLIO', as:'folio'});
 module.exports = Etapes_folio_historiques
