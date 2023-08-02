@@ -7,8 +7,6 @@ const Nature_folio= require('../../models/Nature_folio')
 const Folio= require('../../models/Folio')
 const Volume = require('../../models/Volume')
 
-
-
 /**
  * permet de 
  * @author derick <derick@mediabox.bi>
@@ -169,6 +167,78 @@ const findAll = async (req, res) => {
         })
     }
 }
+
+/**
+ * Permet de faire  la detail  de la course
+ * @date  25/07/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author eloge257 <nirema.eloge@mdiabox.bi>
+ */
+const getOnehis = async (req, res) => {
+    const { id } = req.params
+    try {
+  
+  
+        const volume = await Volume.findOne({
+            where: {
+                ID_COURSE: id
+            },
+            include: [
+            {
+                model: vehicules,
+                as: 'vehicules',
+                attributes: ['ID_VEHICULE','NUMERO_PLAQUE','MARQUE','MODELE','COULEUR','PHOTO_CARTE_ROSE','PHOTO_ASSURANCE','PHOTO_CONTROLE_TECHNIQUE','PHOTO_VEHICULE'],
+                required: false
+            },
+            {
+              model: Drivers,
+              as:'drivers',
+              attributes: ['ID_DRIVER','NOM','PRENOM','EMAIL','TELEPHONE','IMAGE'],
+              required: false
+            },
+            {
+              model:Riders,
+              as:'riders',
+              attributes: ['ID_RIDER','NOM','PRENOM','TELEPHONE','EMAIL','IMAGE'],
+              required: false
+            },
+            {
+              model: Courses_status,
+              as:'courses_status',
+              attributes: ['ID_STATUT','NOM'],
+              required: false
+  
+            }
+          ]
+        })
+        if (courses) {
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Detail",
+                result: courses
+            })
+        } else {
+            res.status(RESPONSE_CODES.NOT_FOUND).json({
+                statusCode: RESPONSE_CODES.NOT_FOUND,
+                httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                message: "Course non trouve",
+            })
+        }
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+  }
+
+ 
 module.exports={
-    findAll
+    findAll,
+     
 }
