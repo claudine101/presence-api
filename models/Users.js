@@ -2,6 +2,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 
+const Profils = require('./Profils');
+
 /**
 * fonction model pour la creation de la table users
 * @author NIREMA ELOGE <nirema.eloge@mediabox.bi>
@@ -69,6 +71,8 @@ const Users = sequelize.define("users", {
     timestamps: false,
 })
 
+
+Users.belongsTo(Profils, { foreignKey: "ID_PROFIL", as: 'profil' })
 
 
 module.exports = Users

@@ -4,7 +4,6 @@ const sequelize = require('../utils/sequelize');
 
 const Nature_folio = require("./Nature_folio");
 const Volume = require('./Volume');
-const Users = require('./Users');
 const Etapes_folio= require('./Etapes_folio');
 const Syst_collines = require('./Syst_collines');
 const Equipes = require ('./Equipes');
@@ -52,7 +51,7 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    COLLINE_ID: {
+    ID_COLLINE: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -83,7 +82,7 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
 
-    ID_EQUIPE: {
+    ID_FOLIO_EQUIPE: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -138,13 +137,15 @@ const Folio = sequelize.define("folio", {
 }, {
     freezeTableName: true,
     tableName: 'folio',
-    timestamps: false
+    timestamps: false,
 })
 
-Folio.belongsTo(Nature_folio, { foreignkey: "ID_NATURE", as: 'nature' })
-Folio.belongsTo(Volume, { foreignkey: "ID_VOLUME", as: 'volum' })
-Folio.belongsTo(Syst_collines, { foreignKey: "COLLINE_ID", as: 'colline' })
-Folio.belongsTo(Equipes, { foreignkey: "ID_EQUIPE", as: 'equipe' })
+
+Folio.belongsTo(Syst_collines, { foreignKey: "ID_COLLINE", as: 'colline' })
+Folio.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes' })
+Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'nature' })
+Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
+Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 
 
 
