@@ -217,7 +217,6 @@ const findVolume = async (req, res) => {
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
             condition =  { 
-                
                     [Op.or]:[ {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO},
                     {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.DETAILLER_LES_FOLIO }],
                      USER_TRAITEMENT: req.userId }
@@ -231,7 +230,6 @@ const findVolume = async (req, res) => {
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
             condition = {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,USER_TRAITEMENT: req.userId}
         }
-        console.log(condition)
         const result = await Etapes_volume_historiques.findAndCountAll({
             // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
             where: {

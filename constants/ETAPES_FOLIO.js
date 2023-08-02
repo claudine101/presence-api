@@ -104,7 +104,11 @@ const IDS_ETAPES_FOLIO = {
         /**
           * 22 - Folio  enregistre
           */
-        FOLIO_ENREG: 22
+        FOLIO_ENREG: 22,
+         /**
+          * 23 - Ajout  details dans un folio
+          */
+         ADD_DETAILLER_FOLIO: 23
 }
 
 module.exports = IDS_ETAPES_FOLIO

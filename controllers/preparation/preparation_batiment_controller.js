@@ -213,6 +213,84 @@ const findDistributeur = async (req, res) => {
     }
 }
 /**
+ * Permet de afficher tous agent  superviseur  phase preparation
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 02/08/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAgentSuperviseurPreparation= async (req, res) => {
+    try {
+        const userObject = await User_ailes.findOne({
+            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            attributes: ['ID_AILE']
+            })
+        const userAile = userObject.toJSON()
+        const superviseurPreparation = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            include: {
+                model: User_ailes,
+                as: 'userAile',
+                required: false,
+            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des agents superviseurs phase preparation",
+            result: superviseurPreparation
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous agent  preparation
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 02/08/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAgentPreparation= async (req, res) => {
+    try {
+        const userObject = await User_ailes.findOne({
+            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            attributes: ['ID_AILE']
+            })
+        const userAile = userObject.toJSON()
+        const superviseurPreparation = await Users.findAll({
+            where: { ID_PROFIL: PROFILS.AGENT_PREPARATION },
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            include: {
+                model: User_ailes,
+                as: 'userAile',
+                required: false,
+            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des agents superviseurs phase preparation",
+            result: superviseurPreparation
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet de afficher tous agent  chefPlateau
  *@author NDAYISABA Claudine<claudine@mediabox.bi>
  *@date 31/07/2023
@@ -261,5 +339,7 @@ module.exports = {
     findAgentArchive,
     findMailles,
     findAgentSuperviseurAile,
-    findChefPlateau
+    findAgentSuperviseurPreparation,
+    findChefPlateau,
+    findAgentPreparation
 }

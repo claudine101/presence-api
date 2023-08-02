@@ -63,7 +63,7 @@ const PROFILS = {
     * 13-Agent superviseur (phase scanning)
     * 
     */
-    AGENT_SUPERVISEUR: 13,
+    AGENT_SUPERVISEUR_SCANNING: 13,
     /**
      * 14-Chef d'equipe (phase indexation)
      * 

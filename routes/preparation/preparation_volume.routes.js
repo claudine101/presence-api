@@ -51,6 +51,7 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.put('/nommerSuperviseurAile/:ID_VOLUME', preparation_volume_controller.nommerSuperviseurAile)
 
+
   /**
  * Une route  permet  de nommer  chef plateau
  *@method PUT
