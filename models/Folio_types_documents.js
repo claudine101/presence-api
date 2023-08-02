@@ -38,5 +38,5 @@ const Folio_types_documents = sequelize.define("folio_types_documents", {
     timestamps: false
 })
 
-Folio_types_documents.belongsTo(Nature_folio, { foreignKey:"ID_NATURE_FOLIO", as:'naturefolio'})
+Folio_types_documents.belongsTo(Nature_folio, { foreignKey:"ID_NATURE", as:'naturefolio'})
 module.exports = Folio_types_documents
