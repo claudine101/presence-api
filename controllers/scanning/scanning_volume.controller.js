@@ -385,7 +385,6 @@ const folioSupScanning = async (req, res) => {
 
 const findAll = async (req, res) => {
     try {
-        const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const userObject = await Users.findOne({
             where: { USERS_ID: req.userId },
             attributes: ['ID_PROFIL', 'USERS_ID']
@@ -396,13 +395,13 @@ const findAll = async (req, res) => {
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_PLATEAU }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE, USER_TRAITEMENT:req.userId }
         }
-        else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
-        }
+        // else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
+        //     condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
+        // }
         const result = await Etapes_volume_historiques.findAll({
-            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH'],
+            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 ...condition
             },
@@ -418,10 +417,7 @@ const findAll = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
-            result: {
-                data: result.rows,
-                totalRecords: result.count
-            }
+            result
         })
     } catch (error) {
         console.log(error)
@@ -481,11 +477,128 @@ const findAllSuperviseur = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuperer les agents superviseur ailles avec leurs volumes
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  1/08/2023
+ * 
+ */
+// const findDistributeur = async (req, res) => {
+//     try {
+//         const { ID_AILE } = req.params
+//         const distributeur = await Users.findAll({
+//             where: { ID_PROFIL: PROFILS.AGENTS_DISTRIBUTEUR },
+//             attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+//             include: {
+//                 model: User_ailes,
+//                 as: 'userAile',
+//                 required: false,
+//             where: { ID_AILE: ID_AILE, IS_ACTIF: 1 },
+
+
+//             }
+//         })
+//         res.status(RESPONSE_CODES.OK).json({
+//             statusCode: RESPONSE_CODES.OK,
+//             httpStatus: RESPONSE_STATUS.OK,
+//             message: "Liste des ailes",
+//             result: distributeur
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+//             message: "Erreur interne du serveur, réessayer plus tard",
+//         })
+//     }
+// }
+
+/**
+ * Permet de faire la validation entre un agent superviseur aille et un chef equipe
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  2/08/2023
+ * 
+ */
+
+const chefEquipeValide = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                },
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                },
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: req.userId,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+
 module.exports = {
     volumeScanning,
     volumeAileScanning,
     folioChefScanning,
     folioSupScanning,
     findAll,
-    findAllSuperviseur
+    findAllSuperviseur,
+    chefEquipeValide
 }

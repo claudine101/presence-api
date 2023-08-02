@@ -44,4 +44,11 @@ scanning_volume_routes.put('/folio/equipe', scanning_volume_controller.folioSupS
  */
  scanning_volume_routes.get('/sup/aille', scanning_volume_controller.findAllSuperviseur)
 
+ /**
+* Une route pour valide qu'un agent superviseur aille donne a un chef equipe
+*@method PUT
+* @url /scanning/volume/chefEquipe
+*/
+scanning_volume_routes.put('/chefEquipe/:ID_VOLUME', scanning_volume_controller.chefEquipeValide)
+
 module.exports = scanning_volume_routes
