@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
+const Nature_folio = require('./Nature_folio');
 
 /**
 * fonction model pour la creation de la table folio_types_documents
@@ -18,7 +19,7 @@ const Folio_types_documents = sequelize.define("folio_types_documents", {
     },
 
     ID_NATURE: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
 
@@ -37,5 +38,5 @@ const Folio_types_documents = sequelize.define("folio_types_documents", {
     timestamps: false
 })
 
-
+Folio_types_documents.belongsTo(Nature_folio, { foreignKey:"ID_NATURE", as:'naturefolio'})
 module.exports = Folio_types_documents
