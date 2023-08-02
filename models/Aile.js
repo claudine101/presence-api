@@ -1,6 +1,8 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Batiment = require('./Batiment');
+const User_ailes = require('./User_ailes');
 
 /**
 * fonction model pour la creation de la table aile
@@ -28,4 +30,7 @@ const Aile = sequelize.define("aile", {
         tableName: 'aile',
         timestamps: false,
 })
+
+Aile.belongsTo(Batiment, { foreignKey:"ID_BATIMENT",as:'batiment'})
+Aile.hasMany(User_ailes,{as: 'userAile', foreignKey: 'ID_AILE'})
 module.exports = Aile

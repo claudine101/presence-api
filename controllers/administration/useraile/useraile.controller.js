@@ -6,6 +6,7 @@ const { Op } = require("sequelize")
 const User_ailes = require("../../../models/User_ailes")
 const Aile = require("../../../models/Aile")
 const Users = require("../../../models/Users")
+const sequelize = require('sequelize');
 
 
 
@@ -135,6 +136,7 @@ const findaile=async(req,res)=>{
  * @date 01/08/2023
  */
 const findAlluseraile = async (req, res) => {
+   
     try {
         const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const defaultSortField = "ID_USER_AILE"
@@ -212,6 +214,7 @@ const findAlluseraile = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
+       
         const result = await User_ailes.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
@@ -219,13 +222,15 @@ const findAlluseraile = async (req, res) => {
                 [sortModel, orderColumn, orderDirection]
             ],
             where: {
-                ...globalSearchWhereLike,
+                ...globalSearchWhereLike
             },
+
             include:[ {
                 model: Aile,
                 as: 'ailes',
                 required: false,
                 attributes: ['ID_AILE','NUMERO_AILE']
+               
             },
              {
                 model: Users,
@@ -233,16 +238,17 @@ const findAlluseraile = async (req, res) => {
                 required: false,
                 attributes: ['USERS_ID','NOM','PRENOM']
 
-            }]
-
+            }
+        ],
         })
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des utilisateurs ailes",
             result: {
                 data: result.rows,
-                totalRecords: result.count
+                totalRecords: result.count,
             }
         })
     } catch (error) {
@@ -256,9 +262,70 @@ const findAlluseraile = async (req, res) => {
 }
 
 
+
+
+
+/**
+* Permet de listes les ailes
+* @param {express.Request} req 
+* @param {express.Response} res 
+* @author leonard <leonard@mdiabox.bi>
+* @date 1/8/2023
+*/
+
+
+
+const findALL=async(req,res)=>{
+    const{ID_AILE}=req.params
+    try {
+       const ailetes=await User_ailes.findAndCountAll({
+        where: {
+            ID_AILE: ID_AILE,
+          },
+          include: [
+            {
+              model: Aile,
+              as: 'ailes',
+              attributes: [[sequelize.fn('COUNT', sequelize.col('USERS_ID')), 'nombre_Utilisateur'],'NUMERO_AILE','ID_AILE'],
+              where: {
+                ID_AILE: ID_AILE,
+              },
+              required: false,
+            },
+          ],
+          attributes: [],
+       }) 
+
+    
+
+    //    const userCount = ailetes.count;
+    //    const numero = ailetes.rows[0].aile.numero
+    //    console.log('User Count:', userCount);
+    //    console.log('Numero:', numero);
+
+       res.status(RESPONSE_CODES.CREATED).json({
+        statusCode: RESPONSE_CODES.CREATED,
+        httpStatus: RESPONSE_STATUS.CREATED,
+        message: "listes des ailes",
+        result: ailetes
+})
+    } catch (error) {
+        console.log(error)
+  res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+  })
+    }
+}
+
+// Sequelize query
+
+
 module.exports={
     createuseraile,
     findaile,
     findAlluseraile,
     findalluser
+   
 }

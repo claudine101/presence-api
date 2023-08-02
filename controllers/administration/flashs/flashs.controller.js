@@ -131,7 +131,7 @@ const findAllflash = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
-        const result = await Nature_folio.findAndCountAll({
+        const result = await Flashs.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
             order: [
