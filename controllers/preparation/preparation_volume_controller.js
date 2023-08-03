@@ -240,6 +240,7 @@ const findVolume = async (req, res) => {
                 as: 'volume',
                 required: false,
                 attributes: ['ID_VOLUME','NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+                
       }]
 
         })

@@ -242,7 +242,7 @@ const findDistributeur = async (req, res) => {
         const { ID_AILE } = req.params
         const distributeur = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_DISTRIBUTEUR },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER',],
             include: {
                 model: User_ailes,
                 as: 'userAile',
@@ -311,7 +311,7 @@ const findDistributeur = async (req, res) => {
         const userAile = userObject.toJSON()
         const superviseurAile = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',
@@ -352,7 +352,7 @@ const findDistributeur = async (req, res) => {
         const userAile = userObject.toJSON()
         const superviseurPreparation = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',
@@ -391,7 +391,7 @@ const findDistributeur = async (req, res) => {
         const userAile = userObject.toJSON()
         const superviseurPreparation = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_PREPARATION },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',
@@ -430,7 +430,7 @@ const findDistributeur = async (req, res) => {
         const userAile = userObject.toJSON()
         const superviseurAile = await Users.findAll({
             where: { ID_PROFIL: PROFILS.CHEF_PLATEAU },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',

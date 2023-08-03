@@ -58,12 +58,12 @@ const login = async (req, res) => {
               }
               const userObject = await Users.findOne({
                         where: { EMAIL: email },
-                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF']
+                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF','PHOTO_USER']
               })
               if (userObject) {
                         const user = userObject.toJSON()
                         if (user.PASSEWORD == md5(password)) {
-                                  const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL }, 3 * 12 * 30 * 24 * 3600)
+                                  const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL,PHOTO_USER:user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
                                   const { password, ...other } = user
                                   if (PUSH_NOTIFICATION_TOKEN) {
                                             // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]

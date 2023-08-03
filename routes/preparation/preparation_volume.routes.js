@@ -15,6 +15,12 @@ const preparation_volume_routes = express.Router()
  * @url /preparation/volume
  */
  preparation_volume_routes.get('/', preparation_volume_controller.findAll)
+/**
+ * Une route  permet  recupere les volumes et leurs details
+ *@method POST
+ * @url /preparation/volume
+ */
+ preparation_volume_routes.get('/allVolume', preparation_volume_controller.findAll)
 
   /**
  * Une route  permet  recupere les volumes detailler
