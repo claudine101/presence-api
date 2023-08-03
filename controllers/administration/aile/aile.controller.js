@@ -36,6 +36,18 @@ const findAllaile = async (req, res) => {
                     NUMERO_BATIMENT: 'NUMERO_BATIMENT'
                 }
             },
+            user_ailes: {
+                as: "userAile",
+                fields: {
+                    ID_USER_AILE: 'ID_USER_AILE'
+                }
+            },
+            users: {
+                as: "users",
+                fields: {
+                    NOM: 'NOM',PRENOM: 'PRENOM',EMAIL: 'EMAIL',TELEPHONE: 'TELEPHONE'
+                }
+            },
         }
         var orderColumn, orderDirection
         // sorting
@@ -109,7 +121,7 @@ const findAllaile = async (req, res) => {
                     include: [
                         {
                             model: Users,
-                            attributes: ['USERS_ID', 'NOM'],
+                            attributes: ['USERS_ID', 'NOM','PRENOM','EMAIL','TELEPHONE'],
                             as: 'users',
                         },
                     ],
@@ -138,9 +150,6 @@ const findAllaile = async (req, res) => {
     }
 }
 
-
-
-
 /**
  * Permet de lister les utilisateurs
  * @date  02/08/2023
@@ -148,8 +157,6 @@ const findAllaile = async (req, res) => {
  * @param {express.Response} res 
  * @author leonard <leonard@mdiabox.bi>
  */
-
-
 const findalluser = async (req, res) => {
     try {
         const users = await Users.findAll({
@@ -238,8 +245,8 @@ const createaile = async (req, res) => {
         const allQst = JSON.parse(selectedUser)
         const aile = await Aile.create({
             NUMERO_AILE,
-            ID_BATIMENT 
-            
+            ID_BATIMENT
+
         })
         const ls_Id = aile.toJSON()
 
@@ -298,7 +305,7 @@ const findOneaile = async (req, res) => {
                     include: [
                         {
                             model: Users,
-                            attributes: ['USERS_ID', 'NOM','PRENOM'],
+                            attributes: ['USERS_ID', 'NOM', 'PRENOM'],
                             as: 'users',
                         },
                     ],
@@ -328,9 +335,6 @@ const findOneaile = async (req, res) => {
         })
     }
 }
-
-
-
 /**
  * Permet de mettre a jour un aile
  * @date  02/08/2023
@@ -342,6 +346,7 @@ const updateaile = async (req, res) => {
     const { ID_AILE } = req.params
     try {
         const { ID_BATIMENT, NUMERO_AILE, selectedUser } = req.body
+        const alluser = JSON.parse(selectedUser)
         const data = { ...req.body };
         const validation = new Validation(data, {
             NUMERO_AILE: {
@@ -351,9 +356,7 @@ const updateaile = async (req, res) => {
             },
             ID_BATIMENT: {
                 required: true,
-
             }
-
         })
         await validation.run()
         const isValid = await validation.isValidate()
@@ -366,29 +369,30 @@ const updateaile = async (req, res) => {
                 result: errors
             })
         }
-
-        const allQst = JSON.parse(selectedUser)
         const aile = await Aile.update({
             NUMERO_AILE,
-            ID_BATIMENT 
-            
-        },{
+            ID_BATIMENT
+
+        }, {
             where: {
                 ID_AILE: ID_AILE
             }
         })
-        // const ls_Id = aile.toJSON()
+
+        await User_ailes.destroy({
+            where: { ID_AILE: ID_AILE }
+        })
 
         //arrangement de l'insertion de multiselect
-        const buildQstData = allQst.map(reponse => {
+        const userdata = alluser.map(reponse => {
             return {
                 USERS_ID: reponse,
-                ID_AILE: aile.ID_AILE,
+                ID_AILE: ID_AILE,
             }
         })
 
         //Insertion de multiselect alors
-        await User_ailes.bulkCreate(buildQstData)
+        await User_ailes.bulkCreate(userdata)
 
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
@@ -406,7 +410,6 @@ const updateaile = async (req, res) => {
     }
 }
 
-
 /**
  * Permet de faire la suppression l'aile
  * @param {express.Request} req 
@@ -414,7 +417,6 @@ const updateaile = async (req, res) => {
  * @author leonard <leonard@mdiabox.bi>
  * @date 2/8/2023
  */
-
 const deleteItemsaile = async (req, res) => {
     try {
         const { ids } = req.body
@@ -449,6 +451,4 @@ module.exports = {
     findOneaile,
     updateaile,
     deleteItemsaile
-
-
 }

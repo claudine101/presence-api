@@ -19,53 +19,51 @@ const sequelize = require('sequelize');
  */
 
 
-const createuseraile = async(req,res) => {
+const createuseraile = async (req, res) => {
     try {
 
-    const { USERS_ID,ID_AILE ,IS_ACTIF} = req.body
-        const data={...req.body};
+        const { USERS_ID, ID_AILE, IS_ACTIF } = req.body
+        const data = { ...req.body };
         const validation = new Validation(data, {
             USERS_ID: {
-                      required: true,
-                     
+                required: true,
+
             },
             ID_AILE: {
                 required: true,
-                
-      }
-                         
-  })
-  await validation.run()
-  const isValid = await validation.isValidate()
-  if (!isValid) {
+            }
+        })
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
             const errors = await validation.getErrors()
             return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                      statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                      httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                      message: "Probleme de validation des donnees",
-                      result: errors
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
             })
-  }
+        }
 
-  const aileuser = await User_ailes.create({
-    USERS_ID,
-    ID_AILE,
-    IS_ACTIF:0
-  })
-  res.status(RESPONSE_CODES.CREATED).json({
+        const aileuser = await User_ailes.create({
+            USERS_ID,
+            ID_AILE,
+            IS_ACTIF: 0
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "Aile a ete cree avec succes",
             result: aileuser
-  })
-} catch (error) {
-  console.log(error)
-  res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-  })
-}
+        })
+    }
 }
 
 
@@ -77,24 +75,24 @@ const createuseraile = async(req,res) => {
 * @date 1/8/2023
 */
 
-const findalluser=async(req,res)=>{
+const findalluser = async (req, res) => {
     try {
-       const user=await Users.findAll({
-        attributes: ['USERS_ID', 'NOM', 'PRENOM']
-       }) 
-       res.status(RESPONSE_CODES.CREATED).json({
-        statusCode: RESPONSE_CODES.CREATED,
-        httpStatus: RESPONSE_STATUS.CREATED,
-        message: "listes des utilisateurs",
-        result: user
-})
+        const user = await Users.findAll({
+            attributes: ['USERS_ID', 'NOM', 'PRENOM']
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des utilisateurs",
+            result: user
+        })
     } catch (error) {
         console.log(error)
-  res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-  })
+        })
     }
 }
 
@@ -106,24 +104,24 @@ const findalluser=async(req,res)=>{
 * @date 1/8/2023
 */
 
-const findaile=async(req,res)=>{
+const findaile = async (req, res) => {
     try {
-       const aile=await Aile.findAll({
-        attributes: ['ID_AILE', 'ID_BATIMENT', 'NUMERO_AILE']
-       }) 
-       res.status(RESPONSE_CODES.CREATED).json({
-        statusCode: RESPONSE_CODES.CREATED,
-        httpStatus: RESPONSE_STATUS.CREATED,
-        message: "listes des ailes",
-        result: aile
-})
+        const aile = await Aile.findAll({
+            attributes: ['ID_AILE', 'ID_BATIMENT', 'NUMERO_AILE']
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des ailes",
+            result: aile
+        })
     } catch (error) {
         console.log(error)
-  res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-  })
+        })
     }
 }
 
@@ -136,7 +134,7 @@ const findaile=async(req,res)=>{
  * @date 01/08/2023
  */
 const findAlluseraile = async (req, res) => {
-   
+
     try {
         const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const defaultSortField = "ID_USER_AILE"
@@ -145,7 +143,7 @@ const findAlluseraile = async (req, res) => {
             user_ailes: {
                 as: "user_ailes",
                 fields: {
-                    ID_USER_AILE:'ID_USER_AILE'
+                    ID_USER_AILE: 'ID_USER_AILE'
                 }
             },
             aile: {
@@ -158,7 +156,7 @@ const findAlluseraile = async (req, res) => {
                 as: "users",
                 fields: {
                     NOM: 'NOM',
-                    PRENOM:'PRENOM'
+                    PRENOM: 'PRENOM'
                 }
             }
         }
@@ -214,7 +212,7 @@ const findAlluseraile = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
-       
+
         const result = await User_ailes.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
@@ -225,21 +223,21 @@ const findAlluseraile = async (req, res) => {
                 ...globalSearchWhereLike
             },
 
-            include:[ {
+            include: [{
                 model: Aile,
                 as: 'ailes',
                 required: false,
-                attributes: ['ID_AILE','NUMERO_AILE']
-               
+                attributes: ['ID_AILE', 'NUMERO_AILE']
+
             },
-             {
+            {
                 model: Users,
                 as: 'users',
                 required: false,
-                attributes: ['USERS_ID','NOM','PRENOM']
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
 
             }
-        ],
+            ],
         })
 
         res.status(RESPONSE_CODES.OK).json({
@@ -275,57 +273,50 @@ const findAlluseraile = async (req, res) => {
 
 
 
-const findALL=async(req,res)=>{
-    const{ID_AILE}=req.params
+const findALL = async (req, res) => {
+    const { ID_AILE } = req.params
     try {
-       const ailetes=await User_ailes.findAndCountAll({
-        where: {
-            ID_AILE: ID_AILE,
-          },
-          include: [
-            {
-              model: Aile,
-              as: 'ailes',
-              attributes: [[sequelize.fn('COUNT', sequelize.col('USERS_ID')), 'nombre_Utilisateur'],'NUMERO_AILE','ID_AILE'],
-              where: {
+        const ailetes = await User_ailes.findAndCountAll({
+            where: {
                 ID_AILE: ID_AILE,
-              },
-              required: false,
             },
-          ],
-          attributes: [],
-       }) 
+            include: [
+                {
+                    model: Aile,
+                    as: 'ailes',
+                    attributes: [[sequelize.fn('COUNT', sequelize.col('USERS_ID')), 'nombre_Utilisateur'], 'NUMERO_AILE', 'ID_AILE'],
+                    where: {
+                        ID_AILE: ID_AILE,
+                    },
+                    required: false,
+                },
+            ],
+            attributes: [],
+        })
 
-    
-
-    //    const userCount = ailetes.count;
-    //    const numero = ailetes.rows[0].aile.numero
-    //    console.log('User Count:', userCount);
-    //    console.log('Numero:', numero);
-
-       res.status(RESPONSE_CODES.CREATED).json({
-        statusCode: RESPONSE_CODES.CREATED,
-        httpStatus: RESPONSE_STATUS.CREATED,
-        message: "listes des ailes",
-        result: ailetes
-})
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des ailes",
+            result: ailetes
+        })
     } catch (error) {
         console.log(error)
-  res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-  })
+        })
     }
 }
 
 // Sequelize query
 
 
-module.exports={
+module.exports = {
     createuseraile,
     findaile,
     findAlluseraile,
     findalluser
-   
+
 }
