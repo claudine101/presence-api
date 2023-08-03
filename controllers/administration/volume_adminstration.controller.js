@@ -123,7 +123,7 @@ const findAll = async (req, res) => {
                  }, 
                
                  { model:maille,
-                  as: 'malle',
+                  as: 'maille',
                   attributes: ['NUMERO_MAILLE'],
                   required: false
                 }]

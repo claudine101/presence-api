@@ -38,7 +38,7 @@ app.use('/auth', authRouter)
 app.use('/indexation', indexationRouter)
 app.use("/admin", adminRouter)
 app.use('/admin', administrationRouter)
-app.use('/administration',administrationRoutes)
+app.use('/administrationRoutes',administrationRoutes)
 app.use('/administration', administrationFolioRoutes)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
