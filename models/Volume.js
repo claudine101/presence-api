@@ -50,9 +50,10 @@ const Volume = sequelize.define("volume", {
     timestamps: false,
 })
 Volume.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volumes' })
-Volume.belongsTo(Maille, { foreignKey: "ID_MALLE", as: 'malle' })
+Volume.belongsTo(Maille, { foreignKey: "ID_MALLE", as: 'maille' })
 Volume.belongsTo(Etape_Volume, {foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volume'})
 Volume.belongsTo(Etapes_volume_historiques, {foreignKey: "ID_VOLUME", as: 'etapes_volume_historiques'})
+// Volume.hasMany(Etapes_volume_historiques, { foreignKey:"ID_VOLUME", as:'volume'})
 
 
 

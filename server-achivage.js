@@ -10,19 +10,19 @@ const fileUpload = require("express-fileupload");
 const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
 const adminRouter = require("./routes/administration/adminRouter");
+const administrationRouter = require("./routes/administration/administrationRouter");
+const administrationRoutes=require("./routes/administration/administrationRoutes")
 const administrationFolioRoutes = require("./routes/administration/folio/folioRoutes");
 const indexationRouter = require("./routes/auth/indexation/indexationRouter");
 
 const app = express();
 const bindUser = require("./middleware/bindUser");
-const adminRouter = require("./routes/administration/administrationRouter");
 
 
 dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
-const administrationRouter=require("./routes/administration/administrationRoutes")
 
 app.use(cors());
 app.set('view engine','ejs');
@@ -31,14 +31,14 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileUpload());
 
-app.use("/admin", adminRouter)
 
 
 app.all('*', bindUser)
 app.use('/auth', authRouter)
 app.use('/indexation', indexationRouter)
-app.use('/admin', adminRouter)
-app.use('/administration',administrationRouter)
+app.use("/admin", adminRouter)
+app.use('/admin', administrationRouter)
+app.use('/administration',administrationRoutes)
 app.use('/administration', administrationFolioRoutes)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({

@@ -38,12 +38,8 @@ const getDetail = async (req, res) => {
                     as: 'etapes_volume',
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
-                }, {
-                    model: Etapes_volume_historiques,
-                    as: 'etapes_volume_historiques',
-                    attributes: ['ID_VOLUME', 'USERS_ID'],
-                    required: false
                 },
+                
             ]
         })
         if (volumes) {
@@ -98,7 +94,7 @@ const getHistoriqueVolume = async (req, res) => {
                     ]
                 }, {
                     model: Etape_Volume,
-                    as: 'etapes_volume',
+                    as: 'etapes_volumes',
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },

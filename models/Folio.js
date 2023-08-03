@@ -1,13 +1,11 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
 const Nature= require('./Nature_folio');
 const Etapes_folio =require('./Etapes_folio');
 const Volume= require('./Volume')
 
 const Nature_folio = require("./Nature_folio");
-const Volume = require('./Volume');
-const Etapes_folio= require('./Etapes_folio');
 const Syst_collines = require('./Syst_collines');
 const Equipes = require ('./Equipes');
 /**
@@ -145,27 +143,14 @@ const Folio = sequelize.define("folio", {
 
 Folio.belongsTo(Syst_collines, { foreignKey: "ID_COLLINE", as: 'colline' })
 Folio.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes' })
-Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'nature' })
+Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'natures' })
 Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 
-Folio.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes_folio' })
+// Folio.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes_folio' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
-Folio.belongsTo(Volume, { foreignKey:"ID_VOLUME", as: 'volume' })
 
 
-
-Folio.belongsTo(Syst_collines, { foreignKey: "ID_COLLINE", as: 'colline' })
-Folio.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes' })
-Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'nature' })
-Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
-Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
-
-
-
-Folio.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes_folio' })
-Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
-Folio.belongsTo(Volume, { foreignKey:"ID_VOLUME", as: 'volume' })
 
 
 module.exports = Folio
