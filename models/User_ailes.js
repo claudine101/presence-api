@@ -1,7 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Aile = require('./Aile');
+// const Aile = require('./Aile');
 const Users = require('./Users');
 
 /**
@@ -35,6 +35,6 @@ const User_ailes = sequelize.define("user_ailes", {
     tableName: 'user_ailes',
     timestamps: false,
 })
-User_ailes.belongsTo(Aile, { foreignKey:"ID_AILE",as:'ailes'})
+// User_ailes.belongsTo(Aile, { foreignKey:"ID_AILE",as:'ailes'})
 User_ailes.belongsTo(Users, { foreignKey:"USERS_ID",as:'users'})
 module.exports = User_ailes

@@ -224,6 +224,14 @@ const findOneFoliotypedocument = async (req, res) => {
             where: {
                 ID_TYPE_FOLIO_DOCUMENT
             },
+            include: {
+                model: Nature_folio,
+                as: 'naturefolio',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION']
+
+            }
+            
         })
         if (foliotype) {
             res.status(RESPONSE_CODES.OK).json({
