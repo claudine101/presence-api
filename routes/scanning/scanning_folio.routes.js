@@ -3,6 +3,13 @@ const scanning_folio_controller = require('../../controllers/scanning/scanning_f
 const scanning_folio_routes = express.Router()
 
  /**
+* Une route pour faire update de reconsiler
+*@method PUT
+* @url /scanning/folio
+*/
+scanning_folio_routes.put('/renconsilier', scanning_folio_controller.updateReconsilier)
+
+ /**
 * Une route pour recuperer la liste des folios apartenant dans un volume
 *@method GET
 * @url /scanning/folio
@@ -16,11 +23,12 @@ scanning_folio_routes.get('/:ID_VOLUME', scanning_folio_controller.findAllFolio)
 */
 scanning_folio_routes.get('/', scanning_folio_controller.findAll)
 
-/**
-* Une route pour envoyer les folios du agent superviseur scanning a une equipe scanning
+ /**
+* Une route pour faire update de reconsiler
 *@method PUT
-* @url /scanning/folio/equipeScanning
+* @url /scanning/folio
 */
-scanning_folio_routes.put('/equipeScanning', scanning_folio_controller.folioEquipeScanning)
+scanning_folio_routes.put('/retour/:ID_FOLIO', scanning_folio_controller.updateReconsilier)
+
 
 module.exports = scanning_folio_routes

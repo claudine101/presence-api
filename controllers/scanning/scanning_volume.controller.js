@@ -52,7 +52,7 @@ const volumeScanning = async (req, res) => {
                     required: "Le nom est obligatoire"
                 },
                 USER_TRAITEMENT: {
-                    required: "ID_ETAPE_VOLUME est obligatoire",
+                    required: "USER_TRAITEMENT est obligatoire yves",
                 }
             }
         );
@@ -220,7 +220,7 @@ const folioChefScanning = async (req, res) => {
                     required: "Le nom est obligatoire"
                 },
                 USER_TRAITEMENT: {
-                    required: "ID_ETAPE_VOLUME est obligatoire",
+                    required: "USER_TRAITEMENT est obligatoire",
                 }
             }
         );
@@ -316,7 +316,7 @@ const folioSupScanning = async (req, res) => {
                     required: "Le nom est obligatoire"
                 },
                 USER_TRAITEMENT: {
-                    required: "ID_ETAPE_VOLUME est obligatoire",
+                    required: "USER_TRAITEMENT est obligatoire",
                 }
             }
         );
@@ -396,13 +396,13 @@ const findAll = async (req, res) => {
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE, USER_TRAITEMENT:req.userId }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE, USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, USER_TRAITEMENT:req.userId  }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT:req.userId  }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
         }
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
@@ -443,10 +443,10 @@ const findAll = async (req, res) => {
  */
 
 const findAllSuperviseur = async (req, res) => {
-    try{
+    try {
         const result = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
-            attributes: ['USERS_ID','ID_PROFIL', 'NOM', 'PRENOM', 'EMAIL', ],
+            attributes: ['USERS_ID', 'ID_PROFIL', 'NOM', 'PRENOM', 'EMAIL',],
             include: [
                 {
                     model: Etapes_volume_historiques,
@@ -468,9 +468,9 @@ const findAllSuperviseur = async (req, res) => {
             message: "Liste des volumes",
             result
         })
-        
+
     }
-    catch(error){
+    catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
@@ -589,7 +589,7 @@ const findAllMaille = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const mailles = await Volume.findOne({
-            attributes: ['ID_VOLUME','NUMERO_VOLUME'],
+            attributes: ['ID_VOLUME', 'NUMERO_VOLUME'],
             where: { ID_VOLUME: ID_VOLUME },
             include: [
                 {
@@ -704,6 +704,326 @@ const findEquipeScanning = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuperer la liste des folios par rapport a un agent connecter
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  2/08/2023
+ * 
+ */
+
+const findAllAgentsFolio = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ID_USER: req.userId,
+                '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO','DATE_INSERTION'],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO','IS_RECONCILIE'],
+                    include: [
+                        {
+                            model:Equipes,
+                            as: 'equipe',
+                            required: false,
+                            attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                        }
+                    ]
+                }
+            ]
+        })
+        console.log(result)
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio",
+            UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+/**
+ * Permet de faire signer un pv entre equipe scanning et agent superviseur scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  3/08/2023
+ * 
+ */
+
+const updateRetourEquipe = async (req, res) => {
+    try {
+        const {
+            folio
+        } = req.body;
+        const PV = req.files?.PV
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le pv est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        var folioObjet = {}
+        folioObjet = JSON.parse(folio)
+        console.log(folioObjet)
+
+
+        // const results = await Volume.update({
+        //     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+        // }, {
+        //     where: {
+        //         ID_VOLUME: ID_VOLUME
+        //     }
+        // })
+        // await Etapes_folio_historiques.create({
+        //     USERS_ID: req.userId,
+        //     USER_TRAITEMENT: req.userId,
+        //     ID_FOLIO,
+        //     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+        //     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+        // })
+
+        // folioObjet = folio
+        await Promise.all(folioObjet.map(async (folio) => {
+            // const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
+            const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            await Folio.update(
+                {
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+                }, {
+                where: {
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                    NUMERO_FOLIO: folio.folio.NUMERO_FOLIO
+                }
+            }
+            )
+            await Etapes_folio_historiques.create({
+                ID_USER: req.userId,
+                USER_TRAITEMENT: req.userId,
+                ID_FOLIO: folio.folio.ID_FOLIO,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            })
+        }))
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+            // result: reponse
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer la liste des folios d'un agent scanning pres a donnees les details
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  3/08/2023
+ * 
+ */
+
+const findAllFolioScannimg = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ID_USER: req.userId,
+                '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO','DATE_INSERTION'],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO','IS_RECONCILIE'],
+                    include: [
+                        {
+                            model:Equipes,
+                            as: 'equipe',
+                            required: false,
+                            attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                        }
+                    ],
+                   
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio",
+            UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer la liste des volumes, folios et renconcilier
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  3/08/2023
+ * 
+ */
+
+const findAllVolumeFolioRencolier = async (req, res) => {
+    try {
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const user = userObject.toJSON()
+
+        var condition = {}
+
+        if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, 
+            '$folio.ETAPES_FOLIO$':ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING  }
+        }
+        // else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
+        //     condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, USER_TRAITEMENT: req.userId }
+        // }
+        // else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+        //     condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
+        // }
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                }]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanning,
@@ -715,8 +1035,11 @@ module.exports = {
     chefEquipeValide,
     findAgentSupAilleScanning,
     findAllMaille,
-    findChefPlateau, 
+    findChefPlateau,
     findSuperviseurScanning,
-    findEquipeScanning
-    
+    findEquipeScanning,
+    findAllAgentsFolio,
+    updateRetourEquipe,
+    findAllFolioScannimg,
+    findAllVolumeFolioRencolier
 }

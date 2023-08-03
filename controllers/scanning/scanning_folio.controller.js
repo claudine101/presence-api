@@ -127,6 +127,15 @@ const findAll = async (req, res) => {
     }
 }
 
+/**
+ * Permet de d'enregistrer les folios donner a une equipe scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  3/08/2023
+ * 
+ */
+
 const folioEquipeScanning = async (req, res) => {
     try {
         const {
@@ -186,7 +195,8 @@ const folioEquipeScanning = async (req, res) => {
                 where: {
                     ID_VOLUME: ID_VOLUME,
                     // ID_NATURE: folio.ID_NATURE,
-                    NUMERO_FOLIO: folio.folio.NUMERO_FOLIO
+                    NUMERO_FOLIO: folio.folio.NUMERO_FOLIO,
+                    ID_FOLIO_EQUIPE:USER_TRAITEMENT
                 }
             }
             )
@@ -214,9 +224,51 @@ const folioEquipeScanning = async (req, res) => {
     }
 }
 
+/**
+ * Permet pour faire update dans la table folio en mettant renconsilier
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  3/08/2023
+ * 
+ */
+
+const updateReconsilier = async (req, res) => {
+    try {
+        // const {ID_FOLIO} = route.params
+        console.log("ID_FOLIO")
+        const {
+            IS_RECONCILIE,
+            ID_FOLIO
+        } = req.body;
+
+        const results = await Folio.update({
+            IS_RECONCILIE: IS_RECONCILIE
+        }, {
+            where: {
+                ID_FOLIO: ID_FOLIO
+            }
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+            // result: reponse
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     findAllFolio,
     findAll,
-    folioEquipeScanning
+    folioEquipeScanning,
+    updateReconsilier
 }

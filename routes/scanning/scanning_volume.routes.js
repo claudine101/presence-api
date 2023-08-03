@@ -2,6 +2,14 @@ const express = require('express')
 const scanning_volume_controller = require('../../controllers/scanning/scanning_volume.controller')
 const scanning_volume_routes = express.Router()
 
+ /**
+* Une route pour recuperer la liste des folios d'un agent superviseur scanning
+*@method PUT
+* @url /scanning/volume
+*/
+scanning_volume_routes.put('/retour', scanning_volume_controller.updateRetourEquipe)
+
+
 /**
  * Une route pour donner le volume et le malle chez une agent superviseur aille phase scanning
  *@method PUT
@@ -85,5 +93,30 @@ scanning_volume_routes.get('/superviseur', scanning_volume_controller.findSuperv
 * @url /scanning/volume/allEquipe
 */
 scanning_volume_routes.get('/allEquipe', scanning_volume_controller.findEquipeScanning)
+
+/**
+* Une route pour retourner les folios donnees a un agent de scanning
+*@method GET
+* @url /scanning/volume/equipeScanning
+*/
+scanning_volume_routes.get('/equipeScanning', scanning_volume_controller.findAllAgentsFolio)
+
+/**
+* Une route pour retourner les folios  pres a etre valide par un agent superviseur
+*@method GET
+* @url /scanning/volume/allFoliosScanning
+*/
+scanning_volume_routes.get('/allFoliosScanning', scanning_volume_controller.findAllFolioScannimg)
+
+/**
+ * Une route  recuperer  les volumes, folios et rencolier
+ *@method GET
+ * @url /scanning/volume/folios/details
+ */
+ scanning_volume_routes.get('/folios/details', scanning_volume_controller.findAllVolumeFolioRencolier)
+
+
+
+
 
 module.exports = scanning_volume_routes
