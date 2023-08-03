@@ -20,7 +20,7 @@ const Etapes_folio = sequelize.define("etapes_folio", {
                 allowNull: false
         },
         ID_PHASE: {
-                type: Sequelize.INTEGER(),
+                type: DataTypes.INTEGER(),
                 allowNull: false,
                 defaultValue: 1
         },
@@ -29,4 +29,7 @@ const Etapes_folio = sequelize.define("etapes_folio", {
         tableName: 'etapes_folio',
         timestamps: false,
 })
+
+
+
 module.exports = Etapes_folio

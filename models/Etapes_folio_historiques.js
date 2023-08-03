@@ -1,10 +1,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-
 const Users = require('./Users');
 const Etapes_folio = require('./Etapes_folio');
 const Folio = require('./Folio');
-
 /**
 * fonction model pour la creation de la table etapes_folio_historiques
 * @author NDAYISABA claudine <claudined@mediabox.bi>

@@ -10,6 +10,8 @@ const fileUpload = require("express-fileupload");
 const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
 const adminRouter = require("./routes/administration/adminRouter");
+const administrationFolioRoutes = require("./routes/administration/folio/folioRoutes");
+const indexationRouter = require("./routes/auth/indexation/indexationRouter");
 
 const app = express();
 const bindUser = require("./middleware/bindUser");
@@ -17,6 +19,7 @@ dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
+const administrationFolioRoutes = require("./routes/administration/folio/folioRoutes");
 const indexationRouter = require("./routes/auth/indexation/indexationRouter");
 app.use(cors());
 app.set('view engine','ejs');
@@ -30,6 +33,7 @@ app.all('*', bindUser)
 app.use('/auth', authRouter)
 app.use('/indexation', indexationRouter)
 app.use('/admin', adminRouter)
+app.use('/administration', administrationFolioRoutes)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,
