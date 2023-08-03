@@ -86,6 +86,7 @@ const createVolume = async (req, res) => {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     USERS_ID: req.userId,
                     ID_VOLUME: insertData.ID_VOLUME,
+                    USER_TRAITEMENT: req.userId,
                     ID_ETAPE_VOLUME:ETAPES_VOLUME.PLANIFICATION}
             )
         }))
@@ -216,9 +217,7 @@ const findVolume = async (req, res) => {
             condition = { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.PLANIFICATION }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
-            condition =  { 
-                    [Op.or]:[ {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO},
-                    {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.DETAILLER_LES_FOLIO }],
+            condition =  {  '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO,
                      USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
@@ -230,6 +229,56 @@ const findVolume = async (req, res) => {
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
             condition = {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,USER_TRAITEMENT: req.userId}
         }
+        const result = await Etapes_volume_historiques.findAndCountAll({
+            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+            where: {
+                ...condition
+            },
+            include: [ 
+                {
+                model: Volume,
+                as: 'volume',
+                required: false,
+                attributes: ['ID_VOLUME','NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+      }]
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                data: result.rows,
+                totalRecords: result.count
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous volume
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 27/06/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findDetailler = async (req, res) => {
+    try {
+        
+       
+        var condition = {}
+        condition =  { 
+           '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.DETAILLER_LES_FOLIO,
+           ID_ETAPE_VOLUME:ETAPES_VOLUME.DETAILLER_LES_FOLIO,
+           USER_TRAITEMENT: req.userId 
+        }
+
         const result = await Etapes_volume_historiques.findAndCountAll({
             // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
             where: {
@@ -650,13 +699,339 @@ const nommerChefPlateau = async (req, res) => {
         })
     }
 }
+/**
+ * Une route  permet  un agents superviseur 
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  16/07/2023
+ * 
+ */
+const findAllChefPlateau = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: { USERS_ID: req.userId,'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
+            ID_ETAPE_VOLUME:ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
+                  },
+                  {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME','ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+
+                }
+                ]
+        })
+        var UserFolios = []
+        result.forEach(user=> {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if(isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = {...volume, volumes: [...volume.volumes, user]}
+                UserFolios = UserFolios.map(vol => {
+                    if(vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+                
+            }
+            
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Une route  permet  a un chef equipe de voir les agent superviseur  et  leur volume
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  03/08/2023
+ * 
+ */
+const findAllAgentSupAile = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.RETOUR_CHEF_PLATEAU,
+            ID_ETAPE_VOLUME:ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME'],
+            include: [
+                {
+                    model: Users,
+                    as: 'users',
+                    required: false,
+                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
+                  },
+                  {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME','ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+
+                }
+                ]
+        })
+        var UserFolios = []
+        result.forEach(user=> {
+            const USERS_ID = user.users?.USERS_ID
+            const users = user.users
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if(isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = {...volume, volumes: [...volume.volumes, user]}
+                UserFolios = UserFolios.map(vol => {
+                    if(vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+                
+            }
+            
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * retour d'un chef plateau
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 03/08/2023
+ */
+const retourChefPlateau = async (req, res) => {
+    try {
+        const { CHEF_PLATEAU, volume } = req.body
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                CHEF_PLATEAU: {
+                    required: true,
+                },
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                CHEF_PLATEAU: {
+                    required: "CHEF_PLATEAU est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        var volumeObjet = {}
+        volumeObjet = JSON.parse(volume)
+        await Promise.all(volumeObjet.map(async (volume) => {
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+            }, {
+                where: {
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                }
+            })
+            await Etapes_volume_historiques.create(
+                {
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                    USERS_ID: req.userId,
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                    USER_TRAITEMENT: CHEF_PLATEAU,
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+                }
+            )
+        }))
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * retour d'un chef plateau
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 03/08/2023
+ */
+const retourAgentSupAile = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR_AILES, volume } = req.body
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                AGENT_SUPERVISEUR_AILE: {
+                    required: true,
+                },
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                AGENT_SUPERVISEUR_AILE: {
+                    required: "AGENT_SUPERVISEUR_AILE est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        var volumeObjet = {}
+        volumeObjet = JSON.parse(volume)
+        await Promise.all(volumeObjet.map(async (volume) => {
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP
+            }, {
+                where: {
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                }
+            })
+            await Etapes_volume_historiques.create(
+                {
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                    USERS_ID: req.userId,
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILES,
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP
+                }
+            )
+        }))
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     createVolume,
     findAll,
+    findDetailler,
     updateVolume,
     findNature,
     findCount,
     nommerDistributeur,
     nommerSuperviseurAile,
-    nommerChefPlateau
+    nommerChefPlateau,
+    findAllChefPlateau,
+    findAllAgentSupAile,
+    retourChefPlateau,
+    retourAgentSupAile
 }

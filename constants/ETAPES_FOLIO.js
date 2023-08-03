@@ -13,10 +13,26 @@ const IDS_ETAPES_FOLIO = {
         * 2 - Selection d'un agent preparation
         */
         SELECTION_AGENT_PREPARATION: 2,
+
         /**
         * 3 - Retour: agent preparation vers agent superviseur phase de preparation
         */
         RETOUR_AGENT_PEPARATION_V_AGENT_SUP: 3,
+
+         /**
+          * 22 - Folio  enregistre
+          */
+        FOLIO_ENREG: 22,
+        /**
+         * 23 - Ajout  details dans un folio
+         */
+        ADD_DETAILLER_FOLIO: 23,
+        
+         /**
+        * 24 - Retour: agent preparation vers agent superviseur phase de preparation
+        */
+         RETOUR__AGENT_SUP_V_CHEF_PLATEAU: 24,
+
         /**
         * 4 - Selection d'un agent sup. scanning
         */
@@ -101,14 +117,6 @@ const IDS_ETAPES_FOLIO = {
           */
         FOLIO_ENREG_TO_EDRMS: 21,
 
-        /**
-          * 22 - Folio  enregistre
-          */
-        FOLIO_ENREG: 22,
-         /**
-          * 23 - Ajout  details dans un folio
-          */
-         ADD_DETAILLER_FOLIO: 23
 }
 
 module.exports = IDS_ETAPES_FOLIO

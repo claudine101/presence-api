@@ -18,6 +18,10 @@ const Batiment = require('../../models/Batiment');
 const Aile = require('../../models/Aile');
 const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
+const Syst_provinces = require('../../models/Syst_provinces');
+const Syst_communes = require('../../models/Syst_communes');
+const Syst_zones = require('../../models/Syst_zones');
+const Syst_collines = require('../../models/Syst_collines');
 
 
 
@@ -49,6 +53,126 @@ const findAll = async (req, res) => {
         })
     }
 }
+/**
+ * Permet de afficher tous provinces
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findProvinces = async (req, res) => {
+    try {
+        const { search } = req.query
+        const batiment = await Syst_provinces.findAll({
+            attributes: ['PROVINCE_ID', 'PROVINCE_NAME']
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des batiment",
+            result: batiment
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de afficher tous communes par rapport   provinces  selectionner
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findCommunes= async (req, res) => {
+    try {
+        const { PROVINCE_ID } = req.params
+        const batiment = await Syst_communes.findAll({
+            where: { PROVINCE_ID: PROVINCE_ID },
+            attributes: ['COMMUNE_ID', 'COMMUNE_NAME', 'PROVINCE_ID']
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des ailes",
+            result: batiment
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de afficher tous zones par rapport   commune  selectionner
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findZones= async (req, res) => {
+    try {
+        const { COMMUNE_ID } = req.params
+        const batiment = await Syst_zones.findAll({
+            where: { COMMUNE_ID: COMMUNE_ID },
+            attributes: ['ZONE_ID', 'ZONE_NAME', 'COMMUNE_ID']
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des ailes",
+            result: batiment
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+/**
+ * Permet de afficher tous zones par rapport   commune  selectionner
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 31/07/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findCollines= async (req, res) => {
+    try {
+        const { ZONE_ID } = req.params
+        const batiment = await Syst_collines.findAll({
+            where: { ZONE_ID: ZONE_ID },
+            attributes: ['COLLINE_ID', 'COLLINE_NAME', 'ZONE_ID']
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des ailes",
+            result: batiment
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 /**
  * Permet de afficher tous batiment
  *@author NDAYISABA Claudine<claudine@mediabox.bi>
@@ -341,5 +465,9 @@ module.exports = {
     findAgentSuperviseurAile,
     findAgentSuperviseurPreparation,
     findChefPlateau,
-    findAgentPreparation
+    findAgentPreparation,
+    findProvinces,
+    findCommunes,
+    findZones,
+    findCollines
 }

@@ -70,5 +70,34 @@ const preparation_batiment_routes = express.Router()
  preparation_batiment_routes.get('/agentArchive', preparation_batiment_controller.findAgentArchive)
 
 
+ /**
+ * Une route  permet recuperer  les provinces
+ *@method GET
+ * @url /preparation/batiment/provinces
+ */
+ preparation_batiment_routes.get('/provinces', preparation_batiment_controller.findProvinces)
+
+ /**
+ * Une route  permet recuperer   les communes par  rapport au provinces selectionner
+ *@method GET
+ * @url /preparation/batiment/communes
+ */
+ preparation_batiment_routes.get('/communes/:PROVINCE_ID', preparation_batiment_controller.findCommunes)
+
+ /**
+ * Une route  permet recuperer   les zones par  rapport au commune selectionner
+ *@method GET
+ * @url /preparation/batiment/zones
+ */
+ preparation_batiment_routes.get('/zones/:COMMUNE_ID', preparation_batiment_controller.findZones)
+
+ /**
+ * Une route  permet recuperer  les collines par  rapport au zone selectionner
+ *@method GET
+ * @url /preparation/batiment/collines
+ */
+ preparation_batiment_routes.get('/collines/:ZONE_ID', preparation_batiment_controller.findCollines)
+
+
 
 module.exports = preparation_batiment_routes

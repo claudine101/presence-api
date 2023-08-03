@@ -2,6 +2,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Volume = require('./volume');
+const Users = require('./Users');
 
 /**
 * fonction model pour la creation de la table etapes_volume_historiques
@@ -47,5 +48,7 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
     timestamps: false,
 })
 Etapes_volume_historiques.belongsTo(Volume, { foreignKey: 'ID_VOLUME', as: 'volume' })
+Etapes_volume_historiques.belongsTo(Users, { foreignKey: 'USER_TRAITEMENT', as: 'traitement' })
+Etapes_volume_historiques.belongsTo(Users, { foreignKey: 'USERS_ID', as: 'users' })
 
 module.exports = Etapes_volume_historiques

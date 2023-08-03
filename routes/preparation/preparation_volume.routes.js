@@ -16,6 +16,14 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.get('/', preparation_volume_controller.findAll)
 
+  /**
+ * Une route  permet  recupere les volumes detailler
+ *@method POST
+ * @url /preparation/volume/volumeDetailler
+ */
+ preparation_volume_routes.get('/volumeDetailler', preparation_volume_controller.findDetailler)
+
+
  /**
  * Une route  permet  recupere les nature du folio
  *@method GET
@@ -58,5 +66,35 @@ const preparation_volume_routes = express.Router()
  * @url /preparation/volume/nommerChefPlateau
  */
  preparation_volume_routes.put('/nommerChefPlateau/:ID_VOLUME', preparation_volume_controller.nommerChefPlateau)
+
+  /**
+ * Une route  permet  un agent  suoerviseur  archive 
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/chefPlateau
+ */
+ preparation_volume_routes.get('/chefPlateau', preparation_volume_controller.findAllChefPlateau)
+
+ /**
+ * Une route  permet  de retour  chef plateau
+ *@method PUT
+ * @url /preparation/volume/retourChefPlateau
+ */
+ preparation_volume_routes.put('/retourChefPlateau', preparation_volume_controller.retourChefPlateau)
+
+  /**
+ * Une route  permet  visualiser  les agent superviseur aile et les nombre de volume recu
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/agentSuperviseurAile
+ */
+ preparation_volume_routes.get('/agentSuperviseurAile', preparation_volume_controller.findAllAgentSupAile)
+
+ /**
+ * Une route  permet  de retour  agent superviseur aile
+ *@method PUT
+ * @url /preparation/volume/retourAgentSuperviseurAile
+ */
+ preparation_volume_routes.put('/retourAgentSuperviseurAile', preparation_volume_controller.retourAgentSupAile)
 
 module.exports = preparation_volume_routes

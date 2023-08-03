@@ -418,6 +418,93 @@ const retourAgentPreparation = async (req, res) => {
     }
 }
 /**
+ * retour d'un agent superviseur
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 03/08/2023
+ */
+const retourAgentSuperviseur = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folio } = req.body
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                AGENT_SUPERVISEUR: {
+                    required: true,
+                },
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                AGENT_SUPERVISEUR: {
+                    required: "AGENT_SUPERVISEUR est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        var folioObjet = {}
+        folioObjet = JSON.parse(folio)
+        await Promise.all(folioObjet.map(async (folio) => {
+            const results = await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
+            }, {
+                where: {
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                }
+            })
+            await Etapes_folio_historiques.create(
+                {
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                    ID_USER: req.userId,
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
+                }
+            )
+        }))
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet de afficher tous volume
  *@author NDAYISABA Claudine<claudine@mediabox.bi>
  *@date 27/06/2023
@@ -468,7 +555,7 @@ const findAllFolio = async (req, res) => {
                 volumeFolios.push({
                     ID_VOLUME,
                     volume,
-                    folios: []
+                    folios: [folio]
                 })
             }
         })
@@ -500,7 +587,9 @@ const findAllFolio = async (req, res) => {
 const findAllAgent = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
-            where: { ID_USER: req.userId,'$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+            where: { ID_USER: req.userId,
+                ID_ETAPE_FOLIO:ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                '$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
             },
             
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
@@ -539,7 +628,7 @@ const findAllAgent = async (req, res) => {
                 UserFolios.push({
                     USERS_ID,
                     users,
-                    folios: []
+                    folios: [user]
                 })
                 
             }
@@ -571,6 +660,80 @@ const findAllAgent = async (req, res) => {
  * 
  */
 const findAllAgents = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: { ID_USER: req.userId,
+                '$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                ID_ETAPE_FOLIO:ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
+                  },
+                  {
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+
+                }
+                ]
+        })
+        var UserFolios = []
+        result.forEach(user=> {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if(isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = {...volume, folios: [...volume.folios, user]}
+                UserFolios = UserFolios.map(vol => {
+                    if(vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+                
+            }
+            
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Une route  permet  un agents superviseur 
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  16/07/2023
+ * 
+ */
+const findAllSuperviseurs = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: { ID_USER: req.userId,'$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
@@ -611,79 +774,7 @@ const findAllAgents = async (req, res) => {
                 UserFolios.push({
                     USERS_ID,
                     users,
-                    folios: []
-                })
-                
-            }
-            
-        })
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
-            result: UserFolios
-            // result:result
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
-}
-/**
- * Une route  permet  un agents superviseur 
- * de voir  les agents preparation apres retour
- * @author NDAYISABA Claudine <claudine@mediabox.bi>
- * @param {express.Request} req
- * @param {express.Response} res 
- * @date  16/07/2023
- * 
- */
-const findAllSuperviseurs = async (req, res) => {
-    try {
-        const result = await Etapes_folio_historiques.findAll({
-            where: { ID_USER: req.userId,'$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.SELECTION_AGENT_SUP,
-            },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
-            include: [
-                {
-                    model: Users,
-                    as: 'traitement',
-                    required: false,
-                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
-                  },
-                  {
-                    model: Folio,
-                    as: 'folio',
-                    required: false,
-                    attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-
-                }
-                ]
-        })
-        var UserFolios = []
-        result.forEach(user=> {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if(isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = {...volume, folios: [...volume.folios, user]}
-                UserFolios = UserFolios.map(vol => {
-                    if(vol.USERS_ID == USERS_ID) {
-                        return newVolumes
-                    } else {
-                        return vol
-                    }
-                })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: []
+                    folios: [user]
                 })
                 
             }
@@ -717,7 +808,7 @@ const addDetails = async (req, res) => {
     try {
         const {
             NUMERO_PARCELLE,
-            // ID_COLLINE,
+            COLLINE_ID,
             LOCALITE,
             NOM_PROPRIETAIRE,
             PRENOM_PROPRIETAIRE,
@@ -730,7 +821,6 @@ const addDetails = async (req, res) => {
         const validation = new Validation(
             req.files,
             {
-
                 PHOTO_DOSSIER: {
                     required: true,
                     image: 21000000
@@ -767,8 +857,7 @@ const addDetails = async (req, res) => {
         await Folio.update(
             {
                 NUMERO_PARCELLE: NUMERO_PARCELLE,
-                // ID_COLLINE: ID_COLLINE,
-                ID_COLLINE: 1,
+                ID_COLLINE: COLLINE_ID,
                 LOCALITE: LOCALITE,
                 NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
                 PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
@@ -814,6 +903,7 @@ module.exports = {
     findAllAgent,
     findAllAgents,
     retourAgentPreparation,
+    retourAgentSuperviseur,
     addDetails,
     findAllSuperviseurs
 }

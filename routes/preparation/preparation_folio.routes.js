@@ -69,6 +69,13 @@ const preparation_folio_routes = express.Router()
  preparation_folio_routes.put('/retourAgentPreparation', preparation_folio_controller.retourAgentPreparation)
 
  /**
+ * Une route  permet  de retour  agent preparation phase preparation
+ *@method PUT
+ * @url /preparation/folio/retourAgentSuperviseur
+ */
+ preparation_folio_routes.put('/retourAgentSuperviseur', preparation_folio_controller.retourAgentSuperviseur)
+
+ /**
 * Une route  permet  a un agent superviseur  de donner 
 *  les folio   a un agent preparation
 *@method PUT
