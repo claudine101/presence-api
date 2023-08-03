@@ -16,6 +16,11 @@ scanning_folio_routes.get('/:ID_VOLUME', scanning_folio_controller.findAllFolio)
 */
 scanning_folio_routes.get('/', scanning_folio_controller.findAll)
 
-
+/**
+* Une route pour envoyer les folios du agent superviseur scanning a une equipe scanning
+*@method PUT
+* @url /scanning/folio/equipeScanning
+*/
+scanning_folio_routes.put('/equipeScanning', scanning_folio_controller.folioEquipeScanning)
 
 module.exports = scanning_folio_routes
