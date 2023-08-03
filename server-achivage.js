@@ -19,8 +19,8 @@ dotenv.config({ path: path.join(__dirname, "./.env") });
 
 const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
-const administrationFolioRoutes = require("./routes/administration/folio/folioRoutes");
-const indexationRouter = require("./routes/auth/indexation/indexationRouter");
+// const administrationFolioRoutes = require("./routes/administration/folio/folioRoutes");
+// const indexationRouter = require("./routes/auth/indexation/indexationRouter");
 app.use(cors());
 app.set('view engine','ejs');
 app.use(express.static(__dirname + "/public"));

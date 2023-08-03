@@ -1,7 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Folio = require('./Folio');
+// const Folio = require('./Folio');
 const Maille = require('./Maille') 
 const Etape_Volume= require('./Etapes_volumes')
 const Etapes_volume_historiques = require('./Etapes_volume_historiques')
