@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Aille= require ('./Aile')
 
 /**
 * fonction model pour la creation de la table aile
@@ -28,4 +29,7 @@ const Maille = sequelize.define("maille", {
         tableName: 'maille',
         timestamps: false,
 })
+
+Maille.belongsTo(Aille, { foreignKey:"ID_AILE", as:'aille' })
+
 module.exports = Maille

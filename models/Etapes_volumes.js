@@ -1,6 +1,8 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Phase =require('../models/Phases')
+
 
 /**
 * fonction model pour la creation de la table etapes_volumes
@@ -28,4 +30,5 @@ const Etapes_volumes = sequelize.define("etapes_volumes", {
     tableName: 'etapes_volumes',
     timestamps: false,
 })
+Etapes_volumes.belongsTo(Phase, { foreignKey:"ID_PHASE", as:'phase' })
 module.exports = Etapes_volumes

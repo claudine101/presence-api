@@ -16,10 +16,6 @@ const Users = sequelize.define("users", {
         autoIncrement: true,
         allowNull: false
     },
-    DEPARTEMENT_ID: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
     NOM: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -40,20 +36,11 @@ const Users = sequelize.define("users", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    STATUT: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
+    
     PASSEWORD: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    CNI: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-
-    },
-
     PHOTO_USER: {
         type: DataTypes.STRING(255),
         allowNull: true
