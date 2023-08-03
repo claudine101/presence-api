@@ -1,6 +1,9 @@
-
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+
+const Users = require('./Users');
+const Etapes_folio = require('./Etapes_folio');
+const Folio = require('./Folio');
 
 /**
 * fonction model pour la creation de la table etapes_folio_historiques
@@ -15,20 +18,20 @@ const Etapes_folio_historiques = sequelize.define("etapes_folio_historiques", {
         primaryKey: true,
         autoIncrement: true
     },
-    USERS_ID: {
-        type: Sequelize.INTEGER(),
+    ID_USER: {
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     USER_TRAITEMENT: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
-    ID_VOLUME: {
-        type: Sequelize.INTEGER(),
+    ID_FOLIO: {
+        type: DataTypes.INTEGER(),
         allowNull: true
     },
     ID_ETAPE_FOLIO: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     PV_PATH: {
@@ -45,4 +48,12 @@ const Etapes_folio_historiques = sequelize.define("etapes_folio_historiques", {
     tableName: 'etapes_folio_historiques',
     timestamps: false,
 })
+
+Etapes_folio_historiques.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO", as: 'etapes' })
+Etapes_folio_historiques.belongsTo(Users, { foreignKey: "ID_USER", as: 'user' })
+Etapes_folio_historiques.belongsTo(Users, { foreignKey: "USER_TRAITEMENT", as: 'traitement' })
+Etapes_folio_historiques.belongsTo(Folio, { foreignKey: "ID_FOLIO", as: 'folio' })
+
+
+
 module.exports = Etapes_folio_historiques
