@@ -20,6 +20,7 @@ const Etapes_volume_historiques = require('../../models/Etapes_volume_historique
 const Volume = require('../../models/volume');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const DossiersUpload = require('../../class/uploads/DossiersUpload');
+const { Op } = require('sequelize');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -105,7 +106,7 @@ const createfolio = async (req, res) => {
         })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
-         USER_TRAITEMENT:req.userId,
+            USER_TRAITEMENT: req.userId,
             ID_VOLUME: ID_VOLUME,
             PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
@@ -521,13 +522,13 @@ const findAllFolio = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO','ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-                    include:{
+                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: {
                         model: Volume,
                         as: 'volume',
                         required: false,
                         attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
-    
+
                     }
 
                 }]
@@ -540,12 +541,12 @@ const findAllFolio = async (req, res) => {
             const ID_VOLUME = folio.folio.ID_VOLUME
             const volume = folio.folio.volume
             const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
-            if(isExists) {
+            if (isExists) {
                 const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
 
-                const newVolumes = {...volume, folios: [...volume.folios, folio]}
+                const newVolumes = { ...volume, folios: [...volume.folios, folio] }
                 volumeFolios = volumeFolios.map(vol => {
-                    if(vol.ID_VOLUME == ID_VOLUME) {
+                    if (vol.ID_VOLUME == ID_VOLUME) {
                         return newVolumes
                     } else {
                         return vol
@@ -587,38 +588,39 @@ const findAllFolio = async (req, res) => {
 const findAllAgent = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
-            where: { ID_USER: req.userId,
-                ID_ETAPE_FOLIO:ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
-                '$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+            where: {
+                ID_USER: req.userId,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
             },
-            
+
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
                 {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
-                  },
-                  {
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                 }
-                ]
+            ]
         })
         var UserFolios = []
-        result.forEach(user=> {
+        result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
             const users = user.traitement
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if(isExists) {
+            if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = {...volume, folios: [...volume.folios, user]}
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if(vol.USERS_ID == USERS_ID) {
+                    if (vol.USERS_ID == USERS_ID) {
                         return newVolumes
                     } else {
                         return vol
@@ -630,9 +632,9 @@ const findAllAgent = async (req, res) => {
                     users,
                     folios: [user]
                 })
-                
+
             }
-            
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -662,9 +664,10 @@ const findAllAgent = async (req, res) => {
 const findAllAgents = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
-            where: { ID_USER: req.userId,
-                '$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                ID_ETAPE_FOLIO:ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
+            where: {
+                ID_USER: req.userId,
+                '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
@@ -672,27 +675,27 @@ const findAllAgents = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
-                  },
-                  {
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                 }
-                ]
+            ]
         })
         var UserFolios = []
-        result.forEach(user=> {
+        result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
             const users = user.traitement
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if(isExists) {
+            if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = {...volume, folios: [...volume.folios, user]}
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if(vol.USERS_ID == USERS_ID) {
+                    if (vol.USERS_ID == USERS_ID) {
                         return newVolumes
                     } else {
                         return vol
@@ -704,9 +707,9 @@ const findAllAgents = async (req, res) => {
                     users,
                     folios: [user]
                 })
-                
+
             }
-            
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -736,7 +739,8 @@ const findAllAgents = async (req, res) => {
 const findAllSuperviseurs = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
-            where: { ID_USER: req.userId,'$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
@@ -744,27 +748,33 @@ const findAllSuperviseurs = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
-                  },
-                  {
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
                     model: Folio,
                     as: 'folio',
-                    required: false,
-                    attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                            ETAPES_FOLIO.SELECTION_AGENT_PREPARATION]
+                        }
+                    }
                 }
-                ]
+            ]
         })
         var UserFolios = []
-        result.forEach(user=> {
+        result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
             const users = user.traitement
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if(isExists) {
+            if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = {...volume, folios: [...volume.folios, user]}
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if(vol.USERS_ID == USERS_ID) {
+                    if (vol.USERS_ID == USERS_ID) {
                         return newVolumes
                     } else {
                         return vol
@@ -776,9 +786,85 @@ const findAllSuperviseurs = async (req, res) => {
                     users,
                     folios: [user]
                 })
-                
+
             }
-            
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Une route  permet  un agents superviseur 
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  16/07/2023
+ * 
+ */
+const checkAgentsup = async (req, res) => {
+    try {
+        const { USERS_ID } = req.params
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
+                    }
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -845,7 +931,7 @@ const addDetails = async (req, res) => {
                 result: errors
             })
         }
-       
+
         const dossiersUpload = new DossiersUpload()
         var filename_dossiers
         var filename_pv
@@ -875,7 +961,7 @@ const addDetails = async (req, res) => {
             {
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                 ID_USER: req.userId,
-                ID_FOLIO:ID_FOLIO,
+                ID_FOLIO: ID_FOLIO,
                 USER_TRAITEMENT: req.userId,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
             })
@@ -905,5 +991,6 @@ module.exports = {
     retourAgentPreparation,
     retourAgentSuperviseur,
     addDetails,
-    findAllSuperviseurs
+    findAllSuperviseurs,
+    checkAgentsup
 }

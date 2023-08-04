@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Maille = require('./Maille');
 // const Folio = require('./folio');
 
 /**
@@ -52,5 +53,6 @@ const Volume = sequelize.define("volume", {
     tableName: 'volume',
     timestamps: false,
 })
+Volume.belongsTo(Maille, { foreignKey: 'ID_MALLE', as: 'maille' })
 
 module.exports = Volume

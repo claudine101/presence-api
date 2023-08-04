@@ -16,7 +16,8 @@ const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/folio');
-const { Op } = require("sequelize")
+const { Op } = require("sequelize");
+const Maille = require('../../models/Maille');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -77,7 +78,7 @@ const createVolume = async (req, res) => {
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
                 CODE_VOLUME: CODE_REFERENCE,
                 ID_USERS: req.userId,
-                ID_ETAPE_VOLUME:ETAPES_VOLUME.PLANIFICATION,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
             }
             )
             const insertData = volumeInsert.toJSON()
@@ -87,7 +88,8 @@ const createVolume = async (req, res) => {
                     USERS_ID: req.userId,
                     ID_VOLUME: insertData.ID_VOLUME,
                     USER_TRAITEMENT: req.userId,
-                    ID_ETAPE_VOLUME:ETAPES_VOLUME.PLANIFICATION}
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION
+                }
             )
         }))
         res.status(RESPONSE_CODES.CREATED).json({
@@ -164,7 +166,7 @@ const findVolume = async (req, res) => {
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
                 CODE_VOLUME: CODE_REFERENCE,
                 ID_USERS: req.userId,
-                ID_ETAPE_VOLUME:ETAPES_VOLUME.PLANIFICATION,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
             }
             )
             const insertData = volumeInsert.toJSON()
@@ -173,7 +175,8 @@ const findVolume = async (req, res) => {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     USERS_ID: req.userId,
                     ID_VOLUME: insertData.ID_VOLUME,
-                    ID_ETAPE_VOLUME:ETAPES_VOLUME.PLANIFICATION}
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION
+                }
             )
         }))
         res.status(RESPONSE_CODES.CREATED).json({
@@ -199,49 +202,80 @@ const findVolume = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findAll = async (req, res) => {
+const findAll = async (req, res) => {
     try {
         const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const userObject = await Users.findOne({
             where: { USERS_ID: req.userId },
             attributes: ['ID_PROFIL', 'USERS_ID']
         })
+        const defaultSortDirection = "DESC"
+        const sortColumns = {
+            volume: {
+                as: "volume",
+                fields: {
+                    DATE_INSERTION: 'volume.DATE_INSERTION',
+                }
+            },
+        }
+        var orderColumn
+        if (!orderColumn) {
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
+            sortModel = {
+                      model: 'volume',
+                      as: sortColumns.volume.as
+            }
+  }
         const user = userObject.toJSON()
-       
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_DIVISION_ARCHIGES) {
-            condition = { USERS_ID: req.userId}
+            condition = { USERS_ID: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
-            condition = { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.PLANIFICATION }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
-            condition =  {  '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO,
-                     USER_TRAITEMENT: req.userId }
+            condition = {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO,
+                USER_TRAITEMENT: req.userId
+            }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
-            condition =  { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_DES_AILES,USER_TRAITEMENT: req.userId }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_DES_AILES, USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
-            condition = { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES, USER_TRAITEMENT: req.userId }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES, USER_TRAITEMENT: req.userId }
         }
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
-            condition = {'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,USER_TRAITEMENT: req.userId}
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU, USER_TRAITEMENT: req.userId }
         }
         const result = await Etapes_volume_historiques.findAndCountAll({
             // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+            order: [
+                ['DATE_INSERTION','DESC']
+            ],
+    //         order: [
+    //             [orderColumn, defaultSortDirection]
+    //   ],
             where: {
                 ...condition
             },
-            include: [ 
+            include: [
                 {
-                model: Volume,
-                as: 'volume',
-                required: false,
-                attributes: ['ID_VOLUME','NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
-                
-      }]
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                        {
+                            model: Maille,
+                            as: 'maille',
+                            required: false,
+                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+        
+                        }
+                }]
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -269,15 +303,15 @@ const findVolume = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findDetailler = async (req, res) => {
+const findDetailler = async (req, res) => {
     try {
-        
-       
+
+
         var condition = {}
-        condition =  { 
-           '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.DETAILLER_LES_FOLIO,
-           ID_ETAPE_VOLUME:ETAPES_VOLUME.DETAILLER_LES_FOLIO,
-           USER_TRAITEMENT: req.userId 
+        condition = {
+            '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.DETAILLER_LES_FOLIO,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO,
+            USER_TRAITEMENT: req.userId
         }
 
         const result = await Etapes_volume_historiques.findAndCountAll({
@@ -285,13 +319,13 @@ const findVolume = async (req, res) => {
             where: {
                 ...condition
             },
-            include: [ 
+            include: [
                 {
-                model: Volume,
-                as: 'volume',
-                required: false,
-                attributes: ['ID_VOLUME','NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
-      }]
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                }]
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -324,7 +358,7 @@ const updateVolume = async (req, res) => {
         const { ID_VOLUME } = req.params
         const { NOMBRE_DOSSIER, ID_USERS } = req.body
         const validation = new Validation(
-            {...req.body,...req.files},
+            { ...req.body, ...req.files },
             {
                 NOMBRE_DOSSIER: {
                     required: true,
@@ -332,7 +366,7 @@ const updateVolume = async (req, res) => {
                 ID_USERS: {
                     required: true,
                 },
-                PV:{
+                PV: {
                     required: true,
                     image: 21000000
                 }
@@ -351,18 +385,18 @@ const updateVolume = async (req, res) => {
                 }
             }
         );
-            await validation.run()
-            const isValid = await validation.isValidate()
-            if (!isValid) {
-                    const errors = await validation.getErrors()
-                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                            message: "Probleme de validation des donnees",
-                            result: errors
-                    })
-            }
-            const PV = req.files?.PV
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
@@ -388,16 +422,16 @@ const updateVolume = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Reussi",
-           
+
         })
 
     } catch (error) {
-            console.log(error)
-            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                    message: "Erreur interne du serveur, réessayer plus tard",
-            })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 
@@ -411,14 +445,14 @@ const updateVolume = async (req, res) => {
 const nommerDistributeur = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { AGENT_DISTRIBUTEUR } = req.body
+        const { AGENT_DISTRIBUTEUR,MAILLE } = req.body
         const validation = new Validation(
-            {...req.body,...req.files},
+            { ...req.body, ...req.files },
             {
                 AGENT_DISTRIBUTEUR: {
                     required: true,
                 },
-                PV:{
+                PV: {
                     required: true,
                     image: 21000000
                 }
@@ -434,18 +468,18 @@ const nommerDistributeur = async (req, res) => {
                 }
             }
         );
-            await validation.run()
-            const isValid = await validation.isValidate()
-            if (!isValid) {
-                    const errors = await validation.getErrors()
-                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                            message: "Probleme de validation des donnees",
-                            result: errors
-                    })
-            }
-            const PV = req.files?.PV
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
@@ -453,7 +487,8 @@ const nommerDistributeur = async (req, res) => {
             filename_pv = fileInfo_2
         }
         const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES,
+            ID_MALLE:MAILLE
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
@@ -470,16 +505,16 @@ const nommerDistributeur = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Reussi",
-           
+
         })
 
     } catch (error) {
-            console.log(error)
-            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                    message: "Erreur interne du serveur, réessayer plus tard",
-            })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 /**
@@ -494,12 +529,12 @@ const nommerSuperviseurAile = async (req, res) => {
         const { ID_VOLUME } = req.params
         const { AGENT_SUPERVISEUR } = req.body
         const validation = new Validation(
-            {...req.body,...req.files},
+            { ...req.body, ...req.files },
             {
                 AGENT_SUPERVISEUR: {
                     required: true,
                 },
-                PV:{
+                PV: {
                     required: true,
                     image: 21000000
                 }
@@ -515,18 +550,18 @@ const nommerSuperviseurAile = async (req, res) => {
                 }
             }
         );
-            await validation.run()
-            const isValid = await validation.isValidate()
-            if (!isValid) {
-                    const errors = await validation.getErrors()
-                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                            message: "Probleme de validation des donnees",
-                            result: errors
-                    })
-            }
-            const PV = req.files?.PV
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
@@ -551,16 +586,16 @@ const nommerSuperviseurAile = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Reussi",
-           
+
         })
 
     } catch (error) {
-            console.log(error)
-            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                    message: "Erreur interne du serveur, réessayer plus tard",
-            })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 /**
@@ -575,12 +610,12 @@ const nommerChefPlateau = async (req, res) => {
         const { ID_VOLUME } = req.params
         const { CHEF_PLATEAU } = req.body
         const validation = new Validation(
-            {...req.body,...req.files},
+            { ...req.body, ...req.files },
             {
                 CHEF_PLATEAU: {
                     required: true,
                 },
-                PV:{
+                PV: {
                     required: true,
                     image: 21000000
                 }
@@ -596,18 +631,18 @@ const nommerChefPlateau = async (req, res) => {
                 }
             }
         );
-            await validation.run()
-            const isValid = await validation.isValidate()
-            if (!isValid) {
-                    const errors = await validation.getErrors()
-                    return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                            statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                            httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                            message: "Probleme de validation des donnees",
-                            result: errors
-                    })
-            }
-            const PV = req.files?.PV
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
@@ -632,16 +667,16 @@ const nommerChefPlateau = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Reussi",
-           
+
         })
 
     } catch (error) {
-            console.log(error)
-            res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                    message: "Erreur interne du serveur, réessayer plus tard",
-            })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 /**
@@ -651,7 +686,7 @@ const nommerChefPlateau = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findNature = async (req, res) => {
+const findNature = async (req, res) => {
     try {
         const { search } = req.query
         const natures = await Nature_folio.findAll()
@@ -677,19 +712,19 @@ const nommerChefPlateau = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findCount = async (req, res) => {
+const findCount = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const natures = await Folio.findAndCountAll(
             {
-                where:{ID_VOLUME:ID_VOLUME}
+                where: { ID_VOLUME: ID_VOLUME }
             }
         )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Nombre folio",
-            result:natures.count
+            result: natures.count
         })
     } catch (error) {
         console.log(error)
@@ -712,8 +747,9 @@ const nommerChefPlateau = async (req, res) => {
 const findAllChefPlateau = async (req, res) => {
     try {
         const result = await Etapes_volume_historiques.findAll({
-            where: { USERS_ID: req.userId,'$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
-            ID_ETAPE_VOLUME:ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
+            where: {
+                USERS_ID: req.userId, '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME'],
             include: [
@@ -721,27 +757,27 @@ const findAllChefPlateau = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
-                  },
-                  {
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME','ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
 
                 }
-                ]
+            ]
         })
         var UserFolios = []
-        result.forEach(user=> {
+        result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
             const users = user.traitement
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if(isExists) {
+            if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = {...volume, volumes: [...volume.volumes, user]}
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if(vol.USERS_ID == USERS_ID) {
+                    if (vol.USERS_ID == USERS_ID) {
                         return newVolumes
                     } else {
                         return vol
@@ -753,9 +789,9 @@ const findAllChefPlateau = async (req, res) => {
                     users,
                     volumes: [user]
                 })
-                
+
             }
-            
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -785,8 +821,9 @@ const findAllChefPlateau = async (req, res) => {
 const findAllAgentSupAile = async (req, res) => {
     try {
         const result = await Etapes_volume_historiques.findAll({
-            where: { '$volume.ID_ETAPE_VOLUME$':ETAPES_VOLUME.RETOUR_CHEF_PLATEAU,
-            ID_ETAPE_VOLUME:ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+            where: {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_PLATEAU,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME'],
             include: [
@@ -794,27 +831,27 @@ const findAllAgentSupAile = async (req, res) => {
                     model: Users,
                     as: 'users',
                     required: false,
-                    attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
-                  },
-                  {
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME','ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
 
                 }
-                ]
+            ]
         })
         var UserFolios = []
-        result.forEach(user=> {
+        result.forEach(user => {
             const USERS_ID = user.users?.USERS_ID
             const users = user.users
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if(isExists) {
+            if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = {...volume, volumes: [...volume.volumes, user]}
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if(vol.USERS_ID == USERS_ID) {
+                    if (vol.USERS_ID == USERS_ID) {
                         return newVolumes
                     } else {
                         return vol
@@ -826,9 +863,9 @@ const findAllAgentSupAile = async (req, res) => {
                     users,
                     volumes: [user]
                 })
-                
+
             }
-            
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -933,7 +970,6 @@ const retourChefPlateau = async (req, res) => {
         })
     }
 }
-
 /**
  * retour d'un chef plateau
  * @param {express.Request} req 
@@ -988,7 +1024,7 @@ const retourAgentSupAile = async (req, res) => {
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
             const results = await Volume.update({
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
             }, {
                 where: {
                     ID_VOLUME: volume.volume.ID_VOLUME,
@@ -1000,7 +1036,7 @@ const retourAgentSupAile = async (req, res) => {
                     USERS_ID: req.userId,
                     ID_VOLUME: volume.volume.ID_VOLUME,
                     USER_TRAITEMENT: AGENT_SUPERVISEUR_AILES,
-                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
                 }
             )
         }))
