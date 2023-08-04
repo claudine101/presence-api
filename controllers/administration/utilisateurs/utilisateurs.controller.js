@@ -241,7 +241,7 @@ const findOneuser = async (req, res) => {
             },
             include: [{
                 model: Profils,
-                as: 'profile',
+                as: 'profil',
                 required: false,
                 attributes: ['ID_PROFIL','DESCRIPTION']
 
