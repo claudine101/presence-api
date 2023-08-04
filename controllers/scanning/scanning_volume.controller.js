@@ -832,27 +832,8 @@ const updateRetourEquipe = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
-        console.log(folioObjet)
 
-
-        // const results = await Volume.update({
-        //     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
-        // }, {
-        //     where: {
-        //         ID_VOLUME: ID_VOLUME
-        //     }
-        // })
-        // await Etapes_folio_historiques.create({
-        //     USERS_ID: req.userId,
-        //     USER_TRAITEMENT: req.userId,
-        //     ID_FOLIO,
-        //     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-        //     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-        // })
-
-        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
-            // const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
                 {
@@ -860,7 +841,6 @@ const updateRetourEquipe = async (req, res) => {
                 }, {
                 where: {
                     ID_FOLIO: folio.folio.ID_FOLIO,
-                    NUMERO_FOLIO: folio.folio.NUMERO_FOLIO
                 }
             }
             )

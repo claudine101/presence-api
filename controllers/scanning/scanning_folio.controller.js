@@ -142,7 +142,6 @@ const folioEquipeScanning = async (req, res) => {
             folio,
             USER_TRAITEMENT
         } = req.body;
-        console.log(req.body)
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
@@ -187,8 +186,6 @@ const folioEquipeScanning = async (req, res) => {
         // console.log(folioObjet)
         // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
-            console.log(folio)
-            // const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
                 {
