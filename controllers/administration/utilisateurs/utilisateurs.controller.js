@@ -296,7 +296,7 @@ const findAlluser = async (req, res) => {
                 }
             },
             profils: {
-                as: "profile",
+                as: "profil",
                 fields: {
                     DESCRIPTION: 'DESCRIPTION'
                 }
@@ -342,7 +342,7 @@ const findAlluser = async (req, res) => {
             'PRENOM',
             'EMAIL',
             'TELEPHONE',
-            '$profile.DESCRIPTION$'
+            '$profil.DESCRIPTION$'
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {

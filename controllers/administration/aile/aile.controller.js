@@ -26,16 +26,18 @@ const findAllaile = async (req, res) => {
             aile: {
                 as: "aile",
                 fields: {
-                    ID_AILE: 'ID_AILE',
-                    NUMERO_AILE: 'NUMERO_AILE'
+                    ID_AILE:'ID_AILE',
+                    NUMERO_AILE:'NUMERO_AILE'
                 }
-            },
+            }
+             ,
             batiment: {
                 as: "batiment",
                 fields: {
-                    NUMERO_BATIMENT: 'NUMERO_BATIMENT'
+                    NUMERO_BATIMENT:'NUMERO_BATIMENT'
                 }
-            },
+            }
+            ,
             user_ailes: {
                 as: "userAile",
                 fields: {
@@ -47,7 +49,7 @@ const findAllaile = async (req, res) => {
                 fields: {
                     NOM: 'NOM',PRENOM: 'PRENOM',EMAIL: 'EMAIL',TELEPHONE: 'TELEPHONE'
                 }
-            },
+            }
         }
         var orderColumn, orderDirection
         // sorting
@@ -83,7 +85,7 @@ const findAllaile = async (req, res) => {
         // searching
         const globalSearchColumns = [
             'NUMERO_AILE',
-            '$batiment.NUMERO_BATIMENT$'
+            // '$batiment.NUMERO_BATIMENT$'
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
@@ -111,8 +113,10 @@ const findAllaile = async (req, res) => {
             include: [
                 {
                     model: Batiment,
-                    attributes: ['ID_BATIMENT', 'NUMERO_BATIMENT'],
                     as: 'batiment',
+                    required: false,
+                    attributes: ['ID_BATIMENT', 'NUMERO_BATIMENT']
+                    
                 },
                 {
                     model: User_ailes,
