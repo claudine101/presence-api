@@ -23,7 +23,7 @@ const createnumerobatiment = async (req, res) => {
         const validation = new Validation(data, {
             NUMERO_BATIMENT: {
                 required: true,
-                length: [1, 245],
+                length: [1, 11],
                 alpha: true
             }
 
@@ -116,7 +116,7 @@ const findAllnumero = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
-           
+            'NUMERO_BATIMENT'
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
@@ -249,7 +249,7 @@ const updateNUMERO = async (req, res) => {
         const validation = new Validation(data, {
             NUMERO_BATIMENT: {
                 required: true,
-                length: [2, 245],
+                length: [1, 11],
                 alpha: true
             },
         })

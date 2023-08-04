@@ -5,7 +5,8 @@ const { query } = require('../../utils/db');
 const Etapes_folio= require('../../models/Etapes_folio');
 const Nature_folio= require('../../models/Nature_folio')
 const Folio= require('../../models/Folio')
-const Volume = require('../../models/Volume')
+const Volume = require('../../models/Volume');
+const { Op } = require('sequelize');
 
 /**
  * permet de 
@@ -18,15 +19,14 @@ const Volume = require('../../models/Volume')
 
 const findAll = async (req, res) => {
     try {
+        
         const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
         const defaultSortField = 'ID_FOLIO '
         const defaultSortDirection = "DESC"
         const sortColumns = {
-
-
             folio: {
-                as: "nature",
+                as: "folio",
                 fields: {
                     ID_FOLIO: 'ID_FOLIO',
                     NUMERO_FOLIO: "NUMERO_FOLIO",
@@ -35,10 +35,8 @@ const findAll = async (req, res) => {
                    
                 }
             },
-
-
-            etapes_volumes: {
-                as: "etapes_volumes",
+            etapes: {
+                as: "etapes",
                 fields: {
                     NOM_ETAPE: 'NOM_ETAPE',
                  
@@ -55,7 +53,7 @@ const findAll = async (req, res) => {
             nature: {
                 as: "nature",
                 fields: {
-                    NOM_ETAPE: 'NOM_ETAPE',
+                    DESCRIPTION: 'DESCRIPTION',
                  
                 }
             },
@@ -100,8 +98,13 @@ const findAll = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
+            'NUMERO_FOLIO',
+            'DATE_INSERTION',
+            '$volume.NUMERO_VOLUME$',
+            '$nature.DESCRIPTION$',
+            '$etapes.NOM_ETAPE$'
 
-           
+
 
         ]
         var globalSearchWhereLike = {}
@@ -110,6 +113,7 @@ const findAll = async (req, res) => {
             globalSearchColumns.forEach(column => {
                 searchWildCard[column] = {
                     [Op.substring]: search
+                    
                 }
             })
             globalSearchWhereLike = {
@@ -126,10 +130,9 @@ const findAll = async (req, res) => {
                 ...globalSearchWhereLike,
             },
             include: 
-               
                  [
                     { model:Etapes_folio,
-                  as: 'etapes_folio',
+                  as: 'etapes',
                   attributes: ['NOM_ETAPE'],
                   required: false
                 },
