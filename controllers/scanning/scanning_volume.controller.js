@@ -21,6 +21,7 @@ const Users = require('../../models/Users');
 const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
+const { Op } = require('sequelize');
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
@@ -345,10 +346,10 @@ const folioSupScanning = async (req, res) => {
                 {
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG
                 }, {
-                where: {
-                    ID_VOLUME: ID_VOLUME,
-                    ID_NATURE: folio.ID_NATURE,
-                    NUMERO_FOLIO: folio.NUMERO_FOLIO
+                where: {  
+                    // ID_VOLUME: ID_VOLUME,
+                    ID_FOLIO: folio.ID_FOLIO,
+                    // NUMERO_FOLIO: folio.NUMERO_FOLIO
                 }
             }
             )
@@ -1014,28 +1015,36 @@ const findAllVolumeFolioRencolier = async (req, res) => {
  */
 const findAllVolumerRetour = async (req, res) => {
     try {
-        console.log(req.userId)
         const result = await Etapes_folio_historiques.findAll({
-            where: { ID_USER: req.userId,
-                '$folio.ID_ETAPE_FOLIO$':ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
-                ID_ETAPE_FOLIO:ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG
+            where: {
+                [Op.and]: [{
+                    ID_USER: req.userId,
+                }]
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO',''],
             include: [
+                {
+                  model: Folio,
+                  as: 'folio',
+                  required: true,
+                  attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                  where: {
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                            ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+                            ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+                        ]
+                    }
+                }
+              },
                 {
                     model: Users,
                     as: 'traitement',
                     required: false,
                     attributes: ['USERS_ID','NOM', 'PRENOM', 'EMAIL'],
                   },
-                  {
-                    model: Folio,
-                    as: 'folio',
-                    required: false,
-                    attributes: ['ID_FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-
-                }
-                ]
+            ]
         })
         var UserFolios = []
         result.forEach(user=> {
@@ -1066,7 +1075,7 @@ const findAllVolumerRetour = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folio donnees",
-            result: UserFolios
+            UserFolios
             // result:result
         })
     } catch (error) {
