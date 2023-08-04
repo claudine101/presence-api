@@ -30,5 +30,11 @@ scanning_folio_routes.get('/', scanning_folio_controller.findAll)
 */
 scanning_folio_routes.put('/retour/:ID_FOLIO', scanning_folio_controller.updateReconsilier)
 
+ /**
+* Une route pour faire update de reconsiler
+*@method PUT
+* @url /scanning/folio/equipeScanning
+*/
+scanning_folio_routes.put('/equipeScanning', scanning_folio_controller.folioEquipeScanning)
 
 module.exports = scanning_folio_routes

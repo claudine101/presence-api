@@ -86,7 +86,6 @@ const findAll = async (req, res) => {
 
         })
         var volumeFolios = []
-        console.log(result)
         result.forEach(folio => {
             const ID_VOLUME = folio.folio.ID_VOLUME
             const volume = folio.folio.volume
@@ -106,7 +105,7 @@ const findAll = async (req, res) => {
                 volumeFolios.push({
                     ID_VOLUME,
                     volume,
-                    folios: []
+                    folios: [folio]
                 })
             }
         })
@@ -143,6 +142,7 @@ const folioEquipeScanning = async (req, res) => {
             folio,
             USER_TRAITEMENT
         } = req.body;
+        console.log(req.body)
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
@@ -184,8 +184,10 @@ const folioEquipeScanning = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
+        // console.log(folioObjet)
         // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
+            console.log(folio)
             // const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
@@ -195,7 +197,7 @@ const folioEquipeScanning = async (req, res) => {
                 where: {
                     ID_VOLUME: ID_VOLUME,
                     // ID_NATURE: folio.ID_NATURE,
-                    NUMERO_FOLIO: folio.folio.NUMERO_FOLIO,
+                    ID_FOLIO: folio.folio.ID_FOLIO,
                     ID_FOLIO_EQUIPE:USER_TRAITEMENT
                 }
             }

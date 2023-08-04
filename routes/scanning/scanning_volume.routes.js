@@ -115,6 +115,13 @@ scanning_volume_routes.get('/allFoliosScanning', scanning_volume_controller.find
  */
  scanning_volume_routes.get('/folios/details', scanning_volume_controller.findAllVolumeFolioRencolier)
 
+ /**
+ * Une route pour retour au chef plateau 
+ *@method GET
+ * @url /scanning/volume/retour/plateau
+ */
+ scanning_volume_routes.get('/retour/plateau', scanning_volume_controller.findAllVolumerRetour)
+
 
 
 
