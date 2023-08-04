@@ -16,7 +16,7 @@ const Batiment = sequelize.define("batiment", {
                 autoIncrement: true
         },
         NUMERO_BATIMENT: {
-                type: Sequelize.INTEGER(),
+                type: DataTypes.INTEGER(),
                 allowNull: false
         }
 }, {

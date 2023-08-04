@@ -1,7 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const PROFILS = require('../constants/PROFILS');
 const Profils = require('./Profils');
 
 /**
@@ -16,10 +15,6 @@ const Users = sequelize.define("users", {
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
-    },
-    DEPARTEMENT_ID: {
-        type: DataTypes.INTEGER,
-        allowNull: true
     },
     NOM: {
         type: DataTypes.STRING(50),
@@ -41,20 +36,11 @@ const Users = sequelize.define("users", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    STATUT: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
+    
     PASSEWORD: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    CNI: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-
-    },
-
     PHOTO_USER: {
         type: DataTypes.STRING(255),
         allowNull: true
@@ -70,5 +56,5 @@ const Users = sequelize.define("users", {
     tableName: 'users',
     timestamps: false,
 })
-Users.belongsTo(Profils, { foreignKey: 'ID_PROFIL', as: 'profil' })
+Users.belongsTo(Profils, {foreignKey:"ID_PROFIL", as:"profil"})
 module.exports = Users

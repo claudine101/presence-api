@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Phase =require('../models/Phases')
 
 /**
 * fonction model pour la creation de la table etapes_folio
@@ -20,7 +21,7 @@ const Etapes_folio = sequelize.define("etapes_folio", {
                 allowNull: false
         },
         ID_PHASE: {
-                type: Sequelize.INTEGER(),
+                type: DataTypes.INTEGER(),
                 allowNull: false,
                 defaultValue: 1
         },
@@ -29,4 +30,9 @@ const Etapes_folio = sequelize.define("etapes_folio", {
         tableName: 'etapes_folio',
         timestamps: false,
 })
+
+
+
+
+Etapes_folio.belongsTo(Phase, { foreignKey:"ID_PHASE", as:'phase' })
 module.exports = Etapes_folio

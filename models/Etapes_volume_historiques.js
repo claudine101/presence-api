@@ -1,6 +1,10 @@
 
-const { Sequelize, DataTypes } = require('sequelize');
+const { DataTypes, BelongsTo } = require('sequelize');
+
 const sequelize = require('../utils/sequelize');
+const Volume = require('./Volume');
+const Users = require('./Users');
+const Etapes_volumes = require('./Etapes_volumes');
 
 /**
 * fonction model pour la creation de la table etapes_volume_historiques
@@ -16,19 +20,19 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
         autoIncrement: true
     },
     USERS_ID: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     USER_TRAITEMENT: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     ID_VOLUME: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     ID_ETAPE_VOLUME: {
-        type: Sequelize.INTEGER(),
+        type: DataTypes.INTEGER(),
         allowNull: false
     },
     PV_PATH: {
@@ -45,4 +49,14 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
     tableName: 'etapes_volume_historiques',
     timestamps: false,
 })
+
+Etapes_volume_historiques.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volumes' })
+// Etapes_volume_historiques.belongsTo(Etapes_volumes, {foreignKey: "ID_ETAPE_VOLUME", as : 'etapes_volume'})
+
+// Etapes_volume_historiques.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
+Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USERS_ID", as: 'users' })
+Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USER_TRAITEMENT", as: 'traitant' })
+// Etapes_volume_historiques.belongsTo(Volume, {foreignKey: "ID_VOLUME", as: 'volumes'})
+//  Etapes_volume_historiques.hasMany(Volume, { foreignKey:"ID_VOLUME", as:'volume'})
+
 module.exports = Etapes_volume_historiques
