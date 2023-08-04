@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Flashs = require('./Flashs');
 
 /**
 * fonction model pour la creation de la table folio
@@ -46,7 +47,7 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    ID_COLLINE: {
+    COLLINE_ID: {
         type: Sequelize.INTEGER,
         allowNull: false
     },
@@ -77,7 +78,7 @@ const Folio = sequelize.define("folio", {
         allowNull: false
     },
 
-    ID_FOLIO_EQUIPE: {
+    ID_EQUIPE: {
         type: Sequelize.INTEGER,
         allowNull: false
     },
@@ -135,5 +136,6 @@ const Folio = sequelize.define("folio", {
     timestamps: false
 })
 
-
+Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as: 'flash' })
+Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as: 'folios' })
 module.exports = Folio

@@ -8,6 +8,7 @@ const generateToken = require('../../utils/generateToken');
 const md5 = require('md5')
 const path = require('path')
 const Users = require('../../models/Users');
+const Profils = require('../../models/Profils');
 
 
 
@@ -58,7 +59,13 @@ const login = async (req, res) => {
               }
               const userObject = await Users.findOne({
                         where: { EMAIL: email },
-                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF']
+                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+                        include: [{
+                              model: Profils,
+                              as: 'profil',
+                              required: false,
+                              attributes: ['ID_PROFIL', 'DESCRIPTION']
+                        }]
               })
               if (userObject) {
                         const user = userObject.toJSON()

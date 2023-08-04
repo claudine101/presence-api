@@ -1,7 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-
 /**
 * fonction model pour la creation de la table flashs
 * @author NDAYISABA claudine<claudined@mediabox.bi>
