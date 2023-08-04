@@ -9,6 +9,20 @@ const scanning_volume_routes = express.Router()
 */
 scanning_volume_routes.put('/retour', scanning_volume_controller.updateRetourEquipe)
 
+// /**
+// * Une route pour envoyer le volumes au chef de plateau
+// *@method PUT
+// * @url /scanning/volume/agent
+// */
+// scanning_volume_routes.put('/agent/:ID_VOLUME', scanning_volume_controller.volumeAileScanning)
+
+ /**
+* Une route pour faire le retour entre un agent superviseur et le chef plateau
+*@method PUT
+* @url /scanning/volume
+*/
+scanning_volume_routes.put('/retour/plateau', scanning_volume_controller.updateRetourPlateauSup)
+
 
 /**
  * Une route pour donner le volume et le malle chez une agent superviseur aille phase scanning
@@ -18,11 +32,12 @@ scanning_volume_routes.put('/retour', scanning_volume_controller.updateRetourEqu
 scanning_volume_routes.put('/:ID_VOLUME', scanning_volume_controller.volumeScanning)
 
 /**
-* Une route pour envoyer le volumes au chef de plateau
-*@method PUT
-* @url /scanning/volume/aile
-*/
-scanning_volume_routes.put('/aile/:ID_VOLUME', scanning_volume_controller.volumeAileScanning)
+ * Une route pour signer un pv chef plateau et agent superviseur aille
+ *@method PUT
+ * @url /scanning/volume/retour/aille
+ */
+ scanning_volume_routes.put('/retour/aille/:ID_VOLUME', scanning_volume_controller.volumeScanning)
+
 
 /**
 * Une route pour envoyer les folios du chef plateau vers un agent superviseur scanning
@@ -121,6 +136,13 @@ scanning_volume_routes.get('/allFoliosScanning', scanning_volume_controller.find
  * @url /scanning/volume/retour/plateau
  */
  scanning_volume_routes.get('/retour/plateau', scanning_volume_controller.findAllVolumerRetour)
+
+  /**
+ * Une route pour retour au chef plateau vers agent superviseur aille
+ *@method GET
+ * @url /scanning/volume/retour/agent
+ */
+ scanning_volume_routes.get('/retour/agent', scanning_volume_controller.findAllVolumerSupAille)
 
 
 
