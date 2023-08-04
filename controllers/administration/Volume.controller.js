@@ -39,7 +39,7 @@ const getDetail = async (req, res) => {
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },
-                
+
             ]
         })
         if (volumes) {
@@ -136,12 +136,9 @@ const getHistoriqueVolume = async (req, res) => {
 const getHistoriqueFolio = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-        const folioHistorique = await   Etapes_folio_historiques.findAndCountAll({
-            attributes :['ID_USER','ID_FOLIO'],
+        const folioHistorique = await Etapes_folio_historiques.findAndCountAll({
+            attributes: ['ID_USER', 'ID_FOLIO'],
             group: ['ID_USER'],
-            // where: {
-            //     ID_VOLUME: ID_VOLUME
-            // },
             include: [
                 {
                     model: Users,
@@ -157,7 +154,19 @@ const getHistoriqueFolio = async (req, res) => {
                         }
                     ]
                 },
-               
+                {
+                    model: Folio,
+                    as: "folio",
+                    attributes: ['ID_FOLIO', 'ID_VOLUME'],
+                    where: {
+                        ID_VOLUME: ID_VOLUME
+                    },
+
+                }
+
+
+
+
             ],
         })
 
@@ -165,14 +174,14 @@ const getHistoriqueFolio = async (req, res) => {
 
             const folio = countObject.toJSON()
 
-            const count_agent_folio = await   Folio.count({
+            const count_agent_folio = await Folio.count({
                 where: {
                     ID_USERS: folio.ID_USER
                 }
             })
 
-            const getFolio = await   Folio.findAndCountAll({
-                attributes : ['ID_FOLIO','NUMERO_FOLIO','CODE_FOLIO','NUMERO_PARCELLE','PHOTO_DOSSIER'],
+            const getFolio = await Folio.findAndCountAll({
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
                 where: {
                     ID_USERS: folio.ID_USER
                 }
