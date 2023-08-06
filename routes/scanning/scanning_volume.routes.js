@@ -9,12 +9,7 @@ const scanning_volume_routes = express.Router()
 */
 scanning_volume_routes.put('/retour', scanning_volume_controller.updateRetourEquipe)
 
-// /**
-// * Une route pour envoyer le volumes au chef de plateau
-// *@method PUT
-// * @url /scanning/volume/agent
-// */
-// scanning_volume_routes.put('/agent/:ID_VOLUME', scanning_volume_controller.volumeAileScanning)
+
 
  /**
 * Une route pour faire le retour entre un agent superviseur et le chef plateau
