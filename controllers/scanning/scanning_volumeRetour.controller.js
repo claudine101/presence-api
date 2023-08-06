@@ -264,6 +264,8 @@ const findAllVolumerRetourDistributeur = async (req, res) => {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR, USER_TRAITEMENT: req.userId }
         }else if(user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE){
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE, USER_TRAITEMENT: req.userId }
+        }else if(user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES){
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE, USER_TRAITEMENT: req.userId }
         }
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
