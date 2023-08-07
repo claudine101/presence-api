@@ -50,23 +50,23 @@ const Folio = sequelize.define("folio", {
     },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     ID_COLLINE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     LOCALITE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     NOM_PROPRIETAIRE: {
         type: DataTypes.STRING(25),
-        allowNull: false
+        allowNull: true
     },
     PRENOM_PROPRIETAIRE: {
         type: DataTypes.STRING(25),
-        allowNull: false
+        allowNull: true
     },
 
     PHOTO_DOSSIER: {
@@ -75,59 +75,59 @@ const Folio = sequelize.define("folio", {
     },
     NUMERO_FEUILLE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
 
     NOMBRE_DOUBLON: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
 
     ID_FOLIO_EQUIPE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     ID_MALLE_NO_TRAITE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     IS_RECONCILIE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     IS_VALIDE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     ID_MALLE_NO_SCANNE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     ID_FLASH: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
 
     IS_INDEXE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     ID_FLASH_INDEXE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
 
     IS_UPLOADED_EDRMS: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     IS_DOCUMENT_BIEN_ENREGISTRE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     DATE_INSERTION: {

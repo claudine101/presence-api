@@ -39,6 +39,11 @@ const Volume = sequelize.define("volume", {
         allowNull: false,
         defaultValue: 1
     },
+    USERS_ID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -53,10 +58,6 @@ Volume.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_vo
 Volume.belongsTo(Maille, { foreignKey: "ID_MALLE", as: 'maille' })
 Volume.belongsTo(Etape_Volume, {foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volume'})
 Volume.belongsTo(Etapes_volume_historiques, {foreignKey: "ID_VOLUME", as: 'etapes_volume_historiques'})
-// Volume.hasMany(Etapes_volume_historiques, { foreignKey:"ID_VOLUME", as:'volume'})
-
-
-
 module.exports = Volume
 
 

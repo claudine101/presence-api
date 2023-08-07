@@ -24,8 +24,8 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
         allowNull: false
     },
     USER_TRAITEMENT: {
-        type: DataTypes.INTEGER(),
-        allowNull: false
+        type: Sequelize.INTEGER(),
+        allowNull: true
     },
     ID_VOLUME: {
         type: DataTypes.INTEGER(),
