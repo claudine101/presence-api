@@ -189,7 +189,8 @@ const folioEquipeScanning = async (req, res) => {
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
                 {
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+                    ID_FOLIO_EQUIPE:USER_TRAITEMENT
                 }, {
                 where: {
                     ID_FOLIO: folio.folio.ID_FOLIO,
