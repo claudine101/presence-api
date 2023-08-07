@@ -3,6 +3,8 @@ const sequelize = require('../utils/sequelize');
 const Users = require('./Users');
 const Etapes_folio = require('./Etapes_folio');
 const Folio = require('./Folio');
+const Etapes_volume_historiques = require('./Etapes_volume_historiques');
+const Volume = require('./Volume');
 /**
 * fonction model pour la creation de la table etapes_folio_historiques
 * @author NDAYISABA claudine <claudined@mediabox.bi>
@@ -51,7 +53,7 @@ Etapes_folio_historiques.belongsTo(Etapes_folio, { foreignKey: "ID_ETAPE_FOLIO",
 Etapes_folio_historiques.belongsTo(Users, { foreignKey: "ID_USER", as: 'user' })
 Etapes_folio_historiques.belongsTo(Users, { foreignKey: "USER_TRAITEMENT", as: 'traitement' })
 Etapes_folio_historiques.belongsTo(Folio, { foreignKey: "ID_FOLIO", as: 'folio' })
-
-
+Volume.hasMany(Etapes_volume_historiques, {foreignKey: "ID_VOLUME", as: 'etapes_volume_historiques'})
+Etapes_volume_historiques.belongsTo(Volume,{foreignKey:'ID_VOLUME', as:'volume'});
 
 module.exports = Etapes_folio_historiques

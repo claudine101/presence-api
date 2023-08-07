@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Folio = require('./Folio');
 /**
 * fonction model pour la creation de la table flashs
 * @author NDAYISABA claudine<claudined@mediabox.bi>
@@ -28,4 +29,6 @@ const Flashs = sequelize.define("flashs", {
     tableName: 'flashs',
     timestamps: false,
 })
+Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as: 'folios' })
+Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as: 'flash' })
 module.exports = Flashs

@@ -1,7 +1,6 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Flashs = require('./Flashs');
 const Nature= require('./Nature_folio');
 const Etapes_folio =require('./Etapes_folio');
 const Volume= require('./Volume')
@@ -9,7 +8,6 @@ const Equipes = require('./Equipes');
 
 const Nature_folio = require("./Nature_folio");
 const Syst_collines = require('./Syst_collines');
-const Equipes = require ('./Equipes');
 /**
 * fonction model pour la creation de la table folio
 * @author habiyakare leonard <leonard@mediabox.bi>
@@ -150,6 +148,4 @@ Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'natures' })
 Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
-Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as: 'flash' })
-Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as: 'folios' })
 module.exports = Folio
