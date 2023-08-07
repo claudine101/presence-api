@@ -106,7 +106,7 @@ const volumeScanning = async (req, res) => {
 }
 
 /**
- * Permet d'envoyer les folios chez un chef plateau
+ * Permet d'envoyer le volumes chez un chef plateau
  * @author Vanny Boy <vanny@mediabox.bi>
  * @param {express.Request} req
  * @param {express.Response} res 
@@ -402,7 +402,7 @@ const findAll = async (req, res) => {
         else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, USER_TRAITEMENT: req.userId }
         }
-        else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+        else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
         }
         const result = await Etapes_volume_historiques.findAll({
@@ -627,7 +627,7 @@ const findAllMaille = async (req, res) => {
 const findChefPlateau = async (req, res) => {
     try {
         const chefPlateaux = await Users.findAll({
-            where: { ID_PROFIL: PROFILS.CHEF_PLATEAU },
+            where: { ID_PROFIL: PROFILS.CHEF_PLATEAU_SCANNING },
             attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -657,13 +657,13 @@ const findChefPlateau = async (req, res) => {
 const findSuperviseurScanning = async (req, res) => {
     try {
         const chefPlateaux = await Users.findAll({
-            where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR },
+            where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR_SCANNING },
             attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des chefs plateau",
+            message: "Liste des agents superviseur scanning",
             result: chefPlateaux
         })
     } catch (error) {
@@ -1038,7 +1038,15 @@ const findAllVolumerRetour = async (req, res) => {
                                 ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
                             ]
                         }
-                    }
+                    },
+                    // include: [
+                    //     {
+                    //         model: Equipes,
+                    //         as: 'equipe',
+                    //         required: false,
+                    //         attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                    //     }
+                    // ]
                 },
                 {
                     model: Users,
