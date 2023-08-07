@@ -17,11 +17,11 @@ const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/folio');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
-const Volume = require('../../models/volume');
+
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const DossiersUpload = require('../../class/uploads/DossiersUpload');
 const { Op } = require('sequelize');
-
+const Volume = require('../../models/Volume');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -512,6 +512,81 @@ const retourAgentSuperviseur = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
+const nbre = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR } = req.params
+        console.log(AGENT_SUPERVISEUR)
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId, USER_TRAITEMENT: AGENT_SUPERVISEUR }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+                    }
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous volume
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 27/06/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
 const findAllFolio = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
@@ -759,7 +834,8 @@ const findAllSuperviseurs = async (req, res) => {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [ETAPES_FOLIO.SELECTION_AGENT_SUP,
                             ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                            ETAPES_FOLIO.SELECTION_AGENT_PREPARATION]
+                            ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                            ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
                         }
                     }
                 }
@@ -836,7 +912,11 @@ const checkAgentsup = async (req, res) => {
                     required: true,
                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
-                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                                ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
+                        }
                     }
                 }
             ]
@@ -992,5 +1072,6 @@ module.exports = {
     retourAgentSuperviseur,
     addDetails,
     findAllSuperviseurs,
-    checkAgentsup
+    checkAgentsup,
+    nbre
 }

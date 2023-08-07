@@ -160,7 +160,7 @@ const gethistoriquevol = async (req, res) => {
     try {
         const { id } = req.params
 
-        const histo = await Volume.findAll({
+        const histo = await Volume.findOne({
             where: {
                 ID_VOLUME: id
             },
@@ -168,7 +168,7 @@ const gethistoriquevol = async (req, res) => {
                 {
                 model: Etapes_volume_historiques,
                 as:'etapes_volume_historiques',
-                attributes: ['ID_VOLUME'],
+                attributes: ['ID_VOLUME', 'PV_PATH'],
                 required: false,
 
                 include:[
@@ -184,14 +184,14 @@ const gethistoriquevol = async (req, res) => {
                         attributes: ['USERS_ID','NOM','PRENOM','EMAIL','TELEPHONE','PHOTO_USER'],
                         required: false
                       },
-                ]
-            },
             
-            {
-              model:Etapes_volumes,
-              as:'etapes_volumes',
-              attributes: ['ID_ETAPE_VOLUME','NOM_ETAPE'],
-              required: false
+                      {
+                        model:Etapes_volumes,
+                        as:'etapes_volumes',
+                        attributes: ['ID_ETAPE_VOLUME','NOM_ETAPE'],
+                        required: false
+                      },
+                ]
             },
        
           ]

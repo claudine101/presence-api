@@ -465,7 +465,6 @@ const findAlluser = async (req, res) => {
                 attributes: ['ID_PROFIL', 'DESCRIPTION']
 
             }
-
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,

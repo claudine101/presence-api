@@ -192,10 +192,7 @@ const folioEquipeScanning = async (req, res) => {
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG
                 }, {
                 where: {
-                    ID_VOLUME: ID_VOLUME,
-                    // ID_NATURE: folio.ID_NATURE,
                     ID_FOLIO: folio.folio.ID_FOLIO,
-                    ID_FOLIO_EQUIPE:USER_TRAITEMENT
                 }
             }
             )

@@ -755,7 +755,7 @@ const findAllChefPlateau = async (req, res) => {
             include: [
                 {
                     model: Users,
-                    as: 'traitement',
+                    as: 'traitant',
                     required: false,
                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
                 },
@@ -770,8 +770,8 @@ const findAllChefPlateau = async (req, res) => {
         })
         var UserFolios = []
         result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
+            const USERS_ID = user.traitant?.USERS_ID
+            const users = user.traitant
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
             if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)

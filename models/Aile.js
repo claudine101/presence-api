@@ -22,7 +22,7 @@ const Aile = sequelize.define("aile", {
                 allowNull: false
         },
         NUMERO_AILE: {
-                type: DataTypes.INTEGER(),
+                type: DataTypes.STRING(50),
                 allowNull: false
         }
 }, {
