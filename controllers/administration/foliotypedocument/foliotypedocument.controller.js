@@ -323,8 +323,7 @@ const updateFoliotypedocument= async (req, res) => {
 * @param {express.Response} res 
 * @author leonard <leonard@mdiabox.bi>
 * @date 1/8/2023
-*
-
+**/
 const findallnaturefolio=async(req,res)=>{
     try {
        const naturefolio=await Nature_folio.findAll({
@@ -353,6 +352,4 @@ module.exports = {
     findOneFoliotypedocument,
     updateFoliotypedocument,
     findallnaturefolio
-
-
 }
