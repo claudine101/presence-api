@@ -31,7 +31,7 @@ const PROFILS = {
     CHEF_PLATEAU: 6,
 
     /**
-      * 7 - Agent superviseur(phase preparation)
+    * 7 - Agent superviseur(phase preparation)
       */
     AGENT_SUPERVISEUR: 7,
 
@@ -58,12 +58,12 @@ const PROFILS = {
     * 12-Chef plateau (phase scanning)
     * 
     */
-    CHEF_PLATEAU: 12,
+    CHEF_PLATEAU_SCANNING: 12,
     /**
     * 13-Agent superviseur (phase scanning)
     * 
     */
-    AGENT_SUPERVISEUR: 13,
+    AGENT_SUPERVISEUR_SCANNING: 13,
     /**
      * 14-Chef d'equipe (phase indexation)
      * 

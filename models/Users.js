@@ -2,7 +2,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Profils = require('./Profils');
-
 /**
 * fonction model pour la creation de la table users
 * @author NIREMA ELOGE <nirema.eloge@mediabox.bi>
@@ -48,7 +47,6 @@ const Users = sequelize.define("users", {
     IS_ACTIF: {
         type: DataTypes.INTEGER,
         allowNull: false
-
     }
 
 }, {

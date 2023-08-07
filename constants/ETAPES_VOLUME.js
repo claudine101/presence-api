@@ -27,10 +27,12 @@ const ETAPES_VOLUME = {
     * 7-Retour: agent superviseur phase de preparation vers chef plateau
     */
     RETOUR_AGENT_SUP: 7,
+
     /**
      *  8-Retour: Chef plateau vers Agent superviseur aile
      */
     RETOUR_CHEF_PLATEAU: 8,
+
     /**
      * 9-Selection du chef equipe scanning
      */
@@ -74,7 +76,11 @@ const ETAPES_VOLUME = {
     /**
      * 17-Retour:agent sup. archive vers agent de desarchivage 
      */
-      RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE: 17
+      RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE: 17,
+       /**
+     * 18-Retour:agent sup aile vers chef d'equipe (phase preparation) 
+     */
+       RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE: 18
 }
 
 module.exports = ETAPES_VOLUME

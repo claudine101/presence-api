@@ -37,4 +37,5 @@ const User_ailes = sequelize.define("user_ailes", {
 })
 // User_ailes.belongsTo(Aile, { foreignKey:"ID_AILE",as:'ailes'})
 User_ailes.belongsTo(Users, { foreignKey:"USERS_ID",as:'users'})
+Users.belongsTo(User_ailes, { foreignKey: 'USERS_ID', as: 'userAile' })
 module.exports = User_ailes

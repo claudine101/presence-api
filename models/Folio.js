@@ -1,14 +1,13 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Flashs = require('./Flashs');
 const Nature= require('./Nature_folio');
 const Etapes_folio =require('./Etapes_folio');
 const Volume= require('./Volume')
+const Equipes = require('./Equipes');
 
 const Nature_folio = require("./Nature_folio");
 const Syst_collines = require('./Syst_collines');
-const Equipes = require ('./Equipes');
 /**
 * fonction model pour la creation de la table folio
 * @author habiyakare leonard <leonard@mediabox.bi>
@@ -24,6 +23,7 @@ const Folio = sequelize.define("folio", {
         autoIncrement: true
     },
     ID_VOLUME: {
+        type: DataTypes.INTEGER,
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -42,31 +42,33 @@ const Folio = sequelize.define("folio", {
     },
     ID_USERS: {
         type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_ETAPE_FOLIO: {
+        type: DataTypes.INTEGER,
         type: DataTypes.INTEGER,
         allowNull: false
     },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     ID_COLLINE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     LOCALITE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     NOM_PROPRIETAIRE: {
         type: DataTypes.STRING(25),
-        allowNull: false
+        allowNull: true
     },
     PRENOM_PROPRIETAIRE: {
         type: DataTypes.STRING(25),
-        allowNull: false
+        allowNull: true
     },
 
     PHOTO_DOSSIER: {
@@ -75,59 +77,59 @@ const Folio = sequelize.define("folio", {
     },
     NUMERO_FEUILLE: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
 
     NOMBRE_DOUBLON: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
 
     ID_FOLIO_EQUIPE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     ID_MALLE_NO_TRAITE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     IS_RECONCILIE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     IS_VALIDE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     ID_MALLE_NO_SCANNE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     ID_FLASH: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
 
     IS_INDEXE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     ID_FLASH_INDEXE: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
 
     IS_UPLOADED_EDRMS: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     IS_DOCUMENT_BIEN_ENREGISTRE: {
         type: DataTypes.STRING(10),
-        allowNull: false
+        allowNull: true
     },
 
     DATE_INSERTION: {
@@ -146,6 +148,4 @@ Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'natures' })
 Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
-Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as: 'flash' })
-Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as: 'folios' })
 module.exports = Folio
