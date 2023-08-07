@@ -521,6 +521,88 @@ const volumeScanningRetourDesarchivages = async (req, res) => {
 }
 
 
+/**
+ * Permet d'envoyer le volumes chez un chef plateau
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  31/07/2023
+ * 
+ */
+
+const volumeAileScanning = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const { USER_TRAITEMENT } = req.body
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                },
+                USER_TRAITEMENT: {
+                    required: true,
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le nom est obligatoire"
+                },
+                USER_TRAITEMENT: {
+                    required: "ID_ETAPE_VOLUME est obligatoire",
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: USER_TRAITEMENT,
+            ID_VOLUME: ID_VOLUME,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     volumeScanningRetourAgentAille,
     volumeScanningRetourChefEquipe,
@@ -530,5 +612,6 @@ module.exports = {
     findAgentSuperviseurArchives,
     volumeScanningRetourAgentSupArchives,
     findAgentDesarchivages,
-    volumeScanningRetourDesarchivages
+    volumeScanningRetourDesarchivages,
+    volumeAileScanning
 }
