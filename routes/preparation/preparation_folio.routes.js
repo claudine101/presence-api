@@ -36,17 +36,17 @@ const preparation_folio_routes = express.Router()
  * ont  déja effectuer  retour  avec agent  preparation
  * de voir  les agents superviseur   
  *@method GET
- * @url /preparation/folio/superviseur
+ * @url /preparation/folio/checkAgentsup
  */
  preparation_folio_routes.get('/checkAgentsup/:USERS_ID', preparation_folio_controller.checkAgentsup)
 
 
  /**
- * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
+ * Une route  permet  un chef  plateau de voir  les folios non prepare
  *@method GET
  * @url /preparation/folio/folios
  */
- preparation_folio_routes.get('/folios', preparation_folio_controller.findAllFolio)
+ preparation_folio_routes.get('/nbrefolios/:AGENT_SUPERVISEUR', preparation_folio_controller.nbre)
 
  /**
  * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
