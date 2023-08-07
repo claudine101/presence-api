@@ -10,7 +10,116 @@ const IMAGES_DESTINATIONS = require("../../../constants/IMAGES_DESTINATIONS")
 const UserUpload = require("../../../class/uploads/UserUpload")
 const Users = require("../../../models/Users")
 const md5 = require("md5")
+// const generateToken = require('../../utils/generateToken');
 const Profils = require("../../../models/Profils")
+
+
+
+/**
+ * Permet un utlsateur de s'authentifier
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author leonard<leonard@mdiabox.bi>
+ * @date 31/07/2023
+ */
+// const login = async (req, res) => {
+//     try {
+//               const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
+//               const validation = new Validation(
+//                         req.body,
+//                         {
+//                                   email: {
+//                                             required: true,
+//                                             email: true
+//                                   },
+//                                   password:
+//                                   {
+//                                             required: true,
+//                                   },
+//                         },
+//                         {
+//                                   password:
+//                                   {
+//                                             required: "Le mot de passe est obligatoire",
+//                                   },
+//                                   email: {
+//                                             required: "L'email est obligatoire",
+//                                             email: "Email invalide"
+//                                   }
+//                         }
+//               );
+//               await validation.run();
+//               const isValid = await validation.isValidate()
+//               const errors = await validation.getErrors()
+//               if (!isValid) {
+//                         return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+//                                   statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+//                                   httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+//                                   message: "Probleme de validation des donnees",
+//                                   result: errors
+//                         })
+//               }
+//               const userObject = await Users.findOne({
+//                         where: { EMAIL: email },
+//                         attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+//                         include: [{
+//                               model: Profils,
+//                               as: 'profil',
+//                               required: false,
+//                               attributes: ['ID_PROFIL', 'DESCRIPTION']
+//                         }]
+//               })
+//               if (userObject) {
+//                         const user = userObject.toJSON()
+//                         if (user.PASSEWORD == md5(password)) {
+//                                   const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL,PHOTO_USER:user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
+//                                   const { password, ...other } = user
+//                                   if (PUSH_NOTIFICATION_TOKEN) {
+//                                             // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
+//                                             // if (notification) {
+//                                             //           await query('UPDATE notification_tokens SET DEVICE = ?, TOKEN = ?, LOCALE = ? WHERE ID_NOTIFICATION_TOKEN = ?', [DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE, notification.ID_NOTIFICATION_TOKEN]);
+//                                             // } else {
+//                                             //           await query('INSERT INTO notification_tokens(ID_DRIVER, DEVICE, TOKEN, LOCALE) VALUES(?, ?, ?, ?)', [user.ID_DRIVER, DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE]);
+//                                             // }
+//                                   }
+//                                   res.status(RESPONSE_CODES.CREATED).json({
+//                                             statusCode: RESPONSE_CODES.CREATED,
+//                                             httpStatus: RESPONSE_STATUS.CREATED,
+//                                             message: "Vous êtes connecté avec succès",
+//                                             result: {
+//                                                       ...other,
+//                                                       token
+//                                             }
+//                                   })
+//                         } else {
+//                                   validation.setError('main', 'Identifiants incorrects')
+//                                   const errors = await validation.getErrors()
+//                                   res.status(RESPONSE_CODES.NOT_FOUND).json({
+//                                             statusCode: RESPONSE_CODES.NOT_FOUND,
+//                                             httpStatus: RESPONSE_STATUS.NOT_FOUND,
+//                                             message: "Utilisateur n'existe pas",
+//                                             result: errors
+//                                   })
+//                         }
+//               } else {
+//                         validation.setError('main', 'Identifiants incorrects')
+//                         const errors = await validation.getErrors()
+//                         res.status(RESPONSE_CODES.NOT_FOUND).json({
+//                                   statusCode: RESPONSE_CODES.NOT_FOUND,
+//                                   httpStatus: RESPONSE_STATUS.NOT_FOUND,
+//                                   message: "Utilisateur n'existe pas",
+//                                   result: errors
+//                         })
+//               }
+//     } catch (error) {
+//               console.log(error)
+//               res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+//                         statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+//                         httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+//                         message: "Erreur interne du serveur, réessayer plus tard",
+//               })
+//     }
+// }
 
 /**
  * Permet d'enregistrer un utilisateur
@@ -85,15 +194,14 @@ const createuser = async (req, res) => {
         const photoUpload = new UserUpload()
         const { fileInfo } = await photoUpload.upload(PHOTO_USER, false)
         const filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
-
-        const creptePswd = md5(PASSEWORD);
+        const generatepassword=`${TELEPHONE}`
         const user = await Users.create({
             NOM,
             PRENOM,
             EMAIL,
             TELEPHONE,
             ID_PROFIL,
-            PASSEWORD: creptePswd,
+            PASSEWORD:md5(generatepassword),
             PHOTO_USER: filename,
             IS_ACTIF: 0
         })
@@ -124,7 +232,7 @@ const createuser = async (req, res) => {
 const Updateuser = async (req, res) => {
     try {
         const { USERS_ID } = req.params
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
+        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, IS_ACTIF } = req.body
 
         const files = req.files || {}
         const { PHOTO_USER } = files
@@ -156,11 +264,7 @@ const Updateuser = async (req, res) => {
                 number: true,
                 length: [2, 50]
             },
-            PASSEWORD: {
-                required: true,
-                length: [8]
-            },
-            
+           
             ID_PROFIL: {
                 required: true,
                 number: true,
@@ -191,14 +295,12 @@ const Updateuser = async (req, res) => {
             filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         }
 
-        const ctptage = md5(PASSEWORD)
         const userUpdate = await Users.update({
             NOM,
             PRENOM,
             EMAIL,
             TELEPHONE,
             ID_PROFIL,
-            PASSEWORD: ctptage,
             PHOTO_USER: filename ? filename : user.PHOTO_USER
         }, {
             where: {
@@ -283,7 +385,7 @@ const findAlluser = async (req, res) => {
     try {
         const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const defaultSortField = "NOM"
-        const defaultSortDirection = "DESC"
+        const defaultSortDirection = "ASC"
         const sortColumns = {
             users: {
                 as: "users",
@@ -438,7 +540,10 @@ const deleteItemsuser = async (req, res) => {
 const listeprofiles = async (req, res) => {
     try {
         const permistype = await Profils.findAll({
-            attributes: ['ID_PROFIL', 'DESCRIPTION']
+            attributes: ['ID_PROFIL', 'DESCRIPTION'],
+            order: [
+                ['DESCRIPTION', 'ASC']
+              ]
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -456,11 +561,58 @@ const listeprofiles = async (req, res) => {
     }
 }
 
+
+/**
+* Permet de desactiver et d'activer le status de l'utilisateur
+* @param {express.Request} req 
+* @param {express.Response} res 
+* @author leonard <leonard@mdiabox.bi>
+* @date 07/08/2023
+*/
+const activer_descativer_utilisateur = async (req, res) => {
+    try {
+        const { USERS_ID } = req.params;
+        const userObjet = await Users.findByPk(USERS_ID, { attributes: ['USERS_ID', 'IS_ACTIF'] })
+
+        const user = userObjet.toJSON()
+        let IS_ACTIF
+        if (user.IS_ACTIF) {
+            IS_ACTIF = 0
+        } else {
+            IS_ACTIF = 1
+        }
+        // Update the IS_ACTIF user data
+        await Users.update(
+            { IS_ACTIF: IS_ACTIF },
+            {
+                where: {
+                    USERS_ID: USERS_ID,
+                },
+            }
+        );
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Activation/Desactivation est fait succès"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+
+}
+
+
 module.exports = {
     createuser,
     Updateuser,
     findOneuser,
     findAlluser,
     deleteItemsuser,
-    listeprofiles
+    listeprofiles,
+    activer_descativer_utilisateur
 }
