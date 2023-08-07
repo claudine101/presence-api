@@ -151,7 +151,7 @@ const findUsersByFolio = async (req, res) => {
         as: 'user',
         required: false,
         attributes: [
-          'USERS_ID', 'NOM','PRENOM', 'EMAIL','TELEPHONE', 'ID_PROFIL','CNI', 'PHOTO_USER'
+          'USERS_ID', 'NOM','PRENOM', 'EMAIL','TELEPHONE', 'ID_PROFIL', 'PHOTO_USER'
         ],
         include: {
           model: Profils,
