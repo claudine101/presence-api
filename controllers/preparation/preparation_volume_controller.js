@@ -980,6 +980,7 @@ const retourChefPlateau = async (req, res) => {
 const retourAgentSupAile = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR_AILES, volume } = req.body
+        console.log(AGENT_SUPERVISEUR_AILES)
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
