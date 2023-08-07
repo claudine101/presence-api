@@ -69,8 +69,8 @@ const findAll = async (req, res) => {
   try {
     const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
-    const defaultSortField = "ID_PROFIL"
-    const defaultSortDirection = "DESC"
+    const defaultSortField = "DESCRIPTION"
+    const defaultSortDirection = "ASC"
     const sortColumns = {
       profil: {
         as: "profil",
@@ -98,7 +98,7 @@ const findAll = async (req, res) => {
       }
     }
     if (!orderColumn || !sortModel) {
-      orderColumn = sortColumns.profil.fields.ID_PROFIL
+      orderColumn = sortColumns.profil.fields.DESCRIPTION
       sortModel = {
         model: 'profil',
         as: sortColumns.profil.as

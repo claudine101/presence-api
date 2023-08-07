@@ -1,5 +1,6 @@
 const express = require('express')
-const folio_controller = require('../../../controllers/administration/folio/folio.controller')
+const folio_controller = require('../../controllers/administration/folio/folio.controller')
+const foliocontroller= require('../../controllers/administration/folio_administration.controller');
 const folio_routes = express.Router()
 
 /**
@@ -23,5 +24,6 @@ const folio_routes = express.Router()
  * @url /folio/all_folio/id_folio
  */
  folio_routes.get('/traitant/:ID_FOLIO', folio_controller.findTraitantFolio)
+ folio_routes.get("/",foliocontroller.findAll);
 
 module.exports = folio_routes

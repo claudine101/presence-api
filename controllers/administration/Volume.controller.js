@@ -35,7 +35,7 @@ const getDetail = async (req, res) => {
                     required: false
                 }, {
                     model: Etape_Volume,
-                    as: 'etapes_volume',
+                    as: 'etapes_volumes',
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },

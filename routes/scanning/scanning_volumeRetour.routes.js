@@ -65,4 +65,12 @@ scanning_volumeRetour_routes.get('/agent/desarchivages', scanning_volumeRetour_c
 */
 scanning_volumeRetour_routes.put('/agent/desarchivages/:ID_VOLUME', scanning_volumeRetour_controller.volumeScanningRetourDesarchivages)
 
+
+/**
+ * Une route pour donner le volume et le malle d'un agent superviseur aille et chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/chef
+ */
+ scanning_volumeRetour_routes.put('/agent/chef/:ID_VOLUME', scanning_volumeRetour_controller.volumeAileScanning)
+
 module.exports = scanning_volumeRetour_routes
