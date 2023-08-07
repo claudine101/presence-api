@@ -24,8 +24,8 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
         allowNull: false
     },
     USER_TRAITEMENT: {
-        type: Sequelize.INTEGER(),
-        allowNull: true
+        type: DataTypes.INTEGER(),
+        allowNull: false
     },
     ID_VOLUME: {
         type: DataTypes.INTEGER(),
@@ -58,5 +58,6 @@ Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USERS_ID", as: 'users' 
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USER_TRAITEMENT", as: 'traitant' })
 // Etapes_volume_historiques.belongsTo(Volume, {foreignKey: "ID_VOLUME", as: 'volumes'})
 //  Etapes_volume_historiques.hasMany(Volume, { foreignKey:"ID_VOLUME", as:'volume'})
+Etapes_volume_historiques.belongsTo(Volume,{foreignKey:'ID_VOLUME', as:'volume'});
 
 module.exports = Etapes_volume_historiques

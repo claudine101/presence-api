@@ -5,6 +5,7 @@ const Flashs = require('./Flashs');
 const Nature= require('./Nature_folio');
 const Etapes_folio =require('./Etapes_folio');
 const Volume= require('./Volume')
+const Equipes = require('./Equipes');
 
 const Nature_folio = require("./Nature_folio");
 const Syst_collines = require('./Syst_collines');
@@ -25,6 +26,7 @@ const Folio = sequelize.define("folio", {
     },
     ID_VOLUME: {
         type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_NATURE: {
@@ -42,9 +44,11 @@ const Folio = sequelize.define("folio", {
     },
     ID_USERS: {
         type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     ID_ETAPE_FOLIO: {
+        type: DataTypes.INTEGER,
         type: DataTypes.INTEGER,
         allowNull: false
     },

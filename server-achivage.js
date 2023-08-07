@@ -24,6 +24,7 @@ dotenv.config({ path: path.join(__dirname, "./.env") });
 const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
 const preparationRouter = require("./routes/preparation/preparationRoutes");
+const scanning_volumeRouter = require("./routes/scanning/scanning_volumeRouter");
 
 
 app.use(cors());
@@ -43,6 +44,7 @@ app.use('/admin', administrationRouter)
 app.use('/administrationRoutes',administrationRoutes)
 app.use('/administration', administrationFolioRoutes)
 app.use('/preparation', preparationRouter)
+app.use('/scanning', scanning_volumeRouter)
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,

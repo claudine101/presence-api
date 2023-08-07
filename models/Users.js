@@ -3,6 +3,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const User_ailes = require('./User_ailes');
 const Profils = require('./Profils');
+const Etapes_volume_historiques = require('./Etapes_volume_historiques');
 /**
 * fonction model pour la creation de la table users
 * @author NIREMA ELOGE <nirema.eloge@mediabox.bi>
@@ -48,7 +49,6 @@ const Users = sequelize.define("users", {
     IS_ACTIF: {
         type: DataTypes.INTEGER,
         allowNull: false
-
     }
 
 }, {
@@ -58,5 +58,5 @@ const Users = sequelize.define("users", {
 })
 Users.belongsTo(User_ailes, { foreignKey: 'USERS_ID', as: 'userAile' })
 Users.belongsTo(Profils, {foreignKey:"ID_PROFIL", as:"profil"})
-
+Users.hasMany(Etapes_volume_historiques,{foreignKey:'USER_TRAITEMENT', as:'histo'});
 module.exports = Users

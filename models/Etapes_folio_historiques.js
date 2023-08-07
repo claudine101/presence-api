@@ -22,14 +22,13 @@ const Etapes_folio_historiques = sequelize.define("etapes_folio_historiques", {
     },
     USER_TRAITEMENT: {
         type: DataTypes.INTEGER(),
-        allowNull: true
+        allowNull: false
     },
     ID_FOLIO: {
         type: DataTypes.INTEGER(),
         allowNull: true
     },
     ID_ETAPE_FOLIO: {
-        type: DataTypes.INTEGER(),
         type: DataTypes.INTEGER(),
         allowNull: false
     },
