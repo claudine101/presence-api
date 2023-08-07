@@ -1,125 +1,116 @@
 const express = require("express")
 const RESPONSE_CODES = require('../../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require("../../../constants/RESPONSE_STATUS")
-const Validation=require("../../../class/Validation")
+const Validation = require("../../../class/Validation")
 const { Op } = require("sequelize")
 const { query } = require('../../../utils/db')
-// const { EMPTY } = require("sqlite3")
-// const ETAPES_STATUTS = require("../../../constants/ETAPES_STATUTS")
 const IMAGES_DESTINATIONS = require("../../../constants/IMAGES_DESTINATIONS")
 const UserUpload = require("../../../class/uploads/UserUpload")
 const Users = require("../../../models/Users")
 const md5 = require("md5")
-// const generateToken = require('../../utils/generateToken');
+const generateToken=require('../../../utils/generateToken')
 const Profils = require("../../../models/Profils")
 
 
 
 /**
- * Permet un utlsateur de s'authentifier
+ * Permet un utilsateur de s'authentifier
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author leonard<leonard@mdiabox.bi>
- * @date 31/07/2023
+ * @date 07/08/2023
  */
-// const login = async (req, res) => {
-//     try {
-//               const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
-//               const validation = new Validation(
-//                         req.body,
-//                         {
-//                                   email: {
-//                                             required: true,
-//                                             email: true
-//                                   },
-//                                   password:
-//                                   {
-//                                             required: true,
-//                                   },
-//                         },
-//                         {
-//                                   password:
-//                                   {
-//                                             required: "Le mot de passe est obligatoire",
-//                                   },
-//                                   email: {
-//                                             required: "L'email est obligatoire",
-//                                             email: "Email invalide"
-//                                   }
-//                         }
-//               );
-//               await validation.run();
-//               const isValid = await validation.isValidate()
-//               const errors = await validation.getErrors()
-//               if (!isValid) {
-//                         return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-//                                   statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-//                                   httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-//                                   message: "Probleme de validation des donnees",
-//                                   result: errors
-//                         })
-//               }
-//               const userObject = await Users.findOne({
-//                         where: { EMAIL: email },
-//                         attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
-//                         include: [{
-//                               model: Profils,
-//                               as: 'profil',
-//                               required: false,
-//                               attributes: ['ID_PROFIL', 'DESCRIPTION']
-//                         }]
-//               })
-//               if (userObject) {
-//                         const user = userObject.toJSON()
-//                         if (user.PASSEWORD == md5(password)) {
-//                                   const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL,PHOTO_USER:user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
-//                                   const { password, ...other } = user
-//                                   if (PUSH_NOTIFICATION_TOKEN) {
-//                                             // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
-//                                             // if (notification) {
-//                                             //           await query('UPDATE notification_tokens SET DEVICE = ?, TOKEN = ?, LOCALE = ? WHERE ID_NOTIFICATION_TOKEN = ?', [DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE, notification.ID_NOTIFICATION_TOKEN]);
-//                                             // } else {
-//                                             //           await query('INSERT INTO notification_tokens(ID_DRIVER, DEVICE, TOKEN, LOCALE) VALUES(?, ?, ?, ?)', [user.ID_DRIVER, DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE]);
-//                                             // }
-//                                   }
-//                                   res.status(RESPONSE_CODES.CREATED).json({
-//                                             statusCode: RESPONSE_CODES.CREATED,
-//                                             httpStatus: RESPONSE_STATUS.CREATED,
-//                                             message: "Vous êtes connecté avec succès",
-//                                             result: {
-//                                                       ...other,
-//                                                       token
-//                                             }
-//                                   })
-//                         } else {
-//                                   validation.setError('main', 'Identifiants incorrects')
-//                                   const errors = await validation.getErrors()
-//                                   res.status(RESPONSE_CODES.NOT_FOUND).json({
-//                                             statusCode: RESPONSE_CODES.NOT_FOUND,
-//                                             httpStatus: RESPONSE_STATUS.NOT_FOUND,
-//                                             message: "Utilisateur n'existe pas",
-//                                             result: errors
-//                                   })
-//                         }
-//               } else {
-//                         validation.setError('main', 'Identifiants incorrects')
-//                         const errors = await validation.getErrors()
-//                         res.status(RESPONSE_CODES.NOT_FOUND).json({
-//                                   statusCode: RESPONSE_CODES.NOT_FOUND,
-//                                   httpStatus: RESPONSE_STATUS.NOT_FOUND,
-//                                   message: "Utilisateur n'existe pas",
-//                                   result: errors
-//                         })
-//               }
-//     } catch (error) {
-//               console.log(error)
-//               res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-//                         statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-//                         httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-//                         message: "Erreur interne du serveur, réessayer plus tard",
-//               })
-//     }
-// }
+const login = async (req, res) => {
+    try {
+        const { EMAIL, PASSEWORD, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
+        const validation = new Validation(
+            req.body,
+            {
+                EMAIL: {
+                    required: true,
+                    email: true
+                },
+                PASSEWORD:
+                {
+                    required: true,
+                },
+            },
+            {
+                PASSEWORD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+                EMAIL: {
+                    required: "L'email est obligatoire",
+                    email: "Email invalide"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const userObject = await Users.findOne({
+            where: { EMAIL: EMAIL },
+            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+            include: [{
+                model: Profils,
+                as: 'profil',
+                required: false,
+                attributes: ['ID_PROFIL', 'DESCRIPTION']
+            }]
+        })
+        if (userObject) {
+            const user = userObject.toJSON()
+            if (user.PASSEWORD == md5(PASSEWORD)) {
+                const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL, PHOTO_USER: user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
+                const { PASSEWORD, ...other } = user
+                
+                res.status(RESPONSE_CODES.CREATED).json({
+                    statusCode: RESPONSE_CODES.CREATED,
+                    httpStatus: RESPONSE_STATUS.CREATED,
+                    message: "Vous êtes connecté avec succès",
+                    result: {
+                        ...other,
+                        token
+                    }
+                })
+            } else {
+                validation.setError('main', 'Identifiants incorrects')
+                const errors = await validation.getErrors()
+                res.status(RESPONSE_CODES.NOT_FOUND).json({
+                    statusCode: RESPONSE_CODES.NOT_FOUND,
+                    httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                    message: "Utilisateur n'existe pas",
+                    result: errors
+                })
+            }
+        } else {
+            validation.setError('main', 'Identifiants incorrects')
+            const errors = await validation.getErrors()
+            res.status(RESPONSE_CODES.NOT_FOUND).json({
+                statusCode: RESPONSE_CODES.NOT_FOUND,
+                httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                message: "Utilisateur n'existe pas",
+                result: errors
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 /**
  * Permet d'enregistrer un utilisateur
@@ -130,7 +121,7 @@ const Profils = require("../../../models/Profils")
  */
 const createuser = async (req, res) => {
     try {
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD,IS_ACTIF } = req.body
+        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
         const files = req.files || {}
         const { PHOTO_USER } = files
         const data = { ...req.body, ...req.files }
@@ -156,7 +147,7 @@ const createuser = async (req, res) => {
                 email: true,
                 unique: "users,EMAIL"
             },
-            
+
             TELEPHONE: {
                 required: true,
                 number: [1, 50],
@@ -194,14 +185,14 @@ const createuser = async (req, res) => {
         const photoUpload = new UserUpload()
         const { fileInfo } = await photoUpload.upload(PHOTO_USER, false)
         const filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
-        const generatepassword=`${TELEPHONE}`
+        const generatepassword = `${TELEPHONE}`
         const user = await Users.create({
             NOM,
             PRENOM,
             EMAIL,
             TELEPHONE,
             ID_PROFIL,
-            PASSEWORD:md5(generatepassword),
+            PASSEWORD: md5(generatepassword),
             PHOTO_USER: filename,
             IS_ACTIF: 0
         })
@@ -264,7 +255,7 @@ const Updateuser = async (req, res) => {
                 number: true,
                 length: [2, 50]
             },
-           
+
             ID_PROFIL: {
                 required: true,
                 number: true,
@@ -276,7 +267,7 @@ const Updateuser = async (req, res) => {
             // }
 
         })
-       
+
         await validation.run()
         const isValid = await validation.isValidate()
         if (!isValid) {
@@ -345,7 +336,7 @@ const findOneuser = async (req, res) => {
                 model: Profils,
                 as: 'profil',
                 required: false,
-                attributes: ['ID_PROFIL','DESCRIPTION']
+                attributes: ['ID_PROFIL', 'DESCRIPTION']
 
             }
             ]
@@ -390,10 +381,10 @@ const findAlluser = async (req, res) => {
             users: {
                 as: "users",
                 fields: {
-                    NOM:'NOM',
-                    PRENOM:'PRENOM',
-                    EMAIL:'EMAIL',
-                    TELEPHONE:'TELEPHONE'
+                    NOM: 'NOM',
+                    PRENOM: 'PRENOM',
+                    EMAIL: 'EMAIL',
+                    TELEPHONE: 'TELEPHONE'
 
                 }
             },
@@ -471,7 +462,7 @@ const findAlluser = async (req, res) => {
                 model: Profils,
                 as: 'profil',
                 required: false,
-                attributes: ['ID_PROFIL','DESCRIPTION']
+                attributes: ['ID_PROFIL', 'DESCRIPTION']
 
             }
 
@@ -543,7 +534,7 @@ const listeprofiles = async (req, res) => {
             attributes: ['ID_PROFIL', 'DESCRIPTION'],
             order: [
                 ['DESCRIPTION', 'ASC']
-              ]
+            ]
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -614,5 +605,6 @@ module.exports = {
     findAlluser,
     deleteItemsuser,
     listeprofiles,
-    activer_descativer_utilisateur
+    activer_descativer_utilisateur,
+    login
 }
