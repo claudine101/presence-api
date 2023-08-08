@@ -48,7 +48,7 @@ app.all("*", (req, res) => {
           })
 });
 const port = process.env.PORT || 8000;
-const isHttps = false
+const isHttps = true
 var server
 if (isHttps) {
           var options = {
@@ -71,5 +71,5 @@ io.on('disconnect', () => {
 })
 app.io = io
 server.listen(port, async () => {
-          console.log(`${(process.env.NODE_ENV).toUpperCase()} - Server is running on : http://${ip.address()}:${port}/`);
+          console.log(`${(process.env.NODE_ENV).toUpperCase()} - Server is running on : http${isHttps && 's'}://${ip.address()}:${port}/`);
 });
