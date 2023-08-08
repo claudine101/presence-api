@@ -29,6 +29,13 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.get('/volumeDetailler', preparation_volume_controller.findDetailler)
 
+ /**
+ * Une route  permet  recupere les volumes detailler
+ *@method GET
+ * @url /preparation/folio/checkAgentsup
+ */
+ preparation_volume_routes.get('/checkchefPlateau/:USERS_ID', preparation_volume_controller.findCheckPlateau)
+
 
  /**
  * Une route  permet  recupere les nature du folio

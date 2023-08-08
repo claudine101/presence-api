@@ -823,7 +823,7 @@ const findAllSuperviseurs = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
                 },
                 {
                     model: Folio,
