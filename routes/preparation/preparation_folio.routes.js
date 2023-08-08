@@ -44,9 +44,17 @@ const preparation_folio_routes = express.Router()
  /**
  * Une route  permet  un chef  plateau de voir  les folios non prepare
  *@method GET
- * @url /preparation/folio/folios
+ * @url /preparation/folio/nbrefolios
  */
  preparation_folio_routes.get('/nbrefolios/:AGENT_SUPERVISEUR', preparation_folio_controller.nbre)
+
+  /**
+ * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
+ *@method GET
+ * @url /preparation/folio/folios
+ */
+ preparation_folio_routes.get('/folios', preparation_folio_controller.findAllFolio)
+
 
  /**
  * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
