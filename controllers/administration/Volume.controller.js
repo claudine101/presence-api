@@ -11,6 +11,8 @@ const Users = require("../../models/Users")
 const Profils = require("../../models/Profils")
 const Etapes_folio_historiques = require("../../models/Etapes_folio_historiques")
 const Folio = require("../../models/Folio")
+const Nature_folio = require("../../models/Nature_folio")
+const Etapes_folio = require("../../models/Etapes_folio")
 
 
 /**
@@ -73,16 +75,16 @@ const getHistoriqueVolume = async (req, res) => {
     try {
 
         const volumesHistorique = await Etapes_volume_historiques.findAll({
-            // attributes :['ID_VOLUME,'],
-            group: ['USERS_ID'],
+            group: ['USER_TRAITEMENT'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
             include: [
                 {
                     model: Users,
-                    as: 'users',
+                    as: 'traitant',
                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+
                     required: false,
                     include: [
                         {
@@ -98,12 +100,6 @@ const getHistoriqueVolume = async (req, res) => {
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },
-                //{
-                //     model: Etapes_volume_historiques,
-                //     as: 'etapes_volume_historiques',
-                //     attributes:['ID_VOLUME','USERS_ID'],
-                //     required:false
-                // },
             ],
 
         })
@@ -200,10 +196,6 @@ const getHistoriqueFolio = async (req, res) => {
                 httpStatus: RESPONSE_STATUS.OK,
                 message: "Detail",
                 result: result
-                // data :result
-                // result: {
-                //     data: result,
-                // }
             })
         } else {
             res.status(RESPONSE_CODES.NOT_FOUND).json({
@@ -225,8 +217,62 @@ const getHistoriqueFolio = async (req, res) => {
 
 
 
+const getAgentByVolume = async (req, res) => {
+    const { ID_VOLUME } = req.params
+    try {
+
+        const dossier = await Folio.findAll({
+            attributes : ['NUMERO_FOLIO'],
+            where: {
+                ID_VOLUME: ID_VOLUME
+            },
+            include: [
+                {
+                    model: Nature_folio,
+                    as: 'nature',
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    required: false,
+                },
+                {
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['ID_ETAPE_FOLIO', 'NOM_ETAPE'],
+                    required: false
+                },
+            ],
+
+        })
+        if (dossier) {
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Tous les dossiers par volume",
+                result: dossier
+            })
+        } else {
+            res.status(RESPONSE_CODES.NOT_FOUND).json({
+                statusCode: RESPONSE_CODES.NOT_FOUND,
+                httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                message: "volumes non trouve",
+            })
+        }
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+
+
 module.exports = {
     getDetail,
     getHistoriqueVolume,
-    getHistoriqueFolio
+    getHistoriqueFolio,
+    getAgentByVolume
 }
