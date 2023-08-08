@@ -169,7 +169,8 @@ const findalluser = async (req, res) => {
         const users = await Users.findAll({
             where:{
                 ID_PROFIL:{
-                    [Op.in]:[PROFILS.AGENTS_SUPERVISEUR_AILE,PROFILS.AGENT_SUPERVISEUR_AILE_INDEXATION,PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING]
+                    [Op.in]:[PROFILS.AGENTS_DISTRIBUTEUR,PROFILS.CHEF_PLATEAU,
+                            PROFILS.AGENTS_SUPERVISEUR_AILE,PROFILS.AGENT_SUPERVISEUR,PROFILS.AGENT_PREPARATION]
                 }
             },
             attributes: ['USERS_ID', 'NOM', 'PRENOM'],
