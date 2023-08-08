@@ -5,9 +5,9 @@ const scanning_volume_routes = express.Router()
  /**
 * Une route pour recuperer la liste des folios d'un agent superviseur scanning
 *@method PUT
-* @url /scanning/volume
+* @url /scanning/volume/retour/chef
 */
-scanning_volume_routes.put('/retour', scanning_volume_controller.updateRetourEquipe)
+scanning_volume_routes.put('/retour/chef', scanning_volume_controller.updateRetourEquipe)
 
 
 
