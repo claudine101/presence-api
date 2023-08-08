@@ -7,6 +7,8 @@ const Etapes_volumes= require('../../models/Etapes_volumes');
 const maille = require('../../models/Maille');
 const Users=  require('../../models/Users');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
+const Profils= require('../../models/Profils')
+
 
 
 /**
@@ -168,7 +170,7 @@ const gethistoriquevol = async (req, res) => {
                 {
                 model: Etapes_volume_historiques,
                 as:'etapes_volume_historiques',
-                attributes: ['ID_VOLUME', 'PV_PATH'],
+                attributes: ['ID_VOLUME', 'PV_PATH','DATE_INSERTION'],
                 required: false,
 
                 include:[
@@ -176,16 +178,29 @@ const gethistoriquevol = async (req, res) => {
                         model:Users,
                         as:'users',
                         attributes: ['USERS_ID','NOM','PRENOM','EMAIL','TELEPHONE','PHOTO_USER'],
-                        required: false
+                        required: false,
+                        include: {
+                            model: Profils,
+                            as: 'profil',
+                            required: false,
+                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                          }
                       },
                       {
                         model:Users,
                         as:'traitant',
                         attributes: ['USERS_ID','NOM','PRENOM','EMAIL','TELEPHONE','PHOTO_USER'],
-                        required: false
+                        required: false,
+                        include: {
+                            model: Profils,
+                            as: 'profile',
+                            required: false,
+                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                          }
+                       
                       },
             
-                      {
+                  {
                         model:Etapes_volumes,
                         as:'etapes_volumes',
                         attributes: ['ID_ETAPE_VOLUME','NOM_ETAPE'],
