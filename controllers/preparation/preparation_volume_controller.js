@@ -979,8 +979,7 @@ const retourChefPlateau = async (req, res) => {
  */
 const retourAgentSupAile = async (req, res) => {
     try {
-        const { AGENT_SUPERVISEUR_AILES, volume } = req.body
-        console.log(AGENT_SUPERVISEUR_AILES)
+        const { AGENT_SUPERVISEUR_AILE, volume } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -1036,7 +1035,7 @@ const retourAgentSupAile = async (req, res) => {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     USERS_ID: req.userId,
                     ID_VOLUME: volume.volume.ID_VOLUME,
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILES,
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILE,
                     ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
                 }
             )

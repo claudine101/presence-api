@@ -55,4 +55,5 @@ const Users = sequelize.define("users", {
     timestamps: false,
 })
 Users.belongsTo(Profils, {foreignKey:"ID_PROFIL", as:"profil"})
+Users.belongsTo(Profils, {foreignKey:"ID_PROFIL", as:"profile"})
 module.exports = Users
