@@ -8,8 +8,9 @@ const IMAGES_DESTINATIONS = require("../../../constants/IMAGES_DESTINATIONS")
 const UserUpload = require("../../../class/uploads/UserUpload")
 const Users = require("../../../models/Users")
 const md5 = require("md5")
-const generateToken=require('../../../utils/generateToken')
+const generateToken = require('../../../utils/generateToken')
 const Profils = require("../../../models/Profils")
+const PROFILS = require("../../../constants/PROFILS")
 
 
 
@@ -58,7 +59,7 @@ const login = async (req, res) => {
             })
         }
         const userObject = await Users.findOne({
-            where: { EMAIL: EMAIL },
+            where: { EMAIL: EMAIL, ID_PROFIL: PROFILS.ADMIN },
             attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
             include: [{
                 model: Profils,
@@ -72,7 +73,7 @@ const login = async (req, res) => {
             if (user.PASSEWORD == md5(PASSEWORD)) {
                 const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL, PHOTO_USER: user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
                 const { PASSEWORD, ...other } = user
-                
+
                 res.status(RESPONSE_CODES.CREATED).json({
                     statusCode: RESPONSE_CODES.CREATED,
                     httpStatus: RESPONSE_STATUS.CREATED,
@@ -374,7 +375,7 @@ const findOneuser = async (req, res) => {
  */
 const findAlluser = async (req, res) => {
     try {
-        const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const { profilebackend, rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const defaultSortField = "NOM"
         const defaultSortDirection = "ASC"
         const sortColumns = {
@@ -449,6 +450,10 @@ const findAlluser = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
+        var profileInfo = {}
+        if (profilebackend) {
+            profileInfo = { ID_PROFIL: profilebackend }
+        }
         const result = await Users.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
@@ -457,6 +462,7 @@ const findAlluser = async (req, res) => {
             ],
             where: {
                 ...globalSearchWhereLike,
+                ...profileInfo,
             },
             include: {
                 model: Profils,
@@ -529,17 +535,18 @@ const deleteItemsuser = async (req, res) => {
 
 const listeprofiles = async (req, res) => {
     try {
-        const permistype = await Profils.findAll({
+        const profil = await Profils.findAll({
             attributes: ['ID_PROFIL', 'DESCRIPTION'],
             order: [
                 ['DESCRIPTION', 'ASC']
             ]
         })
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Listes des profiles",
-            result: permistype
+            result: profil
         })
     } catch (error) {
         console.log(error)

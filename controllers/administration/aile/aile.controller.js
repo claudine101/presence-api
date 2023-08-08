@@ -7,6 +7,9 @@ const Aile = require("../../../models/Aile")
 const Batiment = require("../../../models/Batiment")
 const Users = require("../../../models/Users")
 const User_ailes = require("../../../models/User_ailes")
+const Profils = require("../../../models/Profils")
+const PROFILS = require("../../../constants/PROFILS")
+const { Sequelize } = require('sequelize');
 
 
 /**
@@ -164,7 +167,14 @@ const findAllaile = async (req, res) => {
 const findalluser = async (req, res) => {
     try {
         const users = await Users.findAll({
-            attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            where:{
+                ID_PROFIL:{
+                    [Op.in]:[PROFILS.AGENTS_DISTRIBUTEUR,PROFILS.CHEF_PLATEAU,
+                            PROFILS.AGENTS_SUPERVISEUR_AILE,PROFILS.AGENT_SUPERVISEUR,PROFILS.AGENT_PREPARATION]
+                }
+            },
+            attributes: ['USERS_ID', 'NOM', 'PRENOM'],
+           
         })
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,

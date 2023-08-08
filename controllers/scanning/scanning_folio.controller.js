@@ -34,7 +34,7 @@ const findAllFolio = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const folios = await Folio.findAll({
-            where: { ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP },
+            where: { ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU },
             attributes: ['ID_FOLIO', 'ID_VOLUME', 'NUMERO_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO'],
         })
         res.status(RESPONSE_CODES.OK).json({

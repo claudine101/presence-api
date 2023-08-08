@@ -99,6 +99,13 @@ const PROFILS = {
     * 
     */
         VERIFICATEUR_UPLOAD: 20,
+
+    /**
+    * 21-Admin
+    * 
+    */
+         ADMIN: 21,
+        
 }
 
 module.exports = PROFILS

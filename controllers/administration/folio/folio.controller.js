@@ -132,7 +132,7 @@ const findUsersByFolio = async (req, res) => {
     const { ID_FOLIO } = req.params
     const result = await Etapes_folio_historiques.findAll({
        attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER',	'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
-       group : ['ID_USER'],
+       group : ['USER_TRAITEMENT'],
       where: {
         ID_FOLIO:ID_FOLIO
       },
@@ -148,7 +148,7 @@ const findUsersByFolio = async (req, res) => {
         },
        {
         model: Users,
-        as: 'user',
+        as: 'traitement',
         required: false,
         attributes: [
           'USERS_ID', 'NOM','PRENOM', 'EMAIL','TELEPHONE', 'ID_PROFIL', 'PHOTO_USER'
@@ -193,7 +193,7 @@ const findUsersByFolio = async (req, res) => {
 
 
 /**
- * Permet d'afficher les agents participants au folio
+ * Permet d'afficher l'historique des agents participant au folio
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author jospinba <jospin@mdiabox.bi>
@@ -202,7 +202,7 @@ const findTraitantFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
     const result = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER',	'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
+       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
       //  group : ['ID_USER'],
       where: {
         ID_FOLIO:ID_FOLIO
@@ -224,6 +224,12 @@ const findTraitantFolio = async (req, res) => {
         attributes: [
           'USERS_ID', 'NOM','PRENOM', 'EMAIL', 'PHOTO_USER'
         ],
+        include: {
+          model: Profils,
+          as: 'profil',
+          required: false,
+          attributes: ['ID_PROFIL', 'DESCRIPTION'],
+        }
       },
       {
         model: Users,
@@ -232,6 +238,12 @@ const findTraitantFolio = async (req, res) => {
         attributes: [
           'USERS_ID', 'NOM','PRENOM', 'EMAIL', 'PHOTO_USER'
         ],
+        include: {
+          model: Profils,
+          as: 'profil',
+          required: false,
+          attributes: ['ID_PROFIL', 'DESCRIPTION'],
+        }
       },
       ]
 
