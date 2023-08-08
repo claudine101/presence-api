@@ -393,6 +393,7 @@ const findAll = async (req, res) => {
             attributes: ['ID_PROFIL', 'USERS_ID']
         })
         const user = userObject.toJSON()
+        console.log(user)
 
         var condition = {}
 
