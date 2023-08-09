@@ -74,7 +74,7 @@ const getHistoriqueVolume = async (req, res) => {
 
         const volumesHistorique = await Etapes_volume_historiques.findAll({
             // attributes :['ID_VOLUME,'],
-          //   group: ['USERS_ID'],
+            group: ['USERS_ID'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
@@ -138,7 +138,7 @@ const getHistoriqueFolio = async (req, res) => {
     try {
         const folioHistorique = await Etapes_folio_historiques.findAndCountAll({
             attributes: ['ID_USER', 'ID_FOLIO'],
-          //   group: ['ID_USER'],
+            group: ['ID_USER'],
             include: [
                 {
                     model: Users,
