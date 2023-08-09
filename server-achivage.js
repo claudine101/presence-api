@@ -10,7 +10,7 @@ const fileUpload = require("express-fileupload");
 const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
 const administrationRouter = require("./routes/administration/administrationRouter");
-const indexationRouter = require("./routes/auth/indexation/indexationRouter");
+const indexationRouter = require("./routes/indexation/indexationRouter");
 
 const app = express();
 const bindUser = require("./middleware/bindUser");
