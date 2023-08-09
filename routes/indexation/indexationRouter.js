@@ -1,6 +1,6 @@
 const express = require('express')
 const indexation_folio_routes = require('./indexation_folio.routes')
-const indexation_folio_contoller = require('../../../controllers/indexation/indexation_folio.controller')
+const indexation_folio_contoller = require('../../controllers/indexation/indexation_folio.controller')
 
 const indexationRouter = express.Router()
 
