@@ -74,7 +74,7 @@ const getHistoriqueVolume = async (req, res) => {
 
         const volumesHistorique = await Etapes_volume_historiques.findAll({
             // attributes :['ID_VOLUME,'],
-            group: ['USERS_ID'],
+          //   group: ['USERS_ID'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
