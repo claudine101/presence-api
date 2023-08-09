@@ -129,6 +129,7 @@ const getHistoriqueVolume = async (req, res) => {
     }
     catch (error) {
         console.log(error)
+        return res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
