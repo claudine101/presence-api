@@ -29,7 +29,7 @@ const IDS_ETAPES_FOLIO = {
         ADD_DETAILLER_FOLIO: 23,
         
          /**
-        * 24 - Retour: agent preparation vers agent superviseur phase de preparation
+        * 24 - Retour: agent superviseur phase de preparation vers  chef plateaus
         */
          RETOUR__AGENT_SUP_V_CHEF_PLATEAU: 24,
 

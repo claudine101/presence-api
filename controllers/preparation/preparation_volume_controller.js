@@ -211,6 +211,107 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
+ const findCheckPlateau = async (req, res) => {
+    try {
+        const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const defaultSortDirection = "DESC"
+        const sortColumns = {
+            volume: {
+                as: "volume",
+                fields: {
+                    DATE_INSERTION: 'volume.DATE_INSERTION',
+                }
+            },
+        }
+        var orderColumn
+        if (!orderColumn) {
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
+            sortModel = {
+                      model: 'volume',
+                      as: sortColumns.volume.as
+            }
+  }
+        const user = userObject.toJSON()
+        var condition = {}
+
+        if (user.ID_PROFIL == PROFILS.CHEF_DIVISION_ARCHIGES) {
+            condition = { USERS_ID: req.userId }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
+            condition = {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO,
+                USER_TRAITEMENT: req.userId
+            }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_DES_AILES, USER_TRAITEMENT: req.userId }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES, USER_TRAITEMENT: req.userId }
+        }
+        else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU, USER_TRAITEMENT: req.userId }
+        }
+        const result = await Etapes_volume_historiques.findAndCountAll({
+            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+            order: [
+                ['DATE_INSERTION','DESC']
+            ],
+    //         order: [
+    //             [orderColumn, defaultSortDirection]
+    //   ],
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                        {
+                            model: Maille,
+                            as: 'maille',
+                            required: false,
+                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+        
+                        }
+                }]
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                data: result.rows,
+                totalRecords: result.count
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous volume
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 27/06/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
 const findDetailler = async (req, res) => {
     try {
 
@@ -629,13 +730,13 @@ const findAllChefPlateau = async (req, res) => {
                 USERS_ID: req.userId, '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
             },
-            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME'],
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
                 },
                 {
                     model: Volume,
@@ -934,5 +1035,6 @@ module.exports = {
     findAllChefPlateau,
     findAllAgentSupAile,
     retourChefPlateau,
-    retourAgentSupAile
+    retourAgentSupAile,
+    findCheckPlateau
 }
