@@ -214,6 +214,7 @@ const getHistoriqueFolio = async (req, res) => {
         }
     }
     catch (error) {
+          return res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json(error)
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
