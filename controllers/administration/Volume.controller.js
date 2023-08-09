@@ -138,7 +138,7 @@ const getHistoriqueFolio = async (req, res) => {
     try {
         const folioHistorique = await Etapes_folio_historiques.findAndCountAll({
             attributes: ['ID_USER', 'ID_FOLIO'],
-            group: ['ID_USER'],
+          //   group: ['ID_USER'],
             include: [
                 {
                     model: Users,
