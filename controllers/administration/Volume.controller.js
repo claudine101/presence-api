@@ -11,6 +11,7 @@ const Users = require("../../models/Users")
 const Profils = require("../../models/Profils")
 const Etapes_folio_historiques = require("../../models/Etapes_folio_historiques")
 const Folio = require("../../models/Folio")
+const { query } = require("../../utils/db")
 
 
 /**
@@ -71,7 +72,7 @@ const getDetail = async (req, res) => {
 const getHistoriqueVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-
+          await query("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));")
         const volumesHistorique = await Etapes_volume_historiques.findAll({
             // attributes :['ID_VOLUME,'],
             group: ['USERS_ID'],
@@ -107,6 +108,10 @@ const getHistoriqueVolume = async (req, res) => {
             ],
 
         })
+        const modes = (await query("SELECT @@SESSION.sql_mode"))[0]
+        const newModes = "ONLY_FULL_GROUP_BY," + modes['@@SESSION.sql_mode']
+        console.log({ newModes })
+        await query(`SET GLOBAL sql_mode = "${newModes}"`)
         if (volumesHistorique) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -136,9 +141,10 @@ const getHistoriqueVolume = async (req, res) => {
 const getHistoriqueFolio = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
+          await query("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));")
         const folioHistorique = await Etapes_folio_historiques.findAndCountAll({
             attributes: ['ID_USER', 'ID_FOLIO'],
-            group: ['ID_USER'],
+            group: ['etapes_folio_historiques.ID_USER'],
             include: [
                 {
                     model: Users,
@@ -194,6 +200,10 @@ const getHistoriqueFolio = async (req, res) => {
             }
 
         }))
+        const modes = (await query("SELECT @@SESSION.sql_mode"))[0]
+        const newModes = "ONLY_FULL_GROUP_BY," + modes['@@SESSION.sql_mode']
+        console.log({ newModes })
+        await query(`SET SESSION sql_mode = "${newModes}"`)
         if (folioHistorique) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -214,7 +224,6 @@ const getHistoriqueFolio = async (req, res) => {
         }
     }
     catch (error) {
-          return res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json(error)
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
