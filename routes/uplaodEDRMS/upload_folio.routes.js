@@ -23,4 +23,14 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  */
  upload_folio_routes.post("/agent_upload", upload_folio_contoller.saveAgent)
 
+ /**
+ * Une route  permet  de recuperer les folios enregistre 
+ * dans l'histo par un chef equipe phase uploadEDRMS
+ *@method GET
+ * @url uploadEDMRS/folio/chef_equipe
+ */
+ upload_folio_routes.get("/chef_equipe", upload_folio_contoller.getFlashByChefEquipeENattante)
+
+
+ 
 module.exports = upload_folio_routes
