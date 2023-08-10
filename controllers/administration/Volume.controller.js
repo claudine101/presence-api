@@ -72,10 +72,9 @@ const getDetail = async (req, res) => {
 const getHistoriqueVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-          await query("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));")
-        const volumesHistorique = await Etapes_volume_historiques.findAll({
+        const volumesHistoriqueAll = await Etapes_volume_historiques.findAll({
             // attributes :['ID_VOLUME,'],
-            group: ['USERS_ID'],
+          //   group: ['USERS_ID'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
@@ -108,10 +107,15 @@ const getHistoriqueVolume = async (req, res) => {
             ],
 
         })
-        const modes = (await query("SELECT @@SESSION.sql_mode"))[0]
-        const newModes = "ONLY_FULL_GROUP_BY," + modes['@@SESSION.sql_mode']
-        console.log({ newModes })
-        await query(`SET GLOBAL sql_mode = "${newModes}"`)
+              const uniqueIds = [];
+              const volumesHistorique = volumesHistoriqueAll.filter(element => {
+                        const isDuplicate = uniqueIds.includes(element.USERS_ID);
+                        if (!isDuplicate) {
+                                  uniqueIds.push(element.USERS_ID);
+                                  return true;
+                        }
+                        return false;
+              });
         if (volumesHistorique) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -142,10 +146,9 @@ const getHistoriqueVolume = async (req, res) => {
 const getHistoriqueFolio = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-          await query("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));")
-        const folioHistorique = await Etapes_folio_historiques.findAndCountAll({
+        const folioHistoriqueAll = await Etapes_folio_historiques.findAndCountAll({
             attributes: ['ID_USER', 'ID_FOLIO'],
-            group: ['etapes_folio_historiques.ID_USER'],
+          //   group: ['etapes_folio_historiques.ID_USER'],
             include: [
                 {
                     model: Users,
@@ -176,6 +179,19 @@ const getHistoriqueFolio = async (req, res) => {
 
             ],
         })
+        const uniqueIds = [];
+        const folioHistoriqueRows = folioHistoriqueAll.rows.filter(element => {
+                  const isDuplicate = uniqueIds.includes(element.ID_USER);
+                  if (!isDuplicate) {
+                            uniqueIds.push(element.ID_USER);
+                            return true;
+                  }
+                  return false;
+        });
+        const folioHistorique = {
+          count: folioHistoriqueAll.count,
+          rows: folioHistoriqueRows
+        }
 
         const result = await Promise.all(folioHistorique.rows.map(async countObject => {
 
@@ -201,10 +217,6 @@ const getHistoriqueFolio = async (req, res) => {
             }
 
         }))
-        const modes = (await query("SELECT @@SESSION.sql_mode"))[0]
-        const newModes = "ONLY_FULL_GROUP_BY," + modes['@@SESSION.sql_mode']
-        console.log({ newModes })
-        await query(`SET SESSION sql_mode = "${newModes}"`)
         if (folioHistorique) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
