@@ -200,23 +200,50 @@ const getHistoriqueFolio = async (req, res) => {
 
             const folio = countObject.toJSON()
 
-            const count_agent_folio = await Folio.count({
+            const count_agent_folio = await Etapes_folio_historiques.count({
                 where: {
-                    ID_USERS: folio.ID_USER
+                    ID_USER: folio.ID_USER
                 }
             })
 
-            const getFolio = await Folio.findAndCountAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
+            const getFolio = await Etapes_folio_historiques.findAndCountAll({
+                group:['ID_FOLIO'],
+                include: [
+                    {
+                        model: Folio,
+                        as: "folio",
+                        attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
+                    }
+                ],
                 where: {
-                    ID_USERS: folio.ID_USER
+                    ID_USER: folio.ID_USER
                 }
             })
+
+
+
+
+            // const unique = [];
+            // const getFolioRows = getFolio.rows.filter(element => {
+            //           const isDuplicate = unique.includes(element.ID_FOLIO);
+            //           if (!isDuplicate) {
+            //             unique.push(element.ID_FOLIO);
+            //                     return true;
+            //           }
+            //           return false;
+            // });
+            // const folioHistorique = {
+            //   count: folioHistoriqueAll.count,
+            //   rows: folioHistoriqueRows
+            // }
+
+
+
 
             return {
                 ...folio,
                 count_agent_folio,
-                getFolio
+                getFolio,
             }
 
         }))
