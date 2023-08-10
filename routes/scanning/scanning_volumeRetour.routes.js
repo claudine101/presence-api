@@ -73,4 +73,11 @@ scanning_volumeRetour_routes.put('/agent/desarchivages/:ID_VOLUME', scanning_vol
  */
  scanning_volumeRetour_routes.put('/agent/chef/:ID_VOLUME', scanning_volumeRetour_controller.volumeAileScanning)
 
+  /**
+* Une route pour recuperer la listes des volumes qu'un chef d'equipe preparation a envoyer dans la phase scanning
+*@method GET
+* @url /scanning/retour/agent/chefEquipe/envoyer
+*/
+scanning_volumeRetour_routes.get('/agent/chefEquipe/envoyer', scanning_volumeRetour_controller.findAllVolumerEnvoyerScanning)
+
 module.exports = scanning_volumeRetour_routes
