@@ -142,6 +142,7 @@ const createuser = async (req, res) => {
             //     length: [1, 8],
             //     alpha: true
             // },
+            
             EMAIL: {
                 required: true,
                 length: [1, 255],
