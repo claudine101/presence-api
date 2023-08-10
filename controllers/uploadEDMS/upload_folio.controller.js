@@ -12,6 +12,7 @@ const VolumePvUpload = require('../../class/uploads/VolumePvUpload')
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
 const Validation = require('../../class/Validation')
 const Etapes_folio = require('../../models/Etapes_folio')
+const Folio_types_documents = require('../../models/Folio_types_documents')
 
 
 /**
@@ -25,7 +26,7 @@ const getFlashByChefEquipe = async (req, res) => {
     try {
        
         const flashsIndexe = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_NATURE'],
             where: { ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE },
             include: {
 
@@ -182,13 +183,13 @@ const saveAgent = async (req, res) => {
 
 }
 /**
- * Permet de recuperer les USB des d'un chef d'equipe
- * @author darcydev <darcy@mediabox.bi>
- * @date 04/08/2023
+ * Permet de recuperer les USB des d'un agent uploadEDRMS
+ * @author claudine <claudine@mediabox.bi>
+ * @date 10/08/2023
  * @param {express.Request} req 
  * @param {express.Response} res 
  */
-const getFlashByChefEquipeENattante = async (req, res) => {
+const getFlashByAgent = async (req, res) => {
     try {
         const { precision } = req.query
         var whereFilter = {}
@@ -208,21 +209,17 @@ const getFlashByChefEquipeENattante = async (req, res) => {
         }
         else {
             whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.in]: [
+                ID_ETAPE_FOLIO: 
                         IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS
-                    ]
                 }
             }
-        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION'] 
             },
             where: {
                 [Op.and]: [{
-                    ID_USER: req.userId,
+                    USER_TRAITEMENT: req.userId,
                 },
                whereFilter ]
             },
@@ -230,7 +227,7 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ['ID_FOLIO', 'ID_FLASH'],
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_NATURE'],
                 include: {
                     model: Flashs,
                     as: 'flash',
@@ -289,9 +286,156 @@ const getFlashByChefEquipeENattante = async (req, res) => {
         })
     }
 }
+/**
+ * Permet de recuperer les USB des d'un chef d'equipe
+ * @author claudine <claudine@mediabox.bi>
+ * @date 04/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const getFlashByChefEquipeENattante = async (req, res) => {
+    try {
+        const { precision } = req.query
+        var whereFilter = {}
+
+        if (precision == 'valides') {
+            whereFilter = {
+                ID_ETAPE_FOLIO: {
+                    [Op.notIn]: [
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
+                    ]
+                }
+            }
+        }
+        else {
+            whereFilter = {
+                ID_ETAPE_FOLIO: {
+                    [Op.in]: [
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS
+                    ]
+                }
+            }
+        }
+        const flashs = await Etapes_folio_historiques.findAll({
+            attributes: {
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION'] 
+            },
+            where: {
+                [Op.and]: [{
+                    ID_USER: req.userId,
+                },
+               whereFilter ]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_NATURE'],
+                include: {
+                    model: Flashs,
+                    as: 'flash',
+                    required: true,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                },
+                where: whereFilter
+            }, {
+                model: Users,
+                as: 'traitement',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }],
+            order: [['DATE_INSERTION', 'DESC']]
+        })
+        var FlashFolios = []
+        flashs.forEach(flash => {
+            const ID_FLASH = flash.folio?.ID_FLASH
+            const flashs = flash.folio.flash
+            const users=flash.traitement
+            const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
+            if (isExists) {
+                const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
+                const newFolios = { ...folio, folios: [...folio.folios, flash] }
+
+                FlashFolios = FlashFolios.map(flash => {
+                    if (flash.ID_FLASH == ID_FLASH) {
+                        return newFolios
+                    } else {
+                        return flash
+                    }
+                })
+            } else {
+                FlashFolios.push({
+                    ID_FLASH,
+                    flashs,
+                    users,
+                    folios: [flash]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des flash indexe",
+            result: FlashFolios
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de recuperer les nature du  dossier
+ * @author claudine <claudine@mediabox.bi>
+ * @date 10/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const getDocuments = async (req, res) => {
+    try {
+        const { ID_NATURE } = req.params
+        
+        const type = await Folio_types_documents.findAll({
+            attributes: {
+                include: ['ID_TYPE_FOLIO_DOCUMENT', 'ID_NATURE', 'NOM_DOCUMENT'] 
+            },
+            where: {
+                [Op.and]: [{
+                    ID_NATURE: ID_NATURE,
+                } ]
+            },
+            order: [['NOM_DOCUMENT', 'DESC']]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Type document",
+            result: type
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     getFlashByChefEquipe,
     getAgentsByProfil,
     saveAgent,
-    getFlashByChefEquipeENattante
+    getFlashByChefEquipeENattante,
+    getFlashByAgent,
+    getDocuments
 }

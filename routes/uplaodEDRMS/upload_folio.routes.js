@@ -31,6 +31,20 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  */
  upload_folio_routes.get("/chef_equipe", upload_folio_contoller.getFlashByChefEquipeENattante)
 
+/**
+ * Une route  permet  de recuperer les folios d'un agent  uploadEDRMS
+ *@method GET
+ * @url uploadEDMRS/folio/chef_equipe
+ */
+ upload_folio_routes.get("/agent", upload_folio_contoller.getFlashByAgent)
+
+ /**
+ * Une route  permet  de recuperer les folios d'un agent  uploadEDRMS
+ *@method GET
+ * @url uploadEDMRS/folio/typeDocument
+ */
+ upload_folio_routes.get("/typeDocument/:ID_NATURE", upload_folio_contoller.getDocuments)
+
 
  
 module.exports = upload_folio_routes
