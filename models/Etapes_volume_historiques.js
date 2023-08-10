@@ -50,13 +50,8 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
 })
 
 Etapes_volume_historiques.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volumes' })
-// Etapes_volume_historiques.belongsTo(Etapes_volumes, {foreignKey: "ID_ETAPE_VOLUME", as : 'etapes_volume'})
-
-// Etapes_volume_historiques.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USERS_ID", as: 'users' })
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USER_TRAITEMENT", as: 'traitant' })
-// Etapes_volume_historiques.belongsTo(Volume, {foreignKey: "ID_VOLUME", as: 'volumes'})
-//  Etapes_volume_historiques.hasMany(Volume, { foreignKey:"ID_VOLUME", as:'volume'})
 Users.hasMany(Etapes_volume_historiques,{foreignKey:'USER_TRAITEMENT', as:'histo'});
 
 module.exports = Etapes_volume_historiques
