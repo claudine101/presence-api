@@ -130,9 +130,9 @@ const findOneFolio = async (req, res) => {
 const findUsersByFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
-    const result = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER',	'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
-       group : ['USER_TRAITEMENT'],
+    const folioHistoriquesAll = await Etapes_folio_historiques.findAll({
+       attributes:['ID_FOLIO_HISTORIQUE',	'USER_TRAITEMENT', 'ID_FOLIO'],
+      //  group : ['USER_TRAITEMENT'],
       where: {
         ID_FOLIO:ID_FOLIO
       },
@@ -165,12 +165,22 @@ const findUsersByFolio = async (req, res) => {
 
     })
 
-    if (result) {
+    const uniqueIds = [];
+              const agentsTraitementF = folioHistoriquesAll.filter(element => {
+                        const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
+                        if (!isDuplicate) {
+                                  uniqueIds.push(element.USER_TRAITEMENT);
+                                  return true;
+                        }
+                        return false;
+              });
+
+    if (agentsTraitementF) {
       res.status(RESPONSE_CODES.OK).json({
         statusCode: RESPONSE_CODES.OK,
         httpStatus: RESPONSE_STATUS.OK,
         message: "Users participant au traitement du dossier",
-        result: result
+        result: agentsTraitementF
       })
     } else {
       res.status(RESPONSE_CODES.NOT_FOUND).json({
@@ -201,8 +211,8 @@ const findUsersByFolio = async (req, res) => {
 const findTraitantFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
-    const result = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
+    const agentsFolio = await Etapes_folio_historiques.findAll({
+       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO'],
       //  group : ['ID_USER'],
       where: {
         ID_FOLIO:ID_FOLIO
@@ -249,12 +259,51 @@ const findTraitantFolio = async (req, res) => {
 
     })
 
-    if (result) {
+    const uniqueIds = [];
+    const distinctAgent = agentsFolio.filter(element => {
+              const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
+              if (!isDuplicate) {
+                        uniqueIds.push(element.USER_TRAITEMENT);
+                        return true;
+              }
+              return false;
+    });
+    // const folioHistorique = {
+    //   // count: folioHistoriqueAll.count,
+    //   rows: distinctAgent
+    // }
+
+    // const result = await Promise.all(folioHistorique.rows.map(async countObject => {
+
+    //     const folio = countObject.toJSON()
+
+    //     // const count_agent_folio = await Folio.count({
+    //     //     where: {
+    //     //         ID_USERS: folio.ID_USER
+    //     //     }
+    //     // })
+
+    //     // const getFolio = await Folio.findAndCountAll({
+    //     //     attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
+    //     //     where: {
+    //     //         ID_USERS: folio.ID_USER
+    //     //     }
+    //     // })
+
+    //     // return {
+    //     //     ...folio,
+    //     //     count_agent_folio,
+    //     //     getFolio
+    //     // }
+
+    // }))
+
+    if (distinctAgent) {
       res.status(RESPONSE_CODES.OK).json({
         statusCode: RESPONSE_CODES.OK,
         httpStatus: RESPONSE_STATUS.OK,
         message: "Historique du dossier",
-        result: result
+        result: distinctAgent
       })
     } else {
       res.status(RESPONSE_CODES.NOT_FOUND).json({
