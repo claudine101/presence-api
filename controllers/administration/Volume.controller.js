@@ -69,13 +69,19 @@ const getDetail = async (req, res) => {
     }
 }
 
+/**
+ * Permet d'afficher les agents volume
+ * @date  4/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author eloge257 <nirema.eloge@mdiabox.bi>
+ */
 
 const getHistoriqueVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
         const volumesHistoriqueAll = await Etapes_volume_historiques.findAll({
-            // attributes :['ID_VOLUME,'],
-          //   group: ['USERS_ID'],
+            // attributes : ['ID_VOLUME'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
@@ -84,7 +90,6 @@ const getHistoriqueVolume = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
-
                     required: false,
                     include: [
                         {
@@ -105,9 +110,9 @@ const getHistoriqueVolume = async (req, res) => {
         })
               const uniqueIds = [];
               const volumesHistorique = volumesHistoriqueAll.filter(element => {
-                        const isDuplicate = uniqueIds.includes(element.USERS_ID);
+                        const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
                         if (!isDuplicate) {
-                                  uniqueIds.push(element.USERS_ID);
+                                  uniqueIds.push(element.USER_TRAITEMENT);
                                   return true;
                         }
                         return false;
@@ -138,12 +143,20 @@ const getHistoriqueVolume = async (req, res) => {
 }
 
 
+/**
+ * Permet d'afficher les agents folio
+ * @date  4/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author eloge257 <nirema.eloge@mdiabox.bi>
+ */
+
+
 const getHistoriqueFolio = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
         const folioHistoriqueAll = await Etapes_folio_historiques.findAndCountAll({
             attributes: ['ID_USER', 'ID_FOLIO'],
-          //   group: ['etapes_folio_historiques.ID_USER'],
             include: [
                 {
                     model: Users,
@@ -166,12 +179,7 @@ const getHistoriqueFolio = async (req, res) => {
                     where: {
                         ID_VOLUME: ID_VOLUME
                     },
-
                 }
-
-
-
-
             ],
         })
         const uniqueIds = [];
@@ -238,6 +246,13 @@ const getHistoriqueFolio = async (req, res) => {
 }
 
 
+/**
+ * Permet d'afficher tous les agents sur le volume selectionner
+ * @date  4/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author eloge257 <nirema.eloge@mdiabox.bi>
+ */
 
 const getAgentByVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
