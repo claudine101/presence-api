@@ -17,6 +17,7 @@ const Syst_provinces = require("../../../models/Syst_provinces")
 const Users = require("../../../models/Users")
 const Profils = require("../../../models/Profils")
 const Etapes_folio_historiques = require('../../../models/Etapes_folio_historiques')
+const Flashs = require("../../../models/Flashs")
 
 /**
  * Permet d'afficher les details du folio
@@ -33,47 +34,47 @@ const findOneFolio = async (req, res) => {
         ID_FOLIO
       },
       include:
-       [
-      {
-        model: Syst_collines,
-        as: 'colline',
-        required: false,
-        attributes: [
-          'COLLINE_ID', 'COLLINE_NAME'
-        ],
-        include: {
-          model: Syst_zones,
-          as: 'zone',
-          required: false,
-          attributes: ['ZONE_ID', 'ZONE_NAME'],
-          include: {
-            model: Syst_communes,
-            as: 'commune',
+        [
+          {
+            model: Syst_collines,
+            as: 'colline',
             required: false,
-            attributes: ['COMMUNE_ID', 'COMMUNE_NAME'],
+            attributes: [
+              'COLLINE_ID', 'COLLINE_NAME'
+            ],
             include: {
-              model: Syst_provinces,
-              as: 'province',
+              model: Syst_zones,
+              as: 'zone',
               required: false,
-              attributes: ['PROVINCE_ID', 'PROVINCE_NAME']
+              attributes: ['ZONE_ID', 'ZONE_NAME'],
+              include: {
+                model: Syst_communes,
+                as: 'commune',
+                required: false,
+                attributes: ['COMMUNE_ID', 'COMMUNE_NAME'],
+                include: {
+                  model: Syst_provinces,
+                  as: 'province',
+                  required: false,
+                  attributes: ['PROVINCE_ID', 'PROVINCE_NAME']
+                }
+              }
             }
-          }
-        }
-      },
-       {
-        model: Etapes_folio,
-        as: 'etapes',
-        required: false,
-        attributes: [
-          'ID_ETAPE_FOLIO', 'NOM_ETAPE'
-          ],
-        },
-        {
-          model: Nature_folio,
-          as: 'nature',
-          required: false,
-          attributes: [
-            'ID_NATURE_FOLIO', 'DESCRIPTION'
+          },
+          {
+            model: Etapes_folio,
+            as: 'etapes',
+            required: false,
+            attributes: [
+              'ID_ETAPE_FOLIO', 'NOM_ETAPE'
+            ],
+          },
+          {
+            model: Nature_folio,
+            as: 'nature',
+            required: false,
+            attributes: [
+              'ID_NATURE_FOLIO', 'DESCRIPTION'
             ],
           },
           {
@@ -82,17 +83,35 @@ const findOneFolio = async (req, res) => {
             required: false,
             attributes: [
               'ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'
-              ],
-            },
-            {
-              model: Equipes,
-              as: 'equipe',
-              required: false,
-              attributes: [
-                'ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'
-                ],
-              },
-    ]
+            ],
+          },
+          {
+            model: Equipes,
+            as: 'equipe',
+            required: false,
+            attributes: [
+              'ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'
+            ],
+          },
+          {
+            model: Flashs,
+            as: 'flash',
+            required: false,
+            attributes: [
+              'ID_FLASH','NOM_FLASH','DATE_INSERTION'
+            ],
+          
+          },
+          {
+            model: Flashs,
+            as: 'flashindexe',
+            required: false,
+            attributes: [
+              'ID_FLASH','NOM_FLASH','DATE_INSERTION'
+            ],
+          
+          },
+        ]
 
     })
 
@@ -131,37 +150,37 @@ const findUsersByFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
     const result = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER',	'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
-       group : ['USER_TRAITEMENT'],
+      attributes: ['ID_FOLIO_HISTORIQUE', 'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO', 'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
+      group: ['USER_TRAITEMENT'],
       where: {
-        ID_FOLIO:ID_FOLIO
+        ID_FOLIO: ID_FOLIO
       },
       include:
-       [
-        {
-          model: Etapes_folio,
-          as: 'etapes',
-          required: false,
-          attributes: [
-            'ID_ETAPE_FOLIO', 'NOM_ETAPE'
-          ],
-        },
-       {
-        model: Users,
-        as: 'traitement',
-        required: false,
-        attributes: [
-          'USERS_ID', 'NOM','PRENOM', 'EMAIL','TELEPHONE', 'ID_PROFIL', 'PHOTO_USER'
-        ],
-        include: {
-          model: Profils,
-          as: 'profil',
-          required: false,
-          attributes: ['ID_PROFIL', 'DESCRIPTION'],
-        }
-      },
-      
-    ]
+        [
+          {
+            model: Etapes_folio,
+            as: 'etapes',
+            required: false,
+            attributes: [
+              'ID_ETAPE_FOLIO', 'NOM_ETAPE'
+            ],
+          },
+          {
+            model: Users,
+            as: 'traitement',
+            required: false,
+            attributes: [
+              'USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'TELEPHONE', 'ID_PROFIL', 'PHOTO_USER'
+            ],
+            include: {
+              model: Profils,
+              as: 'profil',
+              required: false,
+              attributes: ['ID_PROFIL', 'DESCRIPTION'],
+            }
+          },
+
+        ]
 
     })
 
@@ -202,50 +221,50 @@ const findTraitantFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
     const result = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
+      attributes: ['ID_FOLIO_HISTORIQUE', 'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO', 'ID_ETAPE_FOLIO', 'PV_PATH', 'DATE_INSERTION'],
       //  group : ['ID_USER'],
       where: {
-        ID_FOLIO:ID_FOLIO
+        ID_FOLIO: ID_FOLIO
       },
       include:
-       [
-        {
-          model: Etapes_folio,
-          as: 'etapes',
-          required: false,
-          attributes: [
-            'ID_ETAPE_FOLIO', 'NOM_ETAPE'
-          ],
-        },
-       {
-        model: Users,
-        as: 'user',
-        required: false,
-        attributes: [
-          'USERS_ID', 'NOM','PRENOM', 'EMAIL', 'PHOTO_USER'
-        ],
-        include: {
-          model: Profils,
-          as: 'profil',
-          required: false,
-          attributes: ['ID_PROFIL', 'DESCRIPTION'],
-        }
-      },
-      {
-        model: Users,
-        as: 'traitement',
-        required: false,
-        attributes: [
-          'USERS_ID', 'NOM','PRENOM', 'EMAIL', 'PHOTO_USER'
-        ],
-        include: {
-          model: Profils,
-          as: 'profil',
-          required: false,
-          attributes: ['ID_PROFIL', 'DESCRIPTION'],
-        }
-      },
-      ]
+        [
+          {
+            model: Etapes_folio,
+            as: 'etapes',
+            required: false,
+            attributes: [
+              'ID_ETAPE_FOLIO', 'NOM_ETAPE'
+            ],
+          },
+          {
+            model: Users,
+            as: 'user',
+            required: false,
+            attributes: [
+              'USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'
+            ],
+            include: {
+              model: Profils,
+              as: 'profil',
+              required: false,
+              attributes: ['ID_PROFIL', 'DESCRIPTION'],
+            }
+          },
+          {
+            model: Users,
+            as: 'traitement',
+            required: false,
+            attributes: [
+              'USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'
+            ],
+            include: {
+              model: Profils,
+              as: 'profil',
+              required: false,
+              attributes: ['ID_PROFIL', 'DESCRIPTION'],
+            }
+          },
+        ]
 
     })
 

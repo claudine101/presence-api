@@ -29,6 +29,10 @@ const Flashs = sequelize.define("flashs", {
     tableName: 'flashs',
     timestamps: false,
 })
-Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as: 'folios' })
-Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as: 'flash' })
+Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as:'folios' })
+Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as:'flash' })
+
+Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH_INDEXE', as:'flashindexe' })
+
+Folio
 module.exports = Flashs

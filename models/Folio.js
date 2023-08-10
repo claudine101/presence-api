@@ -5,7 +5,6 @@ const Nature= require('./Nature_folio');
 const Etapes_folio =require('./Etapes_folio');
 const Volume= require('./Volume')
 const Equipes = require('./Equipes');
-
 const Nature_folio = require("./Nature_folio");
 const Syst_collines = require('./Syst_collines');
 /**
