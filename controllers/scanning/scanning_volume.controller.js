@@ -1195,89 +1195,6 @@ const updateRetourPlateauSup = async (req, res) => {
  * 
  */
 
-// const findAllVolumerSupAille = async (req, res) => {
-//     try {
-//         const result = await Etapes_folio_historiques.findAll({
-//             where: {
-//                 [Op.and]: [{
-//                     ID_USER: req.userId,
-//                 }]
-//             },
-//             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
-//             include: [
-//                 {
-//                     model: Folio,
-//                     as: 'folio',
-//                     required: true,
-//                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-//                     where: {
-//                         ID_ETAPE_FOLIO: {
-//                             [Op.in]: [
-//                                 ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
-//                                 ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
-//                                 ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
-//                             ]
-//                         }
-//                     },
-//                     // include: [
-//                     //     {
-//                     //         model: Equipes,
-//                     //         as: 'equipe',
-//                     //         required: false,
-//                     //         attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
-//                     //     }
-//                     // ]
-//                 },
-//                 {
-//                     model: Users,
-//                     as: 'traitement',
-//                     required: false,
-//                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
-//                 },
-//             ]
-//         })
-//         var UserFolios = []
-//         result.forEach(user => {
-//             const USERS_ID = user.traitement?.USERS_ID
-//             const users = user.traitement
-//             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-//             if (isExists) {
-//                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-//                 const newVolumes = { ...volume, folios: [...volume.folios, user] }
-//                 UserFolios = UserFolios.map(vol => {
-//                     if (vol.USERS_ID == USERS_ID) {
-//                         return newVolumes
-//                     } else {
-//                         return vol
-//                     }
-//                 })
-//             } else {
-//                 UserFolios.push({
-//                     USERS_ID,
-//                     users,
-//                     folios: [user]
-//                 })
-
-//             }
-
-//         })
-//         res.status(RESPONSE_CODES.OK).json({
-//             statusCode: RESPONSE_CODES.OK,
-//             httpStatus: RESPONSE_STATUS.OK,
-//             message: "Liste des folio donnees",
-//             UserFolios
-//             // result:result
-//         })
-//     } catch (error) {
-//         console.log(error)
-//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-//             message: "Erreur interne du serveur, réessayer plus tard",
-//         })
-//     }
-// }
-
 
 const findAllVolumerSupAille = async (req, res) => {
     try {
@@ -1289,7 +1206,11 @@ const findAllVolumerSupAille = async (req, res) => {
 
         var condition = {}
         if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
+            condition = { 
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, 
+            ID_ETAPE_VOLUME:ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+            // USER_TRAITEMENT: req.userId 
+        }
         }
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
@@ -1300,7 +1221,7 @@ const findAllVolumerSupAille = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    required: false,
+                    required: true,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
                 }]
         })
