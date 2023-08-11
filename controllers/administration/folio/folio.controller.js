@@ -150,7 +150,7 @@ const findUsersByFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
     const folioHistoriquesAll = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'USER_TRAITEMENT', 'ID_FOLIO'],
+       attributes:['ID_FOLIO_HISTORIQUE',	'USER_TRAITEMENT', 'ID_FOLIO', 'PV_PATH'],
       //  group : ['USER_TRAITEMENT'],
       where: {
         ID_FOLIO: ID_FOLIO
@@ -231,7 +231,7 @@ const findTraitantFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
     const agentsFolio = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO'],
+       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH'],
       //  group : ['ID_USER'],
       where: {
         ID_FOLIO: ID_FOLIO
