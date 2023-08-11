@@ -199,7 +199,7 @@ const folioEquipeScanning = async (req, res) => {
             )
             await Etapes_folio_historiques.create({
                 ID_USER: req.userId,
-                USER_TRAITEMENT: USER_TRAITEMENT,
+                USER_TRAITEMENT: req.userId,
                 ID_FOLIO: folio.folio.ID_FOLIO,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,

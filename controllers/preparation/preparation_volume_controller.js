@@ -9,7 +9,7 @@ const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
-const Volume = require('../../models/volume');
+const Volume = require('../../models/Volume');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 const Users = require('../../models/Users');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
@@ -77,7 +77,7 @@ const createVolume = async (req, res) => {
             const volumeInsert = await Volume.create({
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
                 CODE_VOLUME: CODE_REFERENCE,
-                ID_USERS: req.userId,
+                USERS_ID: req.userId,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
             }
             )
