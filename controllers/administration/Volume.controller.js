@@ -200,8 +200,8 @@ const getHistoriqueFolio = async (req, res) => {
 
             const folio = countObject.toJSON()
 
-            const getFolio = await Etapes_folio_historiques.findAll({
-                group:['ID_FOLIO'],
+            const getFolio = await Etapes_folio_historiques.findAndCountAll({
+                // group:['ID_FOLIO'],
                 include: [
                     {
                         model: Folio,
@@ -216,12 +216,34 @@ const getHistoriqueFolio = async (req, res) => {
                 }
             })
 
+
+
+            const uniqueIds = [];
+            const folioRows = getFolio.rows.filter(element => {
+                      const isDuplicate = uniqueIds.includes(element.ID_FOLIO);
+                      if (!isDuplicate) {
+                                uniqueIds.push(element.ID_FOLIO);
+                                return true;
+                      }
+                      return false;
+            });
+            // const folioHistorique = {
+            //   count: folioHistoriqueAll.count,
+            //   rows: folioHistoriqueRows
+            // }
+
+
+
+
+
+
+
             return {
                 ...folio,
-                count_agent_folio: getFolio.length,
+                count_agent_folio: folioRows.length,
                 getFolio: {
-                    rows: getFolio,
-                    count: getFolio.length
+                    rows: folioRows,
+                    count: folioRows.length
                 },
             }
 
@@ -265,7 +287,7 @@ const getAgentByVolume = async (req, res) => {
     try {
 
         const dossier = await Folio.findAll({
-            attributes : ['NUMERO_FOLIO'],
+            attributes : ['ID_FOLIO','NUMERO_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
