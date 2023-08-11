@@ -3,6 +3,9 @@ const VolumePvUpload = require('../../class/uploads/VolumePvUpload');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
 const { query } = require('../../utils/db');
+const generateToken = require('../../utils/generateToken');
+const md5 = require('md5')
+const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
@@ -12,7 +15,7 @@ const Users = require('../../models/Users');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
-const Folio = require('../../models/Folio');
+const Folio = require('../../models/folio');
 const { Op } = require("sequelize");
 const Maille = require('../../models/Maille');
 
@@ -61,7 +64,7 @@ const createVolume = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
 
@@ -69,6 +72,95 @@ const createVolume = async (req, res) => {
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
+            const volumeInsert = await Volume.create({
+                NUMERO_VOLUME: volume.NUMERO_VOLUME,
+                CODE_VOLUME: CODE_REFERENCE,
+                USERS_ID: req.userId,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
+            }
+            )
+            const insertData = volumeInsert.toJSON()
+            await Etapes_volume_historiques.create(
+                {
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                    USERS_ID: req.userId,
+                    ID_VOLUME: insertData.ID_VOLUME,
+                    USER_TRAITEMENT: req.userId,
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION
+                }
+            )
+        }))
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "Insertion faite  avec succès",
+            // result: histoPv
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de vérifier la connexion dun utilisateur
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  31/07/2023
+ * 
+ */
+const findVolume = async (req, res) => {
+    try {
+        const {
+            volume,
+        } = req.body;
+        const validation = new Validation(
+            req.files,
+            {
+
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+
+        // const histoPv = histo.toJSON()
+        var volumeObjet = {}
+        volumeObjet = JSON.parse(volume)
+        await Promise.all(volumeObjet.map(async (volume) => {
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
             const volumeInsert = await Volume.create({
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
@@ -83,7 +175,6 @@ const createVolume = async (req, res) => {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     USERS_ID: req.userId,
                     ID_VOLUME: insertData.ID_VOLUME,
-                    USER_TRAITEMENT: req.userId,
                     ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION
                 }
             )
@@ -118,6 +209,7 @@ const findAll = async (req, res) => {
             where: { USERS_ID: req.userId },
             attributes: ['ID_PROFIL', 'USERS_ID']
         })
+        const defaultSortDirection = "DESC"
         const sortColumns = {
             volume: {
                 as: "volume",
@@ -492,9 +584,17 @@ const nommerDistributeur = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES,
+            ID_MALLE:MAILLE
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: AGENT_DISTRIBUTEUR,
@@ -566,9 +666,16 @@ const nommerSuperviseurAile = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: AGENT_SUPERVISEUR,
@@ -640,9 +747,16 @@ const nommerChefPlateau = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: CHEF_PLATEAU,
@@ -917,12 +1031,19 @@ const retourChefPlateau = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+            }, {
+                where: {
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                }
+            })
             await Etapes_volume_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -997,12 +1118,19 @@ const retourAgentSupAile = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+            }, {
+                where: {
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                }
+            })
             await Etapes_volume_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
