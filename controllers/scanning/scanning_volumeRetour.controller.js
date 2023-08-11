@@ -603,6 +603,61 @@ const volumeAileScanning = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuper les volumes qu'un achef equipe a envoyer dans la phase scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  9/08/2023
+ * 
+ */
+const findAllVolumerEnvoyerScanning = async (req, res) => {
+    try {
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const user = userObject.toJSON()
+
+        var condition = {}
+
+        if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
+            condition = { ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES }
+        }else if(user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING){
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING }
+        }
+        // else if(user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES){
+        //     condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE, USER_TRAITEMENT: req.userId }
+        // }
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'TELEPHONE'],
+                }]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes chef equipe",
+            result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     volumeScanningRetourAgentAille,
     volumeScanningRetourChefEquipe,
@@ -613,5 +668,6 @@ module.exports = {
     volumeScanningRetourAgentSupArchives,
     findAgentDesarchivages,
     volumeScanningRetourDesarchivages,
-    volumeAileScanning
+    volumeAileScanning,
+    findAllVolumerEnvoyerScanning
 }

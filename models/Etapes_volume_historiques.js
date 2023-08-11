@@ -4,6 +4,7 @@ const { DataTypes, BelongsTo } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Users = require('./Users');
 const Etapes_volumes = require('./Etapes_volumes');
+const Volume = require('./Volume');
 
 /**
 * fonction model pour la creation de la table etapes_volume_historiques
