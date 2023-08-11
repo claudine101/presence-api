@@ -475,9 +475,9 @@ const getFlashBySupAile = async (req, res) => {
                                         }
                               }
                     }
-                    const flashs = await Etapes_folio_historiques.findAll({
+                    const allFlashs = await Etapes_folio_historiques.findAll({
                               attributes: {
-                                        include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION', [Sequelize.fn('COUNT', Sequelize.col('etapes_folio_historiques.ID_FOLIO_HISTORIQUE')), 'folioCounts']]
+                                        include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
                               },
                               where: {
                                         USER_TRAITEMENT: req.userId
@@ -502,9 +502,30 @@ const getFlashBySupAile = async (req, res) => {
                                         required: true,
                                         attributes: ['USERS_ID', 'NOM', 'PRENOM']
                               }],
-                              group: ['folio->flash.ID_FLASH'],
+                              // group: ['folio->flash.ID_FLASH'],
                               order: [['DATE_INSERTION', 'DESC']]
                     })
+                    const uniqueIds = [];
+                    const uniqueFlashs = allFlashs.filter(element => {
+                              const isDuplicate = uniqueIds.includes(element.folio.flash.ID_FLASH);
+                              if (!isDuplicate) {
+                                        uniqueIds.push(element.folio.flash.ID_FLASH);
+                                        return true;
+                              }
+                              return false;
+                    });
+                    const flashs = await Promise.all(uniqueFlashs.map(async flashObject => {
+                              const flash = flashObject.toJSON()
+                              const folioCounts = await Folio.count({
+                                        where: {
+                                                  ID_FLASH: flash.folio.flash.ID_FLASH
+                                        }
+                              })
+                              return {
+                                        ...flash,
+                                        folioCounts
+                              }
+                    }))
                     res.status(RESPONSE_CODES.OK).json({
                               statusCode: RESPONSE_CODES.OK,
                               httpStatus: RESPONSE_STATUS.OK,
@@ -555,9 +576,9 @@ const getFlashByChefEquipe = async (req, res) => {
                                         }
                               }
                     }
-                    const flashs = await Etapes_folio_historiques.findAll({
+                    const allFlashs = await Etapes_folio_historiques.findAll({
                               attributes: {
-                                        include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION', [Sequelize.fn('COUNT', Sequelize.col('etapes_folio_historiques.ID_FOLIO_HISTORIQUE')), 'folioCounts']]
+                                        include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
                               },
                               where: {
                                         [Op.and]: [{
@@ -583,9 +604,30 @@ const getFlashByChefEquipe = async (req, res) => {
                                         required: true,
                                         attributes: ['USERS_ID', 'NOM', 'PRENOM']
                               }],
-                              group: ['folio->flash.ID_FLASH'],
+                              // group: ['folio->flash.ID_FLASH'],
                               order: [['DATE_INSERTION', 'DESC']]
                     })
+                    const uniqueIds = [];
+                    const uniqueFlashs = allFlashs.filter(element => {
+                              const isDuplicate = uniqueIds.includes(element.folio.flash.ID_FLASH);
+                              if (!isDuplicate) {
+                                        uniqueIds.push(element.folio.flash.ID_FLASH);
+                                        return true;
+                              }
+                              return false;
+                    });
+                    const flashs = await Promise.all(uniqueFlashs.map(async flashObject => {
+                              const flash = flashObject.toJSON()
+                              const folioCounts = await Folio.count({
+                                        where: {
+                                                  ID_FLASH: flash.folio.flash.ID_FLASH
+                                        }
+                              })
+                              return {
+                                        ...flash,
+                                        folioCounts
+                              }
+                    }))
                     res.status(RESPONSE_CODES.OK).json({
                               statusCode: RESPONSE_CODES.OK,
                               httpStatus: RESPONSE_STATUS.OK,
@@ -629,9 +671,9 @@ const getFlashByChefPlateauIndexation = async (req, res) => {
                               }
                     }
 
-                    const flashs = await Etapes_folio_historiques.findAll({
+                    const allFlashs = await Etapes_folio_historiques.findAll({
                               attributes: {
-                                        include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION', [Sequelize.fn('COUNT', Sequelize.col('etapes_folio_historiques.ID_FOLIO_HISTORIQUE')), 'folioCounts']]
+                                        include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
                               },
                               where: {
                                         USER_TRAITEMENT: req.userId
@@ -656,9 +698,30 @@ const getFlashByChefPlateauIndexation = async (req, res) => {
                                         required: true,
                                         attributes: ['USERS_ID', 'NOM', 'PRENOM']
                               }],
-                              group: ['folio->flash.ID_FLASH'],
+                              // group: ['folio->flash.ID_FLASH'],
                               order: [['DATE_INSERTION', 'DESC']]
                     })
+                    const uniqueIds = [];
+                    const uniqueFlashs = allFlashs.filter(element => {
+                              const isDuplicate = uniqueIds.includes(element.folio.flash.ID_FLASH);
+                              if (!isDuplicate) {
+                                        uniqueIds.push(element.folio.flash.ID_FLASH);
+                                        return true;
+                              }
+                              return false;
+                    });
+                    const flashs = await Promise.all(uniqueFlashs.map(async flashObject => {
+                              const flash = flashObject.toJSON()
+                              const folioCounts = await Folio.count({
+                                        where: {
+                                                  ID_FLASH: flash.folio.flash.ID_FLASH
+                                        }
+                              })
+                              return {
+                                        ...flash,
+                                        folioCounts
+                              }
+                    }))
                     res.status(RESPONSE_CODES.OK).json({
                               statusCode: RESPONSE_CODES.OK,
                               httpStatus: RESPONSE_STATUS.OK,
