@@ -2,12 +2,16 @@ const express = require('express');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
 const { query } = require('../../utils/db');
-const Volume=require('../../models/Volume');
-const Etapes_volumes= require('../../models/Etapes_volumes');
+const Volume = require('../../models/Volume');
+const Etapes_volumes = require('../../models/Etapes_volumes');
 const maille = require('../../models/Maille');
-const Users=  require('../../models/Users');
+const Users = require('../../models/Users');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
-const Profils= require('../../models/Profils')
+const Profils = require('../../models/Profils');
+const moment = require('moment');
+const { Op } = require('sequelize');
+
+
 
 
 
@@ -22,7 +26,7 @@ const Profils= require('../../models/Profils')
 
 const findAll = async (req, res) => {
     try {
-        const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const { volume_filters,startDate, endDate, rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
         const defaultSortField = 'ID_VOLUME'
         const defaultSortDirection = "DESC"
@@ -32,10 +36,10 @@ const findAll = async (req, res) => {
                 fields: {
                     ID_VOLUME: 'ID_VOLUME',
                     NUMERO_VOLUME: "NUMERO_VOLUME",
-                    CODE_VOLUME:"CODE_VOLUME",
-                    NOMBRE_DOSSIER :"NOMBRE_DOSSIER",
-                    DATE_INSERTION :"DATE_INSERTION"
-                   
+                    CODE_VOLUME: "CODE_VOLUME",
+                    NOMBRE_DOSSIER: "NOMBRE_DOSSIER",
+                    DATE_INSERTION: "DATE_INSERTION"
+
                 }
             },
 
@@ -44,7 +48,7 @@ const findAll = async (req, res) => {
                 as: "etapes_volumes",
                 fields: {
                     NOM_ETAPE: 'NOM_ETAPE',
-                 
+
                 }
             },
 
@@ -52,11 +56,11 @@ const findAll = async (req, res) => {
                 as: "malle",
                 fields: {
                     NUMERO_MAILLE: 'NUMERO_MAILLE',
-                  
+
                 }
             },
 
-           
+
         }
 
         var orderColumn, orderDirection
@@ -108,6 +112,26 @@ const findAll = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
+        var dateWhere = {}
+
+        var  volume_filter={}
+
+        if(volume_filters){
+            volume_filter = {ID_ETAPE_VOLUME:volume_filters}
+          }
+        // Date filter
+        if (startDate) {
+            const startDateFormat = 
+            moment(startDate).format("YYYY-MM-DD 00:00:00")
+            const endDateFormat = endDate ?
+                moment(endDate).format("YYYY-MM-DD 23:59:59") :
+                moment().format("YYYY-MM-DD 23:59:59")
+            dateWhere = {
+                DATE_INSERTION: {
+                    [Op.between]: [startDateFormat, endDateFormat]
+                }
+            }
+        }
         const result = await Volume.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
@@ -116,20 +140,24 @@ const findAll = async (req, res) => {
             ],
             where: {
                 ...globalSearchWhereLike,
+                ...dateWhere,
+                ... volume_filter
             },
-            include:[
-                { model:Etapes_volumes,
-                as: 'etapes_volumes',
-                attributes: ['NOM_ETAPE'],
-                required: false
-                 }, 
-               
-                 { model:maille,
-                  as: 'maille',
-                  attributes: ['NUMERO_MAILLE'],
-                  required: false
+            include: [
+                {
+                    model: Etapes_volumes,
+                    as: 'etapes_volumes',
+                    attributes: ['NOM_ETAPE'],
+                    required: false
+                },
+
+                {
+                    model: maille,
+                    as: 'maille',
+                    attributes: ['NUMERO_MAILLE'],
+                    required: false
                 }]
-            
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -168,48 +196,48 @@ const gethistoriquevol = async (req, res) => {
             },
             include: [
                 {
-                model: Etapes_volume_historiques,
-                as:'etapes_volume_historiques',
-                attributes: ['ID_VOLUME', 'PV_PATH','DATE_INSERTION'],
-                required: false,
+                    model: Etapes_volume_historiques,
+                    as: 'etapes_volume_historiques',
+                    attributes: ['ID_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+                    required: false,
 
-                include:[
-                    {
-                        model:Users,
-                        as:'users',
-                        attributes: ['USERS_ID','NOM','PRENOM','EMAIL','TELEPHONE','PHOTO_USER'],
-                        required: false,
-                        include: {
-                            model: Profils,
-                            as: 'profil',
+                    include: [
+                        {
+                            model: Users,
+                            as: 'users',
+                            attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'TELEPHONE', 'PHOTO_USER'],
                             required: false,
-                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
-                          }
-                      },
-                      {
-                        model:Users,
-                        as:'traitant',
-                        attributes: ['USERS_ID','NOM','PRENOM','EMAIL','TELEPHONE','PHOTO_USER'],
-                        required: false,
-                        include: {
-                            model: Profils,
-                            as: 'profile',
+                            include: {
+                                model: Profils,
+                                as: 'profil',
+                                required: false,
+                                attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                            }
+                        },
+                        {
+                            model: Users,
+                            as: 'traitant',
+                            attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'TELEPHONE', 'PHOTO_USER'],
                             required: false,
-                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
-                          }
-                       
-                      },
-            
-                  {
-                        model:Etapes_volumes,
-                        as:'etapes_volumes',
-                        attributes: ['ID_ETAPE_VOLUME','NOM_ETAPE'],
-                        required: false
-                      },
-                ]
-            },
-       
-          ]
+                            include: {
+                                model: Profils,
+                                as: 'profile',
+                                required: false,
+                                attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                            }
+
+                        },
+
+                        {
+                            model: Etapes_volumes,
+                            as: 'etapes_volumes',
+                            attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+                            required: false
+                        },
+                    ]
+                },
+
+            ]
         })
         if (histo) {
             res.status(RESPONSE_CODES.OK).json({
@@ -234,9 +262,9 @@ const gethistoriquevol = async (req, res) => {
             message: "Erreur interne du serveur, réessayer plus tard",
         })
     }
-  }
- 
-module.exports={
+}
+
+module.exports = {
     findAll,
     gethistoriquevol
 }

@@ -209,6 +209,45 @@ const findOnevolumef0lio = async (req, res) => {
     }
 }
 
+/**
+* Permet de recuperer les etapes volume pour les filtre
+* @param {express.Request} req 
+* @param {express.Response} res 
+* @author derick <derick@mdiabox.bi>
+*/
+
+const findvolume= async (req, res) => {
+    try {
+        
+        const volumefiltre= await Volume_folio.findAll({
+            where: {
+               
+            },
+            
+        })
+        if (volumefiltre) {
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "volume folio trouvee",
+                result: volumefiltre
+            })
+        } else {
+            res.status(RESPONSE_CODES.NOT_FOUND).json({
+                statusCode: RESPONSE_CODES.NOT_FOUND,
+                httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                message: " non trouvé",
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 
 /**
@@ -277,7 +316,8 @@ module.exports = {
    
     findAllvolume_folio,
     findOnevolumef0lio,
-    updatevolumeflio
+    updatevolumeflio,
+    findvolume
     
 
 }

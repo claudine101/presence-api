@@ -9,13 +9,12 @@ const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
-const folio = require('../../models/folio');
 const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques');
 const Users = require('../../models/Users');
 const ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
-const Folio = require('../../models/folio');
+const Folio = require('../../models/Folio');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
