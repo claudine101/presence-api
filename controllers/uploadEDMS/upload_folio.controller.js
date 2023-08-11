@@ -215,7 +215,8 @@ const getFlashByAgent = async (req, res) => {
             }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
-                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION'] 
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
+                           'DATE_INSERTION'] 
             },
             where: {
                 [Op.and]: [{
@@ -227,7 +228,9 @@ const getFlashByAgent = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_NATURE'],
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_NATURE' ,
+                'NOM_PROPRIETAIRE','PRENOM_PROPRIETAIRE','NUMERO_FEUILLE',
+                'NUMERO_PARCELLE','NUMERO_FEUILLE','LOCALITE'],
                 include: {
                     model: Flashs,
                     as: 'flash',
