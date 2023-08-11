@@ -61,7 +61,7 @@ const createfolio = async (req, res) => {
         const folioUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await folioUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
 
@@ -69,6 +69,7 @@ const createfolio = async (req, res) => {
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${folio.NUMERO_folio}${req.userId}${moment().get("s")}`
             const folioInsert = await Folio.create({
                 ID_VOLUME: ID_VOLUME,
@@ -90,6 +91,13 @@ const createfolio = async (req, res) => {
                 }
             )
         }))
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: req.userId,
@@ -109,8 +117,8 @@ const createfolio = async (req, res) => {
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
+        })
+    }
 }
 /**
  * Permet de afficher tous volume
