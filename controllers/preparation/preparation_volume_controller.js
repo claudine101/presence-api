@@ -3,9 +3,6 @@ const VolumePvUpload = require('../../class/uploads/VolumePvUpload');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
 const { query } = require('../../utils/db');
-const generateToken = require('../../utils/generateToken');
-const md5 = require('md5')
-const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
@@ -64,7 +61,7 @@ const createVolume = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
 
@@ -72,7 +69,6 @@ const createVolume = async (req, res) => {
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
-            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
             const volumeInsert = await Volume.create({
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
@@ -107,83 +103,97 @@ const createVolume = async (req, res) => {
         })
     }
 }
+
 /**
- * Permet de vérifier la connexion dun utilisateur
- * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * Permet de afficher tous volume
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 27/06/2023
  * @param {express.Request} req
  * @param {express.Response} res 
- * @date  31/07/2023
- * 
  */
-const findVolume = async (req, res) => {
+const findAll = async (req, res) => {
     try {
-        const {
-            volume,
-        } = req.body;
-        const validation = new Validation(
-            req.files,
-            {
-
-                PV: {
-                    required: true,
-                    image: 21000000
+        const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const sortColumns = {
+            volume: {
+                as: "volume",
+                fields: {
+                    DATE_INSERTION: 'volume.DATE_INSERTION',
                 }
-
             },
-            {
-                PV: {
-                    image: "La taille invalide",
-                    required: "PV est obligatoire"
-                }
+        }
+        var orderColumn
+        if (!orderColumn) {
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
+            sortModel = {
+                      model: 'volume',
+                      as: sortColumns.volume.as
             }
-        );
-        await validation.run();
-        const isValid = await validation.isValidate()
-        const errors = await validation.getErrors()
-        if (!isValid) {
-            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                message: "Probleme de validation des donnees",
-                result: errors
-            })
-        }
-        const PV = req.files?.PV
-        const volumeUpload = new VolumePvUpload()
-        var filename_pv
-        if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
-            filename_pv = fileInfo_2
-        }
+  }
+        const user = userObject.toJSON()
+        var condition = {}
 
-        // const histoPv = histo.toJSON()
-        var volumeObjet = {}
-        volumeObjet = JSON.parse(volume)
-        await Promise.all(volumeObjet.map(async (volume) => {
-            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
-            const volumeInsert = await Volume.create({
-                NUMERO_VOLUME: volume.NUMERO_VOLUME,
-                CODE_VOLUME: CODE_REFERENCE,
-                ID_USERS: req.userId,
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
+        if (user.ID_PROFIL == PROFILS.CHEF_DIVISION_ARCHIGES) {
+            condition = { USERS_ID: req.userId }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
+            condition = {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO,
+                USER_TRAITEMENT: req.userId
             }
-            )
-            const insertData = volumeInsert.toJSON()
-            await Etapes_volume_historiques.create(
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_DES_AILES, USER_TRAITEMENT: req.userId }
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES, USER_TRAITEMENT: req.userId }
+        }
+        else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU, USER_TRAITEMENT: req.userId }
+        }
+        const result = await Etapes_volume_historiques.findAndCountAll({
+            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+            order: [
+                ['DATE_INSERTION','DESC']
+            ],
+    //         order: [
+    //             [orderColumn, defaultSortDirection]
+    //   ],
+            where: {
+                ...condition
+            },
+            include: [
                 {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    USERS_ID: req.userId,
-                    ID_VOLUME: insertData.ID_VOLUME,
-                    ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION
-                }
-            )
-        }))
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Insertion faite  avec succès",
-            // result: histoPv
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                        {
+                            model: Maille,
+                            as: 'maille',
+                            required: false,
+                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+        
+                        }
+                }]
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                data: result.rows,
+                totalRecords: result.count
+            }
         })
     } catch (error) {
         console.log(error)
@@ -194,7 +204,6 @@ const findVolume = async (req, res) => {
         })
     }
 }
-
 /**
  * Permet de afficher tous volume
  *@author NDAYISABA Claudine<claudine@mediabox.bi>
@@ -202,7 +211,7 @@ const findVolume = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
-const findAll = async (req, res) => {
+ const findCheckPlateau = async (req, res) => {
     try {
         const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const userObject = await Users.findOne({
@@ -483,17 +492,9 @@ const nommerDistributeur = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES,
-            ID_MALLE:MAILLE
-        }, {
-            where: {
-                ID_VOLUME: ID_VOLUME
-            }
-        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: AGENT_DISTRIBUTEUR,
@@ -565,16 +566,9 @@ const nommerSuperviseurAile = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES
-        }, {
-            where: {
-                ID_VOLUME: ID_VOLUME
-            }
-        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: AGENT_SUPERVISEUR,
@@ -646,16 +640,9 @@ const nommerChefPlateau = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
-        }, {
-            where: {
-                ID_VOLUME: ID_VOLUME
-            }
-        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: CHEF_PLATEAU,
@@ -751,13 +738,13 @@ const findAllChefPlateau = async (req, res) => {
                 USERS_ID: req.userId, '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
             },
-            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME'],
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
                 },
                 {
                     model: Volume,
@@ -770,8 +757,8 @@ const findAllChefPlateau = async (req, res) => {
         })
         var UserFolios = []
         result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
+            const USERS_ID = user.traitant?.USERS_ID
+            const users = user.traitant
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
             if (isExists) {
                 const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
@@ -930,19 +917,12 @@ const retourChefPlateau = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
-            const results = await Volume.update({
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
-            }, {
-                where: {
-                    ID_VOLUME: volume.volume.ID_VOLUME,
-                }
-            })
             await Etapes_volume_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -979,7 +959,7 @@ const retourChefPlateau = async (req, res) => {
  */
 const retourAgentSupAile = async (req, res) => {
     try {
-        const { AGENT_SUPERVISEUR_AILES, volume } = req.body
+        const { AGENT_SUPERVISEUR_AILE, volume } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -1017,25 +997,18 @@ const retourAgentSupAile = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var volumeObjet = {}
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
-            const results = await Volume.update({
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
-            }, {
-                where: {
-                    ID_VOLUME: volume.volume.ID_VOLUME,
-                }
-            })
             await Etapes_volume_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     USERS_ID: req.userId,
                     ID_VOLUME: volume.volume.ID_VOLUME,
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILES,
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILE,
                     ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
                 }
             )
@@ -1070,5 +1043,6 @@ module.exports = {
     findAllChefPlateau,
     findAllAgentSupAile,
     retourChefPlateau,
-    retourAgentSupAile
+    retourAgentSupAile,
+    findCheckPlateau
 }
