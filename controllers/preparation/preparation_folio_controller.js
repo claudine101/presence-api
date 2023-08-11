@@ -3,13 +3,19 @@ const VolumePvUpload = require('../../class/uploads/VolumePvUpload');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
 const { query } = require('../../utils/db');
+const generateToken = require('../../utils/generateToken');
+const md5 = require('md5')
+const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
+const folio = require('../../models/folio');
 const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques');
 const Users = require('../../models/Users');
 const ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
-const Folio = require('../../models/Folio');
+const PROFILS = require('../../constants/PROFILS');
+const Nature_folio = require('../../models/Nature_folio');
+const Folio = require('../../models/folio');
 const Etapes_volume_historiques = require('../../models/Etapes_volume_historiques');
 
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
@@ -61,7 +67,7 @@ const createfolio = async (req, res) => {
         const folioUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await folioUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
 
@@ -69,6 +75,7 @@ const createfolio = async (req, res) => {
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${folio.NUMERO_folio}${req.userId}${moment().get("s")}`
             const folioInsert = await Folio.create({
                 ID_VOLUME: ID_VOLUME,
@@ -90,6 +97,13 @@ const createfolio = async (req, res) => {
                 }
             )
         }))
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
         await Etapes_volume_historiques.create({
             USERS_ID: req.userId,
             USER_TRAITEMENT: req.userId,
@@ -190,12 +204,19 @@ const nommerSuperviseurPreparation = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
+            const results = await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP
+            }, {
+                where: {
+                    ID_FOLIO: folio.ID_FOLIO,
+                }
+            })
             await Etapes_folio_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -270,12 +291,19 @@ const nommerAgentPreparation = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
+            const results = await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_PREPARATION
+            }, {
+                where: {
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                }
+            })
             await Etapes_folio_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -350,12 +378,19 @@ const retourAgentPreparation = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
+            const results = await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
+            }, {
+                where: {
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                }
+            })
             await Etapes_folio_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -430,12 +465,19 @@ const retourAgentSuperviseur = async (req, res) => {
         const volumeUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
-            const { fileInfo: fileInfo_2 } = await volumeUpload.upload(PV, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
+            const results = await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
+            }, {
+                where: {
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                }
+            })
             await Etapes_folio_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -975,7 +1017,7 @@ const addDetails = async (req, res) => {
         var filename_pv
 
         if (PHOTO_DOSSIER) {
-            const { fileInfo: fileInfo_2 } = await dossiersUpload.upload(PHOTO_DOSSIER, false)
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await dossiersUpload.upload(PHOTO_DOSSIER, false)
             filename_dossiers = fileInfo_2
         }
         await Folio.update(
