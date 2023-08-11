@@ -15,7 +15,7 @@ const Users = require('../../models/Users');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
-const Folio = require('../../models/folio');
+const Folio = require('../../models/Folio');
 const { Op } = require("sequelize");
 const Maille = require('../../models/Maille');
 
