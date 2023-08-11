@@ -77,7 +77,7 @@ const createVolume = async (req, res) => {
             const volumeInsert = await Volume.create({
                 NUMERO_VOLUME: volume.NUMERO_VOLUME,
                 CODE_VOLUME: CODE_REFERENCE,
-                ID_USERS: req.userId,
+                USERS_ID: req.userId,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
             }
             )
