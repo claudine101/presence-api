@@ -22,6 +22,9 @@ const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
 const preparationRouter = require("./routes/preparation/preparationRoutes");
 const scanning_volumeRouter = require("./routes/scanning/scanning_volumeRouter");
+const uploadRouter = require("./routes/uplaodEDRMS/upload_folioRouter");
+
+
 
 
 app.use(cors());
@@ -39,6 +42,8 @@ app.use('/indexation', indexationRouter)
 app.use('/admin', administrationRouter)
 app.use('/preparation', preparationRouter)
 app.use('/scanning', scanning_volumeRouter)
+app.use('/uploadEDMRS', uploadRouter)
+
 app.all("*", (req, res) => {
           res.status(RESPONSE_CODES.NOT_FOUND).json({
                     statusCode: RESPONSE_CODES.NOT_FOUND,
