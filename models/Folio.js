@@ -8,6 +8,7 @@ const Equipes = require('./Equipes');
 
 const Nature_folio = require("./Nature_folio");
 const Syst_collines = require('./Syst_collines');
+const Folio_documents = require('./Folio_documents');
 /**
 * fonction model pour la creation de la table folio
 * @author habiyakare leonard <leonard@mediabox.bi>
@@ -148,4 +149,7 @@ Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'natures' })
 Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
+Folio.belongsTo(Folio_documents, { foreignKey: "ID_FOLIO", as: 'documents' })
+
+
 module.exports = Folio

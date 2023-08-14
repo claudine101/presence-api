@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
+const Folio = require('./Folio');
 
 
 /**
@@ -21,6 +22,10 @@ const Folio_document_non_enregistres_historiques = sequelize.define("folio_docum
         type: Sequelize.INTEGER,
         allowNull: false
     },
+    USERS_ID: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -32,5 +37,6 @@ const Folio_document_non_enregistres_historiques = sequelize.define("folio_docum
     timestamps: false
 })
 
+Folio_document_non_enregistres_historiques.belongsTo(Folio, { foreignKey: "ID_FOLIO", as: 'folio' })
 
 module.exports = Folio_document_non_enregistres_historiques

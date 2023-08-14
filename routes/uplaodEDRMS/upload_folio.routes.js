@@ -45,6 +45,50 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  */
  upload_folio_routes.get("/typeDocument/:ID_NATURE", upload_folio_contoller.getDocuments)
 
+  /**
+ * Une route  permet  de recuperer les folios d'un agent  uploadEDRMS
+ *@method POST
+ * @url uploadEDMRS/folio/isUpload
+ */
+ upload_folio_routes.post("/isUpload/", upload_folio_contoller.saveIsUpload)
+
+ /**
+ * Une route  permet  de recuperer les folios d'un agent  qui est uploadEDRMS
+ *@method GET
+ * @url uploadEDMRS/folio/folioUplad
+ */
+ upload_folio_routes.get("/folioUplad", upload_folio_contoller.getFolioUpload)
+
+  /**
+ * Une route  permet  de recuperer les folios qui est uploadEDRMS
+ *@method GET
+ * @url uploadEDMRS/folio/folioUpload
+ */
+ upload_folio_routes.get("/folioUpload", upload_folio_contoller.getFolioUploads)
+
+   /**
+ * Une route  permet  d'enregistre  les folios qui n'est  pas enregistre EDRMS
+ *@method POST
+ * @url uploadEDMRS/folio/folioEnregsitre
+ */
+ upload_folio_routes.post("/folioEnregsitre", upload_folio_contoller.enregistreFolio)
+
+  /**
+ * Une route  permet recuper   les folios qui est  enregistre EDRMS d'un verificateur
+ *@method GET
+ * @url uploadEDMRS/folio/enregistre
+ */
+ upload_folio_routes.get("/enregistre", upload_folio_contoller.getFolioEnregistre)
+
+   /**
+ * Une route  permet recuper   les folios qui n'est  pas enregistre EDRMS d'un verificateur
+ *@method GET
+ * @url uploadEDMRS/folio/noEnregistre
+ */
+ upload_folio_routes.get("/noEnregistre", upload_folio_contoller.getFolioNoEnregistre)
+
+
+
 
  
 module.exports = upload_folio_routes
