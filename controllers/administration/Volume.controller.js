@@ -231,13 +231,6 @@ const getHistoriqueFolio = async (req, res) => {
             //   count: folioHistoriqueAll.count,
             //   rows: folioHistoriqueRows
             // }
-
-
-
-
-
-
-
             return {
                 ...folio,
                 count_agent_folio: folioRows.length,
