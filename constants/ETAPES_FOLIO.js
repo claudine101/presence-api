@@ -115,7 +115,7 @@ const IDS_ETAPES_FOLIO = {
         /**
           * 21 - Folio no enregistre to EDRMS
           */
-        FOLIO_ENREG_TO_EDRMS: 21,
+        FOLIO_NO_ENREG_TO_EDRMS: 21,
 
 }
 
