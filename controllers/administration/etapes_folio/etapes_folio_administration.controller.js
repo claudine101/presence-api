@@ -213,6 +213,48 @@ const findOneetapef0lio = async (req, res) => {
 
 
 /**
+* Permet de recuperer les etapes pour les filtre
+* @param {express.Request} req 
+* @param {express.Response} res 
+* @author derick <derick@mdiabox.bi>
+*/
+
+const findetape = async (req, res) => {
+    try {
+        
+        const etapefiltre= await Etape_folio.findAll({
+            where: {
+               
+            },
+            
+        })
+        if (etapefiltre) {
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "etape folio trouvee",
+                result: etapefiltre
+            })
+        } else {
+            res.status(RESPONSE_CODES.NOT_FOUND).json({
+                statusCode: RESPONSE_CODES.NOT_FOUND,
+                httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                message: " non trouvé",
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+
+/**
 * Permet de faire la modification du nature folio
 * @param {express.Request} req 
 * @param {express.Response} res 
@@ -278,7 +320,8 @@ module.exports = {
    
     findAlletape_folio,
     findOneetapef0lio,
-    updateetapeflio
+    updateetapeflio,
+    findetape
     // deleteItems,
     // findOneNaturefolio,
     // updateNUMERO

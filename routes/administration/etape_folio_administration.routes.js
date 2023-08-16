@@ -5,6 +5,7 @@ const etape_folio_routes=express.Router()
 
 
 etape_folio_routes.get('/',etape_folio__controller.findAlletape_folio)
+etape_folio_routes.get('/etape',etape_folio__controller.findetape)
 etape_folio_routes.get('/findone/:ID_ETAPE_FOLIO',etape_folio__controller.findOneetapef0lio)
 etape_folio_routes.put('/:ID_ETAPE_FOLIO',etape_folio__controller.updateetapeflio)
 

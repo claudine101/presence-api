@@ -2,11 +2,12 @@ const express = require('express');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
 const { query } = require('../../utils/db');
-const Etapes_folio= require('../../models/Etapes_folio');
-const Nature_folio= require('../../models/Nature_folio')
-const Folio= require('../../models/Folio')
+const Etapes_folio = require('../../models/Etapes_folio');
+const Nature_folio = require('../../models/Nature_folio')
+const Folio = require('../../models/Folio')
 const Volume = require('../../models/Volume');
 const { Op } = require('sequelize');
+const moment = require('moment');
 
 /**
  * permet de 
@@ -19,8 +20,8 @@ const { Op } = require('sequelize');
 
 const findAll = async (req, res) => {
     try {
-        
-        const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
+
+        const { etape_filters, startDate, endDate, rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
         const defaultSortField = 'ID_FOLIO '
         const defaultSortDirection = "DESC"
@@ -30,23 +31,24 @@ const findAll = async (req, res) => {
                 fields: {
                     ID_FOLIO: 'ID_FOLIO',
                     NUMERO_FOLIO: "NUMERO_FOLIO",
-                    CODE_FOLIO:"CODE_FOLIO",
-                    DATE_INSERTION :"DATE_INSERTION"
-                   
+                    CODE_FOLIO: "CODE_FOLIO",
+                    DATE_INSERTION: "DATE_INSERTION"
+
                 }
             },
             etapes: {
                 as: "etapes",
                 fields: {
                     NOM_ETAPE: 'NOM_ETAPE',
-                 
+                    ID_ETAPE_FOLIO:'ID_ETAPE_FOLIO'
+
                 }
             },
             volumes: {
                 as: "volume",
                 fields: {
                     NUMERO_VOLUME: 'NUMERO_VOLUME',
-                 
+
                 }
             },
 
@@ -54,13 +56,13 @@ const findAll = async (req, res) => {
                 as: "nature",
                 fields: {
                     DESCRIPTION: 'DESCRIPTION',
-                 
+
                 }
             },
 
-          
 
-           
+
+
         }
 
         var orderColumn, orderDirection
@@ -113,11 +115,31 @@ const findAll = async (req, res) => {
             globalSearchColumns.forEach(column => {
                 searchWildCard[column] = {
                     [Op.substring]: search
-                    
+
                 }
             })
             globalSearchWhereLike = {
                 [Op.or]: searchWildCard
+            }
+        }
+
+        var dateWhere = {}
+        var  etape_filter={}
+
+        if(etape_filters){
+            etape_filter = {ID_ETAPE_FOLIO:etape_filters}
+          }
+        // Date filter
+
+        if (startDate) {
+            const startDateFormat = moment(startDate).format("YYYY-MM-DD 00:00:00")
+            const endDateFormat = endDate ?
+                moment(endDate).format("YYYY-MM-DD 23:59:59") :
+                moment().format("YYYY-MM-DD 23:59:59")
+            dateWhere = {
+                DATE_INSERTION: {
+                    [Op.between]: [startDateFormat, endDateFormat]
+                }
             }
         }
         const result = await Folio.findAndCountAll({
@@ -128,29 +150,34 @@ const findAll = async (req, res) => {
             ],
             where: {
                 ...globalSearchWhereLike,
+                ...dateWhere,
+                ...etape_filter
             },
-            include: 
-                 [
-                    { model:Etapes_folio,
-                  as: 'etapes',
-                  attributes: ['NOM_ETAPE'],
-                  required: false
-                },
-                { model:Nature_folio,
-                    as: 'nature',
-                    attributes: ['DESCRIPTION'],
-                    required: false
-                  }
-                  ,
-                  { model:Volume,
-                    as: 'volume',
-                    attributes: ['NUMERO_VOLUME'],
-                    required: false
-                  }
-                  ,
-            
-            ]
-            
+            include:
+                [
+                    {
+                        model: Etapes_folio,
+                        as: 'etapes',
+                        attributes: ['NOM_ETAPE'],
+                        required: false
+                    },
+                    {
+                        model: Nature_folio,
+                        as: 'nature',
+                        attributes: ['DESCRIPTION'],
+                        required: false
+                    }
+                    ,
+                    {
+                        model: Volume,
+                        as: 'volume',
+                        attributes: ['NUMERO_VOLUME'],
+                        required: false
+                    }
+                    ,
+
+                ]
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -181,39 +208,39 @@ const findAll = async (req, res) => {
 const getOnehis = async (req, res) => {
     const { id } = req.params
     try {
-  
-  
+
+
         const volume = await Volume.findOne({
             where: {
                 ID_COURSE: id
             },
             include: [
-            {
-                model: vehicules,
-                as: 'vehicules',
-                attributes: ['ID_VEHICULE','NUMERO_PLAQUE','MARQUE','MODELE','COULEUR','PHOTO_CARTE_ROSE','PHOTO_ASSURANCE','PHOTO_CONTROLE_TECHNIQUE','PHOTO_VEHICULE'],
-                required: false
-            },
-            {
-              model: Drivers,
-              as:'drivers',
-              attributes: ['ID_DRIVER','NOM','PRENOM','EMAIL','TELEPHONE','IMAGE'],
-              required: false
-            },
-            {
-              model:Riders,
-              as:'riders',
-              attributes: ['ID_RIDER','NOM','PRENOM','TELEPHONE','EMAIL','IMAGE'],
-              required: false
-            },
-            {
-              model: Courses_status,
-              as:'courses_status',
-              attributes: ['ID_STATUT','NOM'],
-              required: false
-  
-            }
-          ]
+                {
+                    model: vehicules,
+                    as: 'vehicules',
+                    attributes: ['ID_VEHICULE', 'NUMERO_PLAQUE', 'MARQUE', 'MODELE', 'COULEUR', 'PHOTO_CARTE_ROSE', 'PHOTO_ASSURANCE', 'PHOTO_CONTROLE_TECHNIQUE', 'PHOTO_VEHICULE'],
+                    required: false
+                },
+                {
+                    model: Drivers,
+                    as: 'drivers',
+                    attributes: ['ID_DRIVER', 'NOM', 'PRENOM', 'EMAIL', 'TELEPHONE', 'IMAGE'],
+                    required: false
+                },
+                {
+                    model: Riders,
+                    as: 'riders',
+                    attributes: ['ID_RIDER', 'NOM', 'PRENOM', 'TELEPHONE', 'EMAIL', 'IMAGE'],
+                    required: false
+                },
+                {
+                    model: Courses_status,
+                    as: 'courses_status',
+                    attributes: ['ID_STATUT', 'NOM'],
+                    required: false
+
+                }
+            ]
         })
         if (courses) {
             res.status(RESPONSE_CODES.OK).json({
@@ -238,10 +265,10 @@ const getOnehis = async (req, res) => {
             message: "Erreur interne du serveur, réessayer plus tard",
         })
     }
-  }
+}
 
- 
-module.exports={
+
+module.exports = {
     findAll,
-     
+
 }
