@@ -2,10 +2,6 @@ const express = require('express');
 const VolumePvUpload = require('../../class/uploads/VolumePvUpload');
 const RESPONSE_CODES = require('../../constants/RESPONSE_CODES')
 const RESPONSE_STATUS = require('../../constants/RESPONSE_STATUS');
-const { query } = require('../../utils/db');
-const generateToken = require('../../utils/generateToken');
-const md5 = require('md5')
-const path = require('path')
 const moment = require("moment");
 const Validation = require('../../class/Validation');
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS');
@@ -16,7 +12,6 @@ const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/Folio');
-const { Op } = require("sequelize");
 const Maille = require('../../models/Maille');
 
 /**
@@ -73,9 +68,9 @@ const createVolume = async (req, res) => {
         volumeObjet = JSON.parse(volume)
         await Promise.all(volumeObjet.map(async (volume) => {
             const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            const CODE_REFERENCE = `${volume.NUMERO_VOLUME}${req.userId}${moment().get("s")}`
+            const CODE_REFERENCE = `${volume}${req.userId}${moment().get("s")}`
             const volumeInsert = await Volume.create({
-                NUMERO_VOLUME: volume.NUMERO_VOLUME,
+                NUMERO_VOLUME: volume,
                 CODE_VOLUME: CODE_REFERENCE,
                 USERS_ID: req.userId,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.PLANIFICATION,
