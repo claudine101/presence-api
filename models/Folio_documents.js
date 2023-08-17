@@ -1,6 +1,8 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../utils/sequerize');
+const sequelize = require('../utils/sequelize');
+const Folio = require('./Folio');
+const Folio_types_documents = require('./Folio_types_documents');
 
 /**
 * fonction model pour la creation de la table folio_documents
@@ -26,6 +28,10 @@ const Folio_documents = sequelize.define("folio_documents", {
         type: Sequelize.INTEGER,
         allowNull: false
     },
+    USERS_ID: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -36,6 +42,8 @@ const Folio_documents = sequelize.define("folio_documents", {
     tableName: 'folio_documents',
     timestamps: false
 })
+Folio_documents.belongsTo(Folio_types_documents, { foreignKey: "ID_TYPE_FOLIO_DOCUMENT", as: 'types' })
+
 
 
 module.exports = Folio_documents
