@@ -54,5 +54,6 @@ Etapes_volume_historiques.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLU
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USERS_ID", as: 'users' })
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USER_TRAITEMENT", as: 'traitant' })
 Users.hasMany(Etapes_volume_historiques,{foreignKey:'USER_TRAITEMENT', as:'histo'});
+Etapes_volume_historiques.belongsTo(Volume,{ foreignKey:'ID_VOLUME',as :'vol'})
 
 module.exports = Etapes_volume_historiques

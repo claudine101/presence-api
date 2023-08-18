@@ -8,6 +8,9 @@ const Folio = require('../../models/Folio')
 const Volume = require('../../models/Volume');
 const { Op } = require('sequelize');
 const moment = require('moment');
+const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques');
+const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
+const Users = require('../../models/Users');
 
 /**
  * permet de 
@@ -208,8 +211,7 @@ const findAll = async (req, res) => {
 const getOnehis = async (req, res) => {
     const { id } = req.params
     try {
-
-
+        
         const volume = await Volume.findOne({
             where: {
                 ID_COURSE: id
@@ -268,7 +270,118 @@ const getOnehis = async (req, res) => {
 }
 
 
+
+/**
+ * permet de  trouver les volumes scanner
+ * @author derick <derick@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 4/24/2023
+ * 
+ */
+
+
+const finduploadedrms= async (req, res) => {
+
+    try {
+        const foliouplod= await Etapes_folio_historiques.findAll({
+            where:{
+                ID_ETAPE_FOLIO:{
+                    
+                    [Op.in]:[IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+                        IDS_ETAPES_FOLIO.CHEF_EQUIPE_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS
+                    
+                    ],
+                    // [Op.and]:[IS_UPLOADED_EDRMS = 1]
+                }
+            },
+            include:[
+            {
+                model: Users,
+                as: 'traitement',
+                attributes: ['NOM','PRENOM'],
+                required: false,
+
+              
+            },
+            {
+                model: Folio,
+                as: 'folio',
+                attributes: ['NUMERO_FOLIO'],
+                required: false,
+ 
+            }
+        ]
+        })
+
+
+
+        var volumeFolios = []
+        foliouplod.forEach(folio => {
+            const ID_ETAPE_FOLIO = folio.ID_ETAPE_FOLIO
+            const volume = folio.volume
+            const isExists = volumeFolios.find(vol => vol.ID_ETAPE_FOLIO == ID_ETAPE_FOLIO) ? true : false
+            if (isExists) {
+                const volume = volumeFolios.find(vol => vol.ID_ETAPE_FOLIO == ID_ETAPE_FOLIO)
+
+                const newFolio= { ...volume, folios: [...volume.folios, folio] }
+                volumeFolios = volumeFolios.map(vol => {
+                    if (vol.ID_ETAPE_FOLIO == ID_ETAPE_FOLIO) {
+                        return newFolio
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                volumeFolios.push({
+                    ID_ETAPE_FOLIO,
+                    volume,
+                    folios: [folio]
+                })
+            }
+        })
+
+        var volumereachive = []
+        volumeFolios.forEach(volume => {
+            var volume = volume
+            const volumerachve = volume
+
+            volumereachive.push({
+                volume,
+                volumerachve
+            })
+        })
+
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "volume reachive  est egal à",
+            result: volumereachive
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+
+
+
 module.exports = {
     findAll,
+    finduploadedrms
 
 }

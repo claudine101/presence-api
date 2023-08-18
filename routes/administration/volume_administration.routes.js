@@ -5,6 +5,9 @@ const volumes_routes= express.Router()
 
 volumes_routes.get("/",volumecontroller.findAll);
 volumes_routes.get("/:id",volumecontroller.gethistoriquevol);
+volumes_routes.get("/volumescanne/scane",volumecontroller.findAllscanne);
+volumes_routes.get("/volumescanne/rearchive",volumecontroller.findAllreachive);
+
 /**
 * Une route pour la detail des volumes 
 *@method GET
