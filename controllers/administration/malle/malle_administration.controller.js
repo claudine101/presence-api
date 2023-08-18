@@ -20,15 +20,10 @@ const Aille= require('../../../models/Aile')
 
 const create_malle = async (req, res) => {
     try {
-        const {ID_AILE,NUMERO_MAILLE } = req.body
+        const {NUMERO_MAILLE } = req.body
         const data = { ...req.body };
         const validation = new Validation(data, {
             NUMERO_MAILLE: {
-                required: true,
-                length: [1, 245],
-                alpha: true
-            },
-            ID_AILE:{
                 required: true,
                 length: [1, 245],
                 alpha: true
@@ -48,7 +43,6 @@ const create_malle = async (req, res) => {
         }
 
         const malle = await Malle.create({
-            ID_AILE,
             NUMERO_MAILLE
 
         })
@@ -272,19 +266,14 @@ const updateMalle = async (req, res) => {
 
     try {
         // Validate request
-        const { ID_AILE,NUMERO_MAILLE } = req.body
+        const {NUMERO_MAILLE } = req.body
         const data = { ...req.body };
         const validation = new Validation(data, {
             NUMERO_MAILLE: {
                 required: true,
                 length: [2, 245],
                 alpha: true
-            },
-            // ID_AILE: {
-            //     required: true,
-            //     length: [2, 245],
-            //     alpha: true
-            // },
+            }
         })
         await validation.run()
         const isValid = await validation.isValidate()
@@ -299,8 +288,7 @@ const updateMalle = async (req, res) => {
         }
 
         const malle = await Malle.update({
-            ID_AILE,
-            NUMERO_MAILLE,
+            NUMERO_MAILLE
         }, {
             where: {
                 ID_MAILLE : ID_MAILLE  

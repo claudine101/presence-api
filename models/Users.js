@@ -2,6 +2,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Profils = require('./Profils');
+const Institutions = require('./Institutions');
 /**
 * fonction model pour la creation de la table users
 * @author NIREMA ELOGE <nirema.eloge@mediabox.bi>
@@ -15,6 +16,11 @@ const Users = sequelize.define("users", {
         autoIncrement: true,
         allowNull: false
     },
+    ID_INSTITUTION:{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    }
+    ,
     NOM: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -47,7 +53,7 @@ const Users = sequelize.define("users", {
     IS_ACTIF: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
 
 }, {
     freezeTableName: true,
@@ -56,4 +62,5 @@ const Users = sequelize.define("users", {
 })
 Users.belongsTo(Profils, {foreignKey:"ID_PROFIL", as:"profil"})
 Users.belongsTo(Profils, {foreignKey:"ID_PROFIL", as:"profile"})
+Users.belongsTo(Institutions, {foreignKey:"ID_INSTITUTION", as:"institution"})
 module.exports = Users

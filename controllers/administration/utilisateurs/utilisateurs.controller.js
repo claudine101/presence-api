@@ -11,6 +11,7 @@ const md5 = require("md5")
 const generateToken = require('../../../utils/generateToken')
 const Profils = require("../../../models/Profils")
 const PROFILS = require("../../../constants/PROFILS")
+const Institutions = require("../../../models/Institutions")
 
 
 
@@ -122,11 +123,16 @@ const login = async (req, res) => {
  */
 const createuser = async (req, res) => {
     try {
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
+        const { ID_INSTITUTION,NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
         const files = req.files || {}
         const { PHOTO_USER } = files
         const data = { ...req.body, ...req.files }
         const validation = new Validation(data, {
+            ID_INSTITUTION:{
+                required: true,
+                number: true,
+                exists: "institutions,ID_INSTITUTION"
+            },
             NOM: {
                 required: true,
                 length: [1, 50],
@@ -137,14 +143,8 @@ const createuser = async (req, res) => {
                 length: [1, 50],
                 alpha: true
             },
-            // PASSWORD: {
-            //     required: true,
-            //     length: [1, 8],
-            //     alpha: true
-            // },
-            
             EMAIL: {
-                required: true,
+                required: false,
                 length: [1, 255],
                 email: true,
                 unique: "users,EMAIL"
@@ -189,6 +189,7 @@ const createuser = async (req, res) => {
         const filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         const generatepassword = `${TELEPHONE}`
         const user = await Users.create({
+            ID_INSTITUTION,
             NOM,
             PRENOM,
             EMAIL,
@@ -225,7 +226,7 @@ const createuser = async (req, res) => {
 const Updateuser = async (req, res) => {
     try {
         const { USERS_ID } = req.params
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, IS_ACTIF } = req.body
+        const { ID_INSTITUTION,NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, IS_ACTIF } = req.body
 
         const files = req.files || {}
         const { PHOTO_USER } = files
@@ -237,6 +238,11 @@ const Updateuser = async (req, res) => {
         const data = { ...req.body, ...req.files }
         // const data = { ...req.body }
         const validation = new Validation(data, {
+            ID_INSTITUTION:{
+                required: true,
+                number: true,
+                exists: "institutions,ID_INSTITUTION"
+            },
             NOM: {
                 required: true,
                 alpha: true,
@@ -248,7 +254,7 @@ const Updateuser = async (req, res) => {
                 length: [2, 50]
             },
             EMAIL: {
-                required: true,
+                required: false,
                 email: true,
                 length: [2, 250]
             },
@@ -263,10 +269,6 @@ const Updateuser = async (req, res) => {
                 number: true,
                 exists: "profils,ID_PROFIL"
             },
-            // PHOTO_USER: {
-            //     required: true,
-            //     image: 4000000
-            // }
 
         })
 
@@ -289,6 +291,7 @@ const Updateuser = async (req, res) => {
         }
 
         const userUpdate = await Users.update({
+            ID_INSTITUTION,
             NOM,
             PRENOM,
             EMAIL,
@@ -331,6 +334,18 @@ const findOneuser = async (req, res) => {
     try {
         const { USERS_ID } = req.params
         const userone = await Users.findOne({
+            attributes: [
+                'USERS_ID',
+                'ID_INSTITUTION',
+                'NOM',
+                'PRENOM',
+                'EMAIL',
+                'TELEPHONE',
+                'ID_PROFIL',
+                'PASSEWORD',
+                'PHOTO_USER',
+                'IS_ACTIF'
+              ],
             where: {
                 USERS_ID
             },
@@ -338,7 +353,14 @@ const findOneuser = async (req, res) => {
                 model: Profils,
                 as: 'profil',
                 required: false,
-                attributes: ['ID_PROFIL', 'DESCRIPTION']
+                attributes: ['ID_PROFIL','DESCRIPTION']
+
+            },
+            {
+                model: Institutions,
+                as: 'institution',
+                required: false,
+                attributes: ['ID_INSTITUTION','NOM_INSTITUTION']
 
             }
             ]
@@ -395,6 +417,12 @@ const findAlluser = async (req, res) => {
                 fields: {
                     DESCRIPTION: 'DESCRIPTION'
                 }
+            },
+            institutions: {
+                as: "institution",
+                fields: {
+                    NOM_INSTITUTION: 'NOM_INSTITUTION'
+                }
             }
         }
 
@@ -437,7 +465,8 @@ const findAlluser = async (req, res) => {
             'PRENOM',
             'EMAIL',
             'TELEPHONE',
-            '$profil.DESCRIPTION$'
+            '$profil.DESCRIPTION$',
+            '$institution.NOM_INSTITUTION$'
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
@@ -461,17 +490,33 @@ const findAlluser = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            attributes: [
+                'USERS_ID',
+                'ID_INSTITUTION',
+                'NOM',
+                'PRENOM',
+                'EMAIL',
+                'TELEPHONE',
+                'ID_PROFIL',
+                'PASSEWORD',
+                'PHOTO_USER',
+                'IS_ACTIF'
+              ],
             where: {
                 ...globalSearchWhereLike,
                 ...profileInfo,
             },
-            include: {
+            include: [{
                 model: Profils,
                 as: 'profil',
                 required: false,
                 attributes: ['ID_PROFIL', 'DESCRIPTION']
-
-            }
+            },{
+                model: Institutions,
+                as: 'institution',
+                required: false,
+                attributes: ['ID_INSTITUTION', 'NOM_INSTITUTION']
+            }]
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -515,6 +560,40 @@ const deleteItemsuser = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les elements ont ete supprimer avec success",
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+/**
+ * Permet de lister des institutions
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author leonard <leonard@mdiabox.bi>
+ * @date 17/08/2023
+ */
+
+const listeInstitutions = async (req, res) => {
+    try {
+        const institution = await Institutions.findAll({
+            attributes: ['ID_INSTITUTION', 'NOM_INSTITUTION'],
+            order: [
+                ['NOM_INSTITUTION', 'ASC']
+            ]
+        })
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Listes des institutions",
+            result: institution
         })
     } catch (error) {
         console.log(error)
@@ -613,5 +692,6 @@ module.exports = {
     deleteItemsuser,
     listeprofiles,
     activer_descativer_utilisateur,
-    login
+    login,
+    listeInstitutions
 }
