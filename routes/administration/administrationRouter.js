@@ -15,6 +15,7 @@ const foliotypedocument_routes=require('./foliotypedocument.routes')
 const flash_routes=require('./flashs.routes')
 const aile_routes=require('./aile.routes');
 const folio_routes = require('./folio.routes');
+const planification_routes = require('./preparation_administration.routes');
 
 const administrationRouter=express.Router();
 
@@ -34,5 +35,6 @@ administrationRouter.use('/naturefolio',naturefolio_routes)
 administrationRouter.use('/foliotypedocument',foliotypedocument_routes)
 administrationRouter.use('/flashs',flash_routes)
 administrationRouter.use('/aile',aile_routes)
+administrationRouter.use('/planification',planification_routes)
 
 module.exports = administrationRouter
