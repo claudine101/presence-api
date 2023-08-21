@@ -87,7 +87,22 @@ const preparation_volume_routes = express.Router()
  * @url /preparation/volume/chefPlateau
  */
  preparation_volume_routes.get('/chefPlateau', preparation_volume_controller.findAllChefPlateau)
+   /**
+ * Une route  permet  un agent  superviseur  archive 
+ * de voir chef plateau  et  les volumes avec les details  
+ *@method GET
+ * @url /preparation/volume/detailsVolume/
+ */
+ preparation_volume_routes.get('/detailsVolume/:ID_VOLUME', preparation_volume_controller.getVolumeDetail)
 
+ /**
+ * Permet de recuperer un chef plateau n d'une volume  
+ *@method GET
+ * @url /preparation/volume/chefsPlateaux/
+ */
+ preparation_volume_routes.get('/chefsPlateaux/:ID_VOLUME', preparation_volume_controller.getVolumeChefPlateau)
+
+ 
  /**
  * Une route  permet  de retour  chef plateau
  *@method PUT
@@ -95,6 +110,7 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.put('/retourChefPlateau', preparation_volume_controller.retourChefPlateau)
 
+ 
   /**
  * Une route  permet  visualiser  les agent superviseur aile et les nombre de volume recu
  * de voir chef plateau  et  les volumes   

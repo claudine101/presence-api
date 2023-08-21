@@ -21,6 +21,7 @@ const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const DossiersUpload = require('../../class/uploads/DossiersUpload');
 const { Op } = require('sequelize');
 const Volume = require('../../models/Volume');
+const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -75,10 +76,11 @@ const createfolio = async (req, res) => {
         folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
             const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            const CODE_REFERENCE = `${folio.NUMERO_folio}${req.userId}${moment().get("s")}`
+            const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
             const folioInsert = await Folio.create({
                 ID_VOLUME: ID_VOLUME,
-                NUMERO_FOLIO: folio.NUMERO_FOLIO,
+                NUMERO_FOLIO: folio.NUMERO_DOSSIER,
+                FOLIO: folio.NUMERO_FOLIO,
                 ID_NATURE: folio.ID_NATURE,
                 CODE_FOLIO: CODE_REFERENCE,
                 ID_USERS: req.userId,
@@ -339,7 +341,7 @@ const nommerAgentPreparation = async (req, res) => {
  */
 const retourAgentPreparation = async (req, res) => {
     try {
-        const { AGENT_PREPARATION, folio } = req.body
+        const { AGENT_PREPARATION, folio ,folioPrepare} = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -382,9 +384,12 @@ const retourAgentPreparation = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
+        var folioPrepareObjet = {}
+        folioPrepareObjet = JSON.parse(folioPrepare)
         await Promise.all(folioObjet.map(async (folio) => {
             const results = await Folio.update({
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                IS_PREPARE: 0
             }, {
                 where: {
                     ID_FOLIO: folio.folio.ID_FOLIO,
@@ -399,6 +404,15 @@ const retourAgentPreparation = async (req, res) => {
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
                 }
             )
+        }))
+        await Promise.all(folioPrepareObjet.map(async (folio) => {
+            const results = await Folio.update({
+                IS_PREPARE: 1
+            }, {
+                where: {
+                    ID_FOLIO: folio.ID_FOLIO,
+                }
+            })
         }))
 
         res.status(RESPONSE_CODES.OK).json({
@@ -610,7 +624,6 @@ const findAllFolio = async (req, res) => {
 
         })
         var volumeFolios = []
-        console.log(result)
         result.forEach(folio => {
             const ID_VOLUME = folio.folio.ID_VOLUME
             const volume = folio.folio.volume
@@ -754,8 +767,11 @@ const findAllAgents = async (req, res) => {
                 {
                     model: Folio,
                     as: 'folio',
-                    required: false,
+                    required: true,
                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        IS_PREPARE: 1,
+                    },
 
                 }
             ]
@@ -1059,6 +1075,62 @@ const addDetails = async (req, res) => {
         })
     }
 }
+const getPvs = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        const pvRetour = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...pv.toJSON(),
+                pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     createfolio,
     findAll,
@@ -1072,5 +1144,6 @@ module.exports = {
     addDetails,
     findAllSuperviseurs,
     checkAgentsup,
-    nbre
+    nbre,
+    getPvs
 }

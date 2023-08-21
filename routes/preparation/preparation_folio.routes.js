@@ -31,6 +31,14 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.get('/superviseur', preparation_folio_controller.findAllSuperviseurs)
 
+ /**
+ * Une route  permet les PV d un chef  plateau  et  agent  superviseur
+ *@method POST
+ * @url /preparation/folio/getPv
+ */
+ preparation_folio_routes.post('/getPv', preparation_folio_controller.getPvs)
+
+
   /**
  * Une route  permet  de voir si tel  agent  superviseur phase preparation 
  * ont  déja effectuer  retour  avec agent  preparation
