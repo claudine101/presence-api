@@ -393,12 +393,12 @@ const findAll = async (req, res) => {
             attributes: ['ID_PROFIL', 'USERS_ID']
         })
         const user = userObject.toJSON()
-        console.log(user)
 
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE, USER_TRAITEMENT: req.userId }
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE }
         }
         else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, 
