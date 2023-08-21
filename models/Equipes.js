@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Equipes_agents = require('./Equipes_agents');
 
 /**
 * fonction model pour la creation de la table equipes
@@ -29,7 +30,8 @@ const Equipes = sequelize.define("equipes", {
         }
 }, {
         freezeTableName: true,
-        tableName: 'equipes',
+        tableName:'equipes',
         timestamps: false,
 })
+Equipes.hasMany(Equipes_agents,{as: 'equipeAgents', foreignKey: 'ID_EQUIPE'})
 module.exports = Equipes

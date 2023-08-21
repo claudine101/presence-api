@@ -11,7 +11,7 @@ utilisateurs_routes.post('/deleteuser',utilisateurs_controller.deleteItemsuser)
 utilisateurs_routes.get('/profile',utilisateurs_controller.listeprofiles)
 utilisateurs_routes.put('/activation/:USERS_ID',utilisateurs_controller.activer_descativer_utilisateur)
 utilisateurs_routes.post('/login/',utilisateurs_controller.login)
-
+utilisateurs_routes.get('/institution/',utilisateurs_controller.listeInstitutions)
 
 module.exports = utilisateurs_routes
 

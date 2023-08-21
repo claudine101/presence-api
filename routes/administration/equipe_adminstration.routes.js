@@ -8,7 +8,7 @@ equipe_routes.get('/',equipe_controller.findAllequipe)
 equipe_routes.get('/findone/:ID_EQUIPE',equipe_controller.findOneequipe)
 equipe_routes.put('/:ID_EQUIPE',equipe_controller.updateequipe)
 equipe_routes.post('/deleteequipe',equipe_controller.deleteItems)
-
+equipe_routes.get('/Alluser',equipe_controller.findalluser)
 
 module.exports = equipe_routes
 

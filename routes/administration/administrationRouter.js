@@ -13,8 +13,9 @@ const useraile_routes=require('./useraile.routes')
 const naturefolio_routes=require('./naturefolio.routes')
 const foliotypedocument_routes=require('./foliotypedocument.routes')
 const flash_routes=require('./flashs.routes')
-const aile_routes=require('./aile.routes');
-const folio_routes = require('./folio.routes');
+const aile_routes=require('./aile.routes')
+const folio_routes = require('./folio.routes')
+const institution_routes=require('./institution.routes')
 
 const administrationRouter=express.Router();
 
@@ -26,7 +27,7 @@ administrationRouter.use('/etape_folio',etape_folio_routes)
 administrationRouter.use('/phase',phase_routes)
 administrationRouter.use('/volume_folio',volume_folio_routes)
 administrationRouter.use('/malle',malle_routes)
-
+administrationRouter.use('/institution',institution_routes)
 administrationRouter.use('/users',user_routes)
 administrationRouter.use('/profil',profile_routes)
 administrationRouter.use('/useraile',useraile_routes)

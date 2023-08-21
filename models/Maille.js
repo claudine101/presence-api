@@ -18,7 +18,7 @@ const Maille = sequelize.define("maille", {
         },
         ID_AILE: {
                 type: Sequelize.INTEGER(11),
-                allowNull: false
+                allowNull: true
         },
         NUMERO_MAILLE: {
                 type: Sequelize.STRING(255),
