@@ -98,8 +98,15 @@ const getHistoriqueVolume = async (req, res) => {
                             attributes: ['ID_PROFIL', 'DESCRIPTION'],
                             required: false,
                         }
-                    ]
-                }, {
+                    ],
+                },
+                {
+                    model: Volume,
+                    as: 'volumes',
+                    attributes: ['NUMERO_VOLUME','DATE_INSERTION'],
+                    required:false
+                },
+                 {
                     model: Etape_Volume,
                     as: 'etapes_volumes',
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
@@ -175,10 +182,23 @@ const getHistoriqueFolio = async (req, res) => {
                 {
                     model: Folio,
                     as: "folio",
-                    attributes: ['ID_FOLIO', 'ID_VOLUME'],
+                    attributes: ['ID_FOLIO', 'ID_VOLUME','FOLIO','NUMERO_FOLIO'],
                     where: {
                         ID_VOLUME: ID_VOLUME
                     },
+                    include:[{
+                        model: Volume,
+                        as: 'volume',
+                        attributes:['NUMERO_VOLUME'],
+                        required: false,
+                    },
+                    {
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes:['DESCRIPTION'],
+                        required: false
+                    }
+                ]
                 }
             ],
         })
@@ -280,7 +300,7 @@ const getAgentByVolume = async (req, res) => {
     try {
 
         const dossier = await Folio.findAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO'],
+            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },

@@ -617,32 +617,32 @@ const activer_descativer_utilisateur = async (req, res) => {
 const getnumber_user_by_profil = async (req, res) => {
     try {
         const { profilebackend } = req.query
-        const user_by_profil = await Users.findAndCountAll({
-          attributes:['ID_PROFIL'],
-          include:[{
-            model: Profils,
-            as: 'profil',
-            required: false,
-            attributes: ['DESCRIPTION'],
-            // where:{ID_PROFIL}
+        // const user_by_profil = await Users.findAndCountAll({
+        //   attributes:['ID_PROFIL'],
+        //   include:[{
+        //     model: Profils,
+        //     as: 'profil',
+        //     required: false,
+        //     attributes: ['DESCRIPTION'],
+        //     // where:{ID_PROFIL}
 
-            }]
-        })
+        //     }]
+        // })
 
 
-        const uniqueIds = [];
-        const folioHistoriqueRows = user_by_profil.rows.filter(element => {
-                  const isDuplicate = uniqueIds.includes(element.ID_PROFIL);
-                  if (!isDuplicate) {
-                            uniqueIds.push(element.ID_PROFIL);
-                            return true;
-                  }
-                  return false;
-        });
-        const folioHistorique = {
-          count: user_by_profil.count,
-          rows: folioHistoriqueRows
-        };
+        // const uniqueIds = [];
+        // const folioHistoriqueRows = user_by_profil.rows.filter(element => {
+        //           const isDuplicate = uniqueIds.includes(element.ID_PROFIL);
+        //           if (!isDuplicate) {
+        //                     uniqueIds.push(element.ID_PROFIL);
+        //                     return true;
+        //           }
+        //           return false;
+        // });
+        // const folioHistorique = {
+        //   count: user_by_profil.count,
+        //   rows: folioHistoriqueRows
+        // };
 
         var profileInfo = {}
         if (profilebackend) {
@@ -677,7 +677,7 @@ const getnumber_user_by_profil = async (req, res) => {
         const userProfil = result.map((uP)=> {
             return uP.profil.DESCRIPTION
          });
-console.log(userProfil)
+// console.log(userProfil)
          const numberUser=result.map((uP)=> {
             return uP.fetCmpt.rows.count
          });

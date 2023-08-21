@@ -35,6 +35,10 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    FOLIO:{
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     CODE_FOLIO: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -147,4 +151,5 @@ Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'natures' })
 Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
+// Volume.hasMany(Folio, {foreignKey:'ID_VOLUME', as:'volume'})
 module.exports = Folio

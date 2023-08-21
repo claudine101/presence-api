@@ -10,6 +10,8 @@ const Etapes_volume_historiques = require('../../models/Etapes_volume_historique
 const Profils = require('../../models/Profils');
 const moment = require('moment');
 const { Op } = require('sequelize');
+const Folio = require('../../models/Folio');
+const Nature_folio = require('../../models/Nature_folio');
 
 
 
@@ -28,7 +30,7 @@ const findAll = async (req, res) => {
     try {
         const { volume_filters,startDate, endDate, rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
-        const defaultSortField = 'ID_VOLUME'
+        const defaultSortField = 'NUMERO_VOLUME'
         const defaultSortDirection = "DESC"
         const sortColumns = {
             volume: {
@@ -42,8 +44,6 @@ const findAll = async (req, res) => {
 
                 }
             },
-
-
             etapes_volumes: {
                 as: "etapes_volumes",
                 fields: {
@@ -80,7 +80,7 @@ const findAll = async (req, res) => {
             }
         }
         if (!orderColumn || !sortModel) {
-            orderColumn = sortColumns.volume.fields.ID_VOLUME
+            orderColumn = sortColumns.volume.fields.NUMERO_VOLUME
             sortModel = {
                 model: 'volume',
                 as: sortColumns.volume.as
@@ -98,6 +98,13 @@ const findAll = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
+            'FOLIO',
+            'NUMERO_FOLIO',
+            '$volume.NUMERO_VOLUME$',
+            '$natures.DESCRIPTION$',
+            '$volume.NOMBRE_DOSSIER$',
+            '$volume.DATE_INSERTION$',
+            '$volume.etapes_volumes.NOM_ETAPE$'
 
         ]
         var globalSearchWhereLike = {}
@@ -132,12 +139,13 @@ const findAll = async (req, res) => {
                 }
             }
         }
-        const result = await Volume.findAndCountAll({
+        const result = await Folio.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            attributes:["FOLIO",'NUMERO_FOLIO'],
             where: {
                 ...globalSearchWhereLike,
                 ...dateWhere,
@@ -145,18 +153,34 @@ const findAll = async (req, res) => {
             },
             include: [
                 {
-                    model: Etapes_volumes,
-                    as: 'etapes_volumes',
-                    attributes: ['NOM_ETAPE'],
-                    required: false
+                    model:Volume,
+                    as: 'volume',
+                    attributes: ['ID_VOLUME','NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'DATE_INSERTION'],
+                    required: false,
+                    include:[
+                        {
+                            model: Etapes_volumes,
+                            as: 'etapes_volumes',
+                            attributes: ['NOM_ETAPE'],
+                            required: false
+                        },
+        
+                        {
+                            model: maille,
+                            as: 'maille',
+                            attributes: ['NUMERO_MAILLE'],
+                            required: false
+                        },
+                    ]
                 },
-
                 {
-                    model: maille,
-                    as: 'maille',
-                    attributes: ['NUMERO_MAILLE'],
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['DESCRIPTION'],
                     required: false
-                }]
+                }
+         
+            ]
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -236,7 +260,6 @@ const gethistoriquevol = async (req, res) => {
                         },
                     ]
                 },
-
             ]
         })
         if (histo) {
