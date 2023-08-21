@@ -272,14 +272,13 @@ const getOnehis = async (req, res) => {
 
 
 /**
- * permet de  trouver les volumes scanner
+ * permet de  trouver les volumes uploades et non uploades
  * @author derick <derick@mediabox.bi>
  * @param {express.Request} req
  * @param {express.Response} res 
  * @date 4/24/2023
  * 
  */
-
 
 const finduploadedrms= async (req, res) => {
 
@@ -296,9 +295,7 @@ const finduploadedrms= async (req, res) => {
                         IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
                         IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
                         IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS
-                    
                     ],
-                    // [Op.and]:[IS_UPLOADED_EDRMS = 1]
                 }
             },
             include:[
@@ -313,57 +310,63 @@ const finduploadedrms= async (req, res) => {
             {
                 model: Folio,
                 as: 'folio',
-                attributes: ['NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','NUMERO_FOLIO','IS_UPLOADED_EDRMS'],
                 required: false,
+
+                include :{
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['ID_ETAPE_FOLIO','NOM_ETAPE'],
+                    required: false, 
+                }
  
             }
         ]
         })
+        
+        var volumeuploader = []
 
-
-
-        var volumeFolios = []
         foliouplod.forEach(folio => {
-            const ID_ETAPE_FOLIO = folio.ID_ETAPE_FOLIO
-            const volume = folio.volume
-            const isExists = volumeFolios.find(vol => vol.ID_ETAPE_FOLIO == ID_ETAPE_FOLIO) ? true : false
+            const ID_FOLIO = folio.ID_FOLIO
+            const volume = folio.folio
+            const isExists = volumeuploader.find(vol => vol.FOLIO == ID_FOLIO) ? true : false
             if (isExists) {
-                const volume = volumeFolios.find(vol => vol.ID_ETAPE_FOLIO == ID_ETAPE_FOLIO)
-
-                const newFolio= { ...volume, folios: [...volume.folios, folio] }
-                volumeFolios = volumeFolios.map(vol => {
-                    if (vol.ID_ETAPE_FOLIO == ID_ETAPE_FOLIO) {
+        const volume = volumeuploader.find(vol => vol.ID_FOLIO == ID_FOLIO)
+             const newFolio= { ...volume, foliosupload: [...volume.foliosupload, folio] }
+            volumeuploader = volumeuploader.map(vol => {
+                    if (vol.ID_FOLIO == ID_FOLIO) {
                         return newFolio
                     } else {
                         return vol
                     }
                 })
-            } else {
-                volumeFolios.push({
-                    ID_ETAPE_FOLIO,
+
+                } else {
+                volumeuploader.push({
+                    ID_FOLIO,
                     volume,
-                    folios: [folio]
+                    foliosupload: [folio]
                 })
             }
         })
 
-        var volumereachive = []
-        volumeFolios.forEach(volume => {
-            var volume = volume
-            const volumerachve = volume
 
-            volumereachive.push({
+    var volumeupload = []
+     volumeuploader.forEach(volume => {
+            var volume = volume
+            const volumerachve = volume.foliosupload.filter(fol => fol.IS_UPLOADED_EDRMS!= 0)
+            volumeupload.push({
                 volume,
                 volumerachve
             })
+
         })
-
-
-        res.status(RESPONSE_CODES.OK).json({
+        
+     res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "volume reachive  est egal à",
-            result: volumereachive
+            result: volumeupload
         })
     }
     catch (error) {

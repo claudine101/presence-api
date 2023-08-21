@@ -248,21 +248,17 @@ const findAllscanne = async (req, res) => {
                 })
             }
         })
-
-
-
-
+        
         var volumeScan = []
         volumeFolios.forEach(volume => {
             var volume = volume
             const folioScan = volume.folios.filter(fol => fol.IS_RECONCILIE != 0)
-
-
             volumeScan.push({
                 volume,
                 folioScan
             })
         })
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
