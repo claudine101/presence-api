@@ -836,5 +836,6 @@ module.exports = {
     listeprofiles,
     activer_descativer_utilisateur,
     login,
-    getnumber_user_by_profil
+    getnumber_user_by_profil,
+    listeInstitutions
 }
