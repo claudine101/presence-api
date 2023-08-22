@@ -196,23 +196,35 @@ const findAll = async (req, res) => {
 
 
 const findAllscanne = async (req, res) => {
-
     try {
-        const folioss = await Folio.findAll({
-
+        const folios = await Folio.findAll({
             where: {
-                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-                // IS_RECONCILIE:1,
-
+                ID_ETAPE_FOLIO:{
+                    [Op.in]:[
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+                        IDS_ETAPES_FOLIO.CHEF_EQUIPE_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                    ]
+                }         
             },
-
             include:
             {
                 model: Volume,
                 as: 'volume',
                 attributes: ['NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME', 'ID_VOLUME'],
                 required: false,
-
                 include: {
                     model: Etapes_volumes,
                     as: 'etapes_volumes',
@@ -221,49 +233,35 @@ const findAllscanne = async (req, res) => {
                 }
             }
 
-
         })
+        const uniqueIds = [];
+        const volumesPure = folios.filter(element => {
+                  const isDuplicate = uniqueIds.includes(element.toJSON().ID_VOLUME);
+                  if (!isDuplicate) {
+                            uniqueIds.push(element.toJSON().ID_VOLUME);
+                            return true;
+                  }
+                  return false;
+        });
 
-        var volumeFolios = []
-        folioss.forEach(folio => {
-            const ID_VOLUME = folio.ID_VOLUME
-            const volume = folio.volume
-            const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
-            if (isExists) {
-                const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
-
-                const newVolumes = { ...volume, folios: [...volume.folios, folio] }
-                volumeFolios = volumeFolios.map(vol => {
-                    if (vol.ID_VOLUME == ID_VOLUME) {
-                        return newVolumes
-                    } else {
-                        return vol
-                    }
-                })
-            } else {
-                volumeFolios.push({
-                    ID_VOLUME,
-                    volume,
-                    folios: [folio]
-                })
+        const volumes = volumesPure.map(volume => {
+            const foliovolume=folios.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME )
+            const folioscane=folios.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 1)
+            const foliononscane=folios.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 0)
+            return{
+                ...volume.toJSON(),
+                foliovolume,
+                folioscane,
+                foliononscane
             }
         })
-        
-        var volumeScan = []
-        volumeFolios.forEach(volume => {
-            var volume = volume
-            const folioScan = volume.folios.filter(fol => fol.IS_RECONCILIE != 0)
-            volumeScan.push({
-                volume,
-                folioScan
-            })
-        })
 
+       
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Le nombre de volume scanner   est egal à",
-            result: volumeScan
+            result: volumes
         })
     }
     catch (error) {
@@ -381,10 +379,19 @@ const gethistoriquevol = async (req, res) => {
 const findAllreachive = async (req, res) => {
 
     try {
-        const folioss = await Etapes_volume_historiques.findAll({
+        const foliorea = await Etapes_volume_historiques.findAll({
             where: {
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR
-                // IS_RECONCILIE:1,
+                
+                ID_ETAPE_VOLUME:{
+                    [Op.in]:[
+                       
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING,
+                        ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+                        ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+                    ],
+                } ,
             },
             include:
             {
@@ -402,54 +409,43 @@ const findAllreachive = async (req, res) => {
             }
         })
 
+        const uniqueIds = [];
+        const volumesPure = foliorea.filter(element => {
+                  const isDuplicate = uniqueIds.includes(element.toJSON().ID_VOLUME);
+                  if (!isDuplicate) {
+                            uniqueIds.push(element.toJSON().ID_VOLUME);
+                            return true;
+                  }
+                  return false;
+        });
 
+        const volumesrea = await Promise.all(volumesPure.map( async volume => {
+            const foliovolume=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME )
+            // const folioscane=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 1)
+            // const foliononscane=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 0)
+            const folioreachive = await Folio.findAll({
+                attributes :['NUMERO_FOLIO','CODE_FOLIO','ID_VOLUME'],
 
-        var volumeFolios = []
-        folioss.forEach(folio => {
-            const ID_VOLUME = folio.ID_VOLUME
-            const volume = folio.volume
-            const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
-            if (isExists) {
-                const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
-
-                const newVolumes = { ...volume, folios: [...volume.folios, folio] }
-                volumeFolios = volumeFolios.map(vol => {
-                    if (vol.ID_VOLUME == ID_VOLUME) {
-                        return newVolumes
-                    } else {
-                        return vol
-                    }
-                })
-            } else {
-                volumeFolios.push({
-                    ID_VOLUME,
-                    volume,
-                    folios: [folio]
-                })
-            }
-        })
-
-
-
-
-        var volumereachive = []
-        volumeFolios.forEach(volume => {
-            var volume = volume
-            const volumerachve = volume.folios.filter(fol => fol.ID_ETAPE_VOLUME == 15)
-
-
-            volumereachive.push({
-                volume,
-                volumerachve
+                where :{
+                    ID_VOLUME :volume.volume.ID_VOLUME 
+                }
+                
             })
-        })
+            
+            return{
+                ...volume.toJSON(),
+                foliovolume,
+                folioreachive,
+                // foliononscane
+            }
+        }))
 
 
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "volume reachive  est egal à",
-            result: volumereachive
+            result: volumesrea
         })
     }
     catch (error) {
