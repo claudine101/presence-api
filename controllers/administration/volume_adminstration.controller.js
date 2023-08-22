@@ -98,13 +98,10 @@ const findAll = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
-            'FOLIO',
-            'NUMERO_FOLIO',
-            '$volume.NUMERO_VOLUME$',
-            '$natures.DESCRIPTION$',
-            '$volume.NOMBRE_DOSSIER$',
-            '$volume.DATE_INSERTION$',
-            '$volume.etapes_volumes.NOM_ETAPE$'
+            'NUMERO_VOLUME',
+            'NOMBRE_DOSSIER',
+            'DATE_INSERTION',
+            '$etapes_volumes.NOM_ETAPE$'
 
         ]
         var globalSearchWhereLike = {}
@@ -139,25 +136,19 @@ const findAll = async (req, res) => {
                 }
             }
         }
-        const result = await Folio.findAndCountAll({
+        const result = await Volume.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
-            attributes:["FOLIO",'NUMERO_FOLIO'],
+            attributes: ['ID_VOLUME','NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'DATE_INSERTION'],
             where: {
                 ...globalSearchWhereLike,
                 ...dateWhere,
                 ... volume_filter
             },
-            include: [
-                {
-                    model:Volume,
-                    as: 'volume',
-                    attributes: ['ID_VOLUME','NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'DATE_INSERTION'],
-                    required: false,
-                    include:[
+            include:[
                         {
                             model: Etapes_volumes,
                             as: 'etapes_volumes',
@@ -172,15 +163,6 @@ const findAll = async (req, res) => {
                             required: false
                         },
                     ]
-                },
-                {
-                    model: Nature_folio,
-                    as: 'natures',
-                    attributes: ['DESCRIPTION'],
-                    required: false
-                }
-         
-            ]
 
         })
         res.status(RESPONSE_CODES.OK).json({

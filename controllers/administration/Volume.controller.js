@@ -182,7 +182,7 @@ const getHistoriqueFolio = async (req, res) => {
                 {
                     model: Folio,
                     as: "folio",
-                    attributes: ['ID_FOLIO', 'ID_VOLUME','FOLIO','NUMERO_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME','FOLIO','NUMERO_FOLIO'],
                     where: {
                         ID_VOLUME: ID_VOLUME
                     },
@@ -226,9 +226,17 @@ const getHistoriqueFolio = async (req, res) => {
                     {
                         model: Folio,
                         as: "folio",
-                        attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
+                        attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
                         required: true,
-                        where: {ID_VOLUME}
+                        where: {ID_VOLUME},
+                        include:[
+                            {
+                                model: Nature_folio,
+                                as: 'natures',
+                                attributes:['DESCRIPTION'],
+                                required: false
+                            }
+                        ]
                     }
                 ],
                 where: {
