@@ -60,10 +60,6 @@ const findAll = async (req, res) => {
 
                 }
             },
-
-
-
-
         }
 
         var orderColumn, orderDirection

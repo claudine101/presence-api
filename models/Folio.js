@@ -151,5 +151,5 @@ Folio.belongsTo(Nature_folio, { foreignKey: "ID_NATURE", as: 'natures' })
 Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
-// Volume.hasMany(Folio, {foreignKey:'ID_VOLUME', as:'volume'})
+// Volume.hasMany(Folio, {foreignKey:'ID_VOLUME', as: 'folio'})
 module.exports = Folio
