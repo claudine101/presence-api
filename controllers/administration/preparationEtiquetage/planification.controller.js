@@ -18,71 +18,202 @@ const Users = require("../../../models/Users");
  * @param {express.Response} res
  * @author eloge257 <nirema.eloge@mdiabox.bi>
  */
+// const planification = async (req, res) => {
+//   try {
+//     const { rows = 10, first = 0, sortField, sortOrder, search } = req.query;
+//     const defaultSortDirection = "ASC";
+//     const sortColumns = {
+//       volume: {
+//         as: "volume",
+//         fields: {
+//           NUMERO_VOLUME: "NUMERO_VOLUME",
+//           NOMBRE_DOSSIER: "NOMBRE_DOSSIER",
+//           DATE_INSERTION: "DATE_INSERTION",
+//         },
+//       },
+//     };
+
+//     var orderColumn, orderDirection;
+//     var sortModel;
+//     if (sortField) {
+//       for (let key in sortColumns) {
+//         if (sortColumns[key].fields.hasOwnProperty(sortField)) {
+//           sortModel = {
+//             model: key,
+//             as: sortColumns[key].as,
+//           };
+//           orderColumn = sortColumns[key].fields[sortField];
+//           break;
+//         }
+//       }
+//     }
+//     if (!orderColumn || !sortModel) {
+//       orderColumn = sortColumns.volume.fields.NUMERO_VOLUME;
+//       sortModel = {
+//         model: "Etapes_volume_historiques",
+//         as: sortColumns.volume,
+//       };
+//     }
+
+//     // ordering
+//     if (sortOrder == 1) {
+//       orderDirection = "ASC";
+//     } else if (sortOrder == -1) {
+//       orderDirection = "DESC";
+//     } else {
+//       orderDirection = defaultSortDirection;
+//     }
+
+//     // searching
+//     const globalSearchColumns = [
+//       "$volume.NUMERO_VOLUME$",
+//       "$volume.NOMBRE_DOSSIER$",
+//       "$volume.DATE_INSERTION$",
+//     ];
+//     var globalSearchWhereLike = {};
+//     if (search && search.trim() != "") {
+//       const searchWildCard = {};
+//       globalSearchColumns.forEach((column) => {
+//         searchWildCard[column] = {
+//           [Op.substring]: search,
+//         };
+//       });
+//       globalSearchWhereLike = {
+//         [Op.or]: searchWildCard,
+//       };
+//     }
+
+//     const result = await Etapes_volume_historiques.findAndCountAll({
+//       limit: parseInt(rows),
+//       offset: parseInt(first),
+//       order: [[sortModel, orderColumn, orderDirection]],
+//       attributes: ["ID_VOLUME"],
+//       where: {
+//         ...globalSearchWhereLike,
+//         // ID_ETAPE_VOLUME: {
+//         //   [Op.ne]: IDS_ETAPE_VOLUME.PLANIFICATION
+//         // },
+//       },
+//       include: [
+//         {
+//           model: Volume,
+//           as: "volume",
+//           required: false,
+//           attributes: [
+//             "NUMERO_VOLUME",
+//             "NOMBRE_DOSSIER",
+//             "DATE_INSERTION",
+//             "ID_VOLUME",
+//           ],
+//           include: {
+//             model: Etapes_volumes,
+//             as: "etapes_volumes",
+//             attributes: ["NOM_ETAPE"],
+//             required: false,
+//           },
+//         },
+//       ],
+//     });
+
+//     const uniqueIds = [];
+//     const HistoriqueRows = result.rows.filter((element) => {
+//       const isDuplicate = uniqueIds.includes(element.ID_VOLUME);
+//       if (!isDuplicate) {
+//         uniqueIds.push(element.ID_VOLUME);
+//         return true;
+//       }
+//       return false;
+//     });
+
+//     res.status(RESPONSE_CODES.OK).json({
+//       statusCode: RESPONSE_CODES.OK,
+//       httpStatus: RESPONSE_STATUS.OK,
+//       message: "Liste des utilisateurs",
+//       result: {
+//         data: HistoriqueRows,
+//         totalRecords: HistoriqueRows.length
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+//       statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+//       httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+//       message: "Erreur interne du serveur, réessayer plus tard",
+//     });
+//   }
+// };
+
+
 const planification = async (req, res) => {
   try {
-    const { rows = 10, first = 0, sortField, sortOrder, search } = req.query;
-    const defaultSortDirection = "ASC";
-    const sortColumns = {
-      volume: {
-        as: "volume",
-        fields: {
-          NUMERO_VOLUME: "NUMERO_VOLUME",
-          NOMBRE_DOSSIER: "NOMBRE_DOSSIER",
-          DATE_INSERTION: "DATE_INSERTION",
+      const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
+      const defaultSortDirection = "DESC"
+      const sortColumns = {
+        volume: {
+          as: "volume",
+          fields: {
+            NUMERO_VOLUME: "NUMERO_VOLUME",
+            NOMBRE_DOSSIER: "NOMBRE_DOSSIER",
+            DATE_INSERTION: "DATE_INSERTION",
+          },
         },
-      },
-    };
+      };
 
-    var orderColumn, orderDirection;
-    var sortModel;
-    if (sortField) {
-      for (let key in sortColumns) {
-        if (sortColumns[key].fields.hasOwnProperty(sortField)) {
-          sortModel = {
-            model: key,
-            as: sortColumns[key].as,
-          };
-          orderColumn = sortColumns[key].fields[sortField];
-          break;
-        }
+      var orderColumn, orderDirection
+
+      // sorting
+      var sortModel
+      if (sortField) {
+          for (let key in sortColumns) {
+              if (sortColumns[key].fields.hasOwnProperty(sortField)) {
+                  sortModel = {
+                      model: key,
+                      as: sortColumns[key].as
+                  }
+                  orderColumn = sortColumns[key].fields[sortField]
+                  break
+              }
+          }
       }
-    }
-    if (!orderColumn || !sortModel) {
-      orderColumn = sortColumns.volume.fields.NUMERO_VOLUME;
-      sortModel = {
-        model: "Etapes_volume_historiques",
-        as: sortColumns.volume,
-      };
-    }
-
-    // ordering
-    if (sortOrder == 1) {
-      orderDirection = "ASC";
-    } else if (sortOrder == -1) {
-      orderDirection = "DESC";
-    } else {
-      orderDirection = defaultSortDirection;
-    }
-
-    // searching
-    const globalSearchColumns = [
-      "$volume.NUMERO_VOLUME$",
-      "$volume.NOMBRE_DOSSIER$",
-      "$volume.DATE_INSERTION$",
-    ];
-    var globalSearchWhereLike = {};
-    if (search && search.trim() != "") {
-      const searchWildCard = {};
-      globalSearchColumns.forEach((column) => {
-        searchWildCard[column] = {
-          [Op.substring]: search,
+      if (!orderColumn || !sortModel) {
+        orderColumn = sortColumns.volume.fields.NUMERO_VOLUME;
+        sortModel = {
+          model: "Etapes_volume_historiques",
+          as: sortColumns.volume,
         };
-      });
-      globalSearchWhereLike = {
-        [Op.or]: searchWildCard,
-      };
-    }
+      }
+  
 
+      // ordering
+      if (sortOrder == 1) {
+          orderDirection = 'ASC'
+      } else if (sortOrder == -1) {
+          orderDirection = 'DESC'
+      } else {
+          orderDirection = defaultSortDirection
+      }
+        // searching
+        const globalSearchColumns = [
+          "$volume.NUMERO_VOLUME$",
+          "$volume.NOMBRE_DOSSIER$",
+          "$volume.DATE_INSERTION$",
+        ];
+        var globalSearchWhereLike = {};
+        if (search && search.trim() != "") {
+          const searchWildCard = {};
+          globalSearchColumns.forEach((column) => {
+            searchWildCard[column] = {
+              [Op.substring]: search,
+            };
+          });
+          globalSearchWhereLike = {
+            [Op.or]: searchWildCard,
+          };
+        }
+
+
+      
     const result = await Etapes_volume_historiques.findAndCountAll({
       limit: parseInt(rows),
       offset: parseInt(first),
@@ -90,9 +221,9 @@ const planification = async (req, res) => {
       attributes: ["ID_VOLUME"],
       where: {
         ...globalSearchWhereLike,
-        ID_ETAPE_VOLUME: {
-          [Op.ne]: IDS_ETAPE_VOLUME.PLANIFICATION
-        },
+        // ID_ETAPE_VOLUME: {
+        //   [Op.ne]: IDS_ETAPE_VOLUME.PLANIFICATION
+        // },
       },
       include: [
         {
@@ -115,6 +246,8 @@ const planification = async (req, res) => {
       ],
     });
 
+
+
     const uniqueIds = [];
     const HistoriqueRows = result.rows.filter((element) => {
       const isDuplicate = uniqueIds.includes(element.ID_VOLUME);
@@ -135,15 +268,14 @@ const planification = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
-    res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-      statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-      httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-      message: "Erreur interne du serveur, réessayer plus tard",
-    });
+      console.log(error)
+      res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+          statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+          httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+          message: "Erreur interne du serveur, réessayer plus tard",
+      })
   }
-};
-
+}
 /**
  * Permet d'afficher tous les volumes qui ont passee sur l'etape de des Désarchivage
  * @date  18/08/2023
@@ -605,13 +737,22 @@ const indexation = async (req, res) => {
       where: {
         ...globalSearchWhereLike,
         ID_ETAPE_FOLIO: {
-          [Op.ne]: [
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
-            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
-            IDS_ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
-            IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+          [Op.in]: [
+            IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+            IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+            IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+            IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+            IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+            IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+            IDS_ETAPES_FOLIO.CHEF_EQUIPE_EDRMS,
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+            IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+            IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+            IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+            IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+            IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
           ],
         },
       },
@@ -624,13 +765,13 @@ const indexation = async (req, res) => {
           "CODE_VOLUME",
           "ID_VOLUME",
         ],
-        required: true,
+        required: false,
         include: [
           {
             model: Etapes_volumes,
             as: "etapes_volumes",
             attributes: ["NOM_ETAPE"],
-            required: true,
+            required: false,
           },
         ],
       },
