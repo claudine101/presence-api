@@ -2,6 +2,7 @@ const express = require("express");
 const RESPONSE_CODES = require("../../../constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("../../../constants/RESPONSE_STATUS");
 const IDS_ETAPES_FOLIO = require("../../../constants/ETAPES_FOLIO");
+const IDS_ETAPE_VOLUME = require("../../../constants/ETAPES_VOLUME");
 const { Op } = require("sequelize");
 const Volume = require("../../../models/Volume");
 const Folio = require("../../../models/Folio");
@@ -90,7 +91,7 @@ const planification = async (req, res) => {
       where: {
         ...globalSearchWhereLike,
         ID_ETAPE_VOLUME: {
-          [Op.ne]: 1,
+          [Op.ne]: IDS_ETAPE_VOLUME.PLANIFICATION
         },
       },
       include: [
@@ -224,7 +225,10 @@ const desarchivage = async (req, res) => {
       where: {
         ...globalSearchWhereLike,
         ID_ETAPE_VOLUME: {
-          [Op.notIn]: [1, 2],
+          [Op.notIn]: [
+            IDS_ETAPE_VOLUME.PLANIFICATION,
+            IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO
+          ],
         },
       },
       include: [
@@ -358,7 +362,12 @@ const transmission = async (req, res) => {
       where: {
         ...globalSearchWhereLike,
         ID_ETAPE_VOLUME: {
-          [Op.notIn]: [1, 2, 3, 4],
+          [Op.notIn]: [  
+            IDS_ETAPE_VOLUME.PLANIFICATION,
+            IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO,
+            IDS_ETAPE_VOLUME.DETAILLER_LES_FOLIO,
+            IDS_ETAPE_VOLUME.CHOIX_DES_AILES,
+          ],
         },
       },
       include: [
@@ -638,7 +647,7 @@ const indexation = async (req, res) => {
 
     const volumes = await Promise.all(volumesPure.map(async (volume) => {
       const agentIndexation = await Etapes_folio_historiques.findOne({
-        attributes: [],
+        attributes: ['ID_ETAPE_FOLIO'],
         where: {
           ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
         },
