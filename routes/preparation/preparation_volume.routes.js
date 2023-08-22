@@ -10,11 +10,27 @@ const preparation_volume_routes = express.Router()
  preparation_volume_routes.post('/', preparation_volume_controller.createVolume)
 
  /**
+ * Une route  permet  un chef  de divisions des archives d'ajouter   les volumes 
+ *@method POST
+ * @url /preparation/volume
+ */
+ preparation_volume_routes.post('/', preparation_volume_controller.createVolume)
+
+
+ /**
  * Une route  permet  recupere les volumes
  *@method POST
  * @url /preparation/volume
  */
  preparation_volume_routes.get('/', preparation_volume_controller.findAll)
+
+ /**
+ * Une route  permet  un agent  superviseur  aile de voir  les volume prepares 
+ *@method POST
+ * @url /preparation/volume/volumePrepares
+ */
+ preparation_volume_routes.get('/volumePrepares', preparation_volume_controller.findAllVolume)
+
 /**
  * Une route  permet  recupere les volumes et leurs details
  *@method POST

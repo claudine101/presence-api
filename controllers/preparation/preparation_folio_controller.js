@@ -341,7 +341,7 @@ const nommerAgentPreparation = async (req, res) => {
  */
 const retourAgentPreparation = async (req, res) => {
     try {
-        const { AGENT_PREPARATION, folio ,folioPrepare} = req.body
+        const { AGENT_PREPARATION, folio, folioPrepare } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -818,7 +818,7 @@ const findAllAgents = async (req, res) => {
     }
 }
 /**
- * Une route  permet  un agents superviseur 
+ * Une route  permet  les agents superviseur 
  * de voir  les agents preparation apres retour
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
  * @param {express.Request} req
@@ -844,7 +844,7 @@ const findAllSuperviseurs = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO','IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [ETAPES_FOLIO.SELECTION_AGENT_SUP,
@@ -853,6 +853,81 @@ const findAllSuperviseurs = async (req, res) => {
                             ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
                         }
                     }
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Une route  permet  un agents superviseur valides
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  16/07/2023
+ * 
+ */
+const findAllSuperviseursValides = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ 
+                    ID_USER: req.userId ,
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
+                }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO','IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 }
             ]
         })
@@ -1079,6 +1154,7 @@ const getPvs = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
+        console.log(folioIds)
 
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
@@ -1131,6 +1207,459 @@ const getPvs = async (req, res) => {
         })
     }
 }
+const getPvsAgentPREPARATION = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        const pvRetour = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+        })
+        var foliosPrepares = []
+        var foliosNoPrepare = []
+
+        if (pvRetour) {
+            foliosPrepares=await Etapes_folio_historiques.findAll({
+                attributes: ['ID_FOLIO_HISTORIQUE'],
+                where: {
+                    [Op.and]: [{
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                        ID_USER: req.userId,
+                        USER_TRAITEMENT: { [Op.not]: req.userId },
+                        
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                            ]
+                        }
+                    }]
+                },
+                include: [{
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+                    where: {
+                        [Op.and]: [ {
+                            IS_PREPARE: 1
+                        }]
+                    }
+                }]
+            })
+
+            foliosNoPrepare=await Etapes_folio_historiques.findAll({
+                attributes: ['ID_FOLIO_HISTORIQUE'],
+                where: {
+                    [Op.and]: [{
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                        ID_USER: req.userId,
+                        USER_TRAITEMENT: { [Op.not]: req.userId },
+                        
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                            ]
+                        }
+                    }]
+                },
+                include: [{
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+                    where: {
+                        [Op.and]: [ {
+                            IS_PREPARE: 0
+                        }]
+                    }
+                }]
+            })
+        }
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...pv.toJSON(),
+                pvRetour,
+                foliosPrepares,
+                foliosNoPrepare
+
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+const getPvsAgentSuperviseur= async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        const pvRetour = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+        })
+        var foliosPrepares = []
+        var foliosNoPrepare = []
+
+        if (pvRetour) {
+            foliosPrepares=await Etapes_folio_historiques.findAll({
+                attributes: ['ID_FOLIO_HISTORIQUE'],
+                where: {
+                    [Op.and]: [{
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                        ID_USER: req.userId,
+                        USER_TRAITEMENT: { [Op.not]: req.userId },
+                        
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                            ]
+                        }
+                    }]
+                },
+                include: [{
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+                    where: {
+                        [Op.and]: [ {
+                            IS_PREPARE: 1
+                        }]
+                    }
+                }]
+            })
+
+            foliosNoPrepare=await Etapes_folio_historiques.findAll({
+                attributes: ['ID_FOLIO_HISTORIQUE'],
+                where: {
+                    [Op.and]: [{
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                        ID_USER: req.userId,
+                        USER_TRAITEMENT: { [Op.not]: req.userId },
+                        
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                            ]
+                        }
+                    }]
+                },
+                include: [{
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+                    where: {
+                        [Op.and]: [ {
+                            IS_PREPARE: 0
+                        }]
+                    }
+                }]
+            })
+        }
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...pv.toJSON(),
+                pvRetour,
+                foliosPrepares,
+                foliosNoPrepare
+
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Une route  permet  les  agents de preparation et  leurs folio  prepare et  non prepare
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  22/08/2023
+ * 
+ */
+const findAllFolioPrepare = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ID_USER: req.userId,
+                USER_TRAITEMENT: { [Op.not]: req.userId },
+                ID_ETAPE_FOLIO: {
+                    [Op.in]: [
+                        IDS_ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                    ]
+                }
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: true,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        IS_PREPARE: { [Op.in]: [1, 0] },
+                    },
+
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folios prépare et  non  prépare",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+const getAgentDetail = async (req, res) => {
+    try {
+        const { USERS_ID } = req.params
+        const agent = (
+            await Etapes_folio_historiques.findOne({
+                attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+                where: {
+                    USER_TRAITEMENT: USERS_ID,
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: { [Op.not]: req.userId },
+                    '$folio.ID_ETAPE_FOLIO$': {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
+                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                        ]
+                    },
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
+                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                        ]
+                    }
+
+
+                },
+                include: [{
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"]
+                }]
+            })).toJSON()
+
+        const agentPreparation = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+            where: {
+                [Op.and]: [{
+                    USER_TRAITEMENT: USERS_ID,
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: { [Op.not]: req.userId },
+                    '$folio.ID_ETAPE_FOLIO$': {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                        ]
+                    },
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                        ]
+                    }
+                }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+               
+            }]
+        })
+        const agentPreparationRetour = 
+        await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+            where: {
+                [Op.and]: [{
+                    USER_TRAITEMENT: USERS_ID,
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: { [Op.not]: req.userId },
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                        ]
+                    }
+                }]
+            },
+           
+        })
+        var foliosPrepares = []
+        if (agentPreparationRetour) {
+            foliosPrepares=await Etapes_folio_historiques.findOne({
+                attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+                where: {
+                    [Op.and]: [{
+                        USER_TRAITEMENT: USERS_ID,
+                        ID_USER: req.userId,
+                        USER_TRAITEMENT: { [Op.not]: req.userId },
+                        '$folio.ID_ETAPE_FOLIO$': {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                            ]
+                        },
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                            ]
+                        }
+                    }]
+                },
+                include: [{
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+                    where: {
+                        [Op.and]: [ {
+                            IS_PREPARE: 1
+                        }]
+                    }
+                }]
+            })
+        }
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Detail d'un flash",
+            result: {
+                ...agent,
+                agentPreparation,
+                agentPreparationRetour,
+                foliosPrepares
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 module.exports = {
     createfolio,
     findAll,
@@ -1145,5 +1674,10 @@ module.exports = {
     findAllSuperviseurs,
     checkAgentsup,
     nbre,
-    getPvs
+    getPvs,
+    findAllFolioPrepare,
+    getAgentDetail,
+    getPvsAgentPREPARATION,
+    findAllSuperviseursValides,
+    getPvsAgentSuperviseur
 }

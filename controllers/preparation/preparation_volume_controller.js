@@ -13,6 +13,7 @@ const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/Folio');
 const Maille = require('../../models/Maille');
+const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -169,6 +170,86 @@ const findAll = async (req, res) => {
     //   ],
             where: {
                 ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                        {
+                            model: Maille,
+                            as: 'maille',
+                            required: false,
+                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+        
+                        }
+                }]
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                data: result.rows,
+                totalRecords: result.count
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de afficher tous volume
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 27/06/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAllVolume = async (req, res) => {
+    try {
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const sortColumns = {
+            volume: {
+                as: "volume",
+                fields: {
+                    DATE_INSERTION: 'volume.DATE_INSERTION',
+                }
+            },
+        }
+        var orderColumn
+        if (!orderColumn) {
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
+            sortModel = {
+                      model: 'volume',
+                      as: sortColumns.volume.as
+            }
+  }
+        const user = userObject.toJSON()
+        var condition = {}
+
+        if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
+            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_PLATEAU, USERS_ID: req.userId }
+        }
+        
+        const result = await Etapes_volume_historiques.findAndCountAll({
+            order: [
+                ['DATE_INSERTION','DESC']
+            ],
+    
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU, USERS_ID: req.userId 
             },
             include: [
                 {
@@ -847,7 +928,7 @@ const findAllAgentSupAile = async (req, res) => {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME',  'NOMBRE_DOSSIER','NUMERO_VOLUME', 'CODE_VOLUME'],
 
                 }
             ]
@@ -943,27 +1024,24 @@ const retourChefPlateau = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        var volumeObjet = {}
-        volumeObjet = JSON.parse(volume)
-        await Promise.all(volumeObjet.map(async (volume) => {
+       
             const results = await Volume.update({
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
             }, {
                 where: {
-                    ID_VOLUME: volume.volume.ID_VOLUME,
+                    ID_VOLUME: volume,
                 }
             })
             await Etapes_volume_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     USERS_ID: req.userId,
-                    ID_VOLUME: volume.volume.ID_VOLUME,
+                    ID_VOLUME: volume,
                     USER_TRAITEMENT: CHEF_PLATEAU,
                     ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
                 }
             )
-        }))
-
+        
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1203,13 +1281,23 @@ const getVolumeChefPlateau = async (req, res) => {
                                   attributes: ['USERS_ID', 'NOM', 'PRENOM']
                         }]
               })
+              const check = await Folio.findAll({
+                attributes: ['ID_FOLIO'],
+                where: {
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                    ID_VOLUME:ID_VOLUME
+
+                },
+                
+      })
               res.status(RESPONSE_CODES.OK).json({
                         statusCode: RESPONSE_CODES.OK,
                         httpStatus: RESPONSE_STATUS.OK,
                         message: "Chef platteau de la volume",
                         result: {
                                   ...chefPlateau.toJSON(),
-                                  retour: retour ? retour.toJSON() : null
+                                  retour: retour ? retour.toJSON() : null,
+                                  check:check ?check: null
                         }
               })
     } catch (error) {
@@ -1237,5 +1325,8 @@ module.exports = {
     retourAgentSupAile,
     findCheckPlateau,
     getVolumeDetail,
-    getVolumeChefPlateau
+    getVolumeChefPlateau,
+    findAllVolume
+
+    
 }
