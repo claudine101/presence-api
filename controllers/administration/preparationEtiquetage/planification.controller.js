@@ -18,136 +18,11 @@ const Users = require("../../../models/Users");
  * @param {express.Response} res
  * @author eloge257 <nirema.eloge@mdiabox.bi>
  */
-// const planification = async (req, res) => {
-//   try {
-//     const { rows = 10, first = 0, sortField, sortOrder, search } = req.query;
-//     const defaultSortDirection = "ASC";
-//     const sortColumns = {
-//       volume: {
-//         as: "volume",
-//         fields: {
-//           NUMERO_VOLUME: "NUMERO_VOLUME",
-//           NOMBRE_DOSSIER: "NOMBRE_DOSSIER",
-//           DATE_INSERTION: "DATE_INSERTION",
-//         },
-//       },
-//     };
-
-//     var orderColumn, orderDirection;
-//     var sortModel;
-//     if (sortField) {
-//       for (let key in sortColumns) {
-//         if (sortColumns[key].fields.hasOwnProperty(sortField)) {
-//           sortModel = {
-//             model: key,
-//             as: sortColumns[key].as,
-//           };
-//           orderColumn = sortColumns[key].fields[sortField];
-//           break;
-//         }
-//       }
-//     }
-//     if (!orderColumn || !sortModel) {
-//       orderColumn = sortColumns.volume.fields.NUMERO_VOLUME;
-//       sortModel = {
-//         model: "Etapes_volume_historiques",
-//         as: sortColumns.volume,
-//       };
-//     }
-
-//     // ordering
-//     if (sortOrder == 1) {
-//       orderDirection = "ASC";
-//     } else if (sortOrder == -1) {
-//       orderDirection = "DESC";
-//     } else {
-//       orderDirection = defaultSortDirection;
-//     }
-
-//     // searching
-//     const globalSearchColumns = [
-//       "$volume.NUMERO_VOLUME$",
-//       "$volume.NOMBRE_DOSSIER$",
-//       "$volume.DATE_INSERTION$",
-//     ];
-//     var globalSearchWhereLike = {};
-//     if (search && search.trim() != "") {
-//       const searchWildCard = {};
-//       globalSearchColumns.forEach((column) => {
-//         searchWildCard[column] = {
-//           [Op.substring]: search,
-//         };
-//       });
-//       globalSearchWhereLike = {
-//         [Op.or]: searchWildCard,
-//       };
-//     }
-
-//     const result = await Etapes_volume_historiques.findAndCountAll({
-//       limit: parseInt(rows),
-//       offset: parseInt(first),
-//       order: [[sortModel, orderColumn, orderDirection]],
-//       attributes: ["ID_VOLUME"],
-//       where: {
-//         ...globalSearchWhereLike,
-//         // ID_ETAPE_VOLUME: {
-//         //   [Op.ne]: IDS_ETAPE_VOLUME.PLANIFICATION
-//         // },
-//       },
-//       include: [
-//         {
-//           model: Volume,
-//           as: "volume",
-//           required: false,
-//           attributes: [
-//             "NUMERO_VOLUME",
-//             "NOMBRE_DOSSIER",
-//             "DATE_INSERTION",
-//             "ID_VOLUME",
-//           ],
-//           include: {
-//             model: Etapes_volumes,
-//             as: "etapes_volumes",
-//             attributes: ["NOM_ETAPE"],
-//             required: false,
-//           },
-//         },
-//       ],
-//     });
-
-//     const uniqueIds = [];
-//     const HistoriqueRows = result.rows.filter((element) => {
-//       const isDuplicate = uniqueIds.includes(element.ID_VOLUME);
-//       if (!isDuplicate) {
-//         uniqueIds.push(element.ID_VOLUME);
-//         return true;
-//       }
-//       return false;
-//     });
-
-//     res.status(RESPONSE_CODES.OK).json({
-//       statusCode: RESPONSE_CODES.OK,
-//       httpStatus: RESPONSE_STATUS.OK,
-//       message: "Liste des utilisateurs",
-//       result: {
-//         data: HistoriqueRows,
-//         totalRecords: HistoriqueRows.length
-//       },
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-//       statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-//       httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-//       message: "Erreur interne du serveur, réessayer plus tard",
-//     });
-//   }
-// };
 
 
 const planification = async (req, res) => {
   try {
-      const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
+      const { rows = 1000, first = 0, sortField, sortOrder, search } = req.query
       const defaultSortDirection = "DESC"
       const sortColumns = {
         volume: {
@@ -211,14 +86,18 @@ const planification = async (req, res) => {
             [Op.or]: searchWildCard,
           };
         }
-
-
-      
-    const result = await Etapes_volume_historiques.findAndCountAll({
-      limit: parseInt(rows),
+    const result = await Folio.findAndCountAll({
+      // limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
-      attributes: ["ID_VOLUME"],
+      attributes: [
+        "NUMERO_FOLIO",
+        "CODE_FOLIO",
+        "ID_FOLIO",
+        "ID_VOLUME",
+        "ID_NATURE",
+        "IS_PREPARE"
+      ],
       where: {
         ...globalSearchWhereLike,
         // ID_ETAPE_VOLUME: {
@@ -242,11 +121,10 @@ const planification = async (req, res) => {
             attributes: ["NOM_ETAPE"],
             required: false,
           },
+
         },
       ],
     });
-
-
 
     const uniqueIds = [];
     const HistoriqueRows = result.rows.filter((element) => {
@@ -257,14 +135,22 @@ const planification = async (req, res) => {
       }
       return false;
     });
-
+     const volumes = HistoriqueRows.map((volume) => {
+      const foliovolume = result.rows.filter(
+        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
+      );  
+      return {
+        ...volume.toJSON(),
+        foliovolume,
+      };
+    });
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
       httpStatus: RESPONSE_STATUS.OK,
       message: "Liste des utilisateurs",
       result: {
-        data: HistoriqueRows,
-        totalRecords: HistoriqueRows.length
+        data: volumes,
+        totalRecords: volumes.length
       },
     });
   } catch (error) {
@@ -349,14 +235,22 @@ const desarchivage = async (req, res) => {
       };
     }
 
-    const result = await Etapes_volume_historiques.findAndCountAll({
-      limit: parseInt(rows),
+    const result = await Folio.findAndCountAll({
+      // limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
-      attributes: ["ID_VOLUME"],
+      // attributes: ["ID_VOLUME"],
+      attributes: [
+        "NUMERO_FOLIO",
+        "CODE_FOLIO",
+        "ID_FOLIO",
+        "ID_VOLUME",
+        "ID_NATURE",
+        "IS_PREPARE"
+      ],
       where: {
         ...globalSearchWhereLike,
-        ID_ETAPE_VOLUME: {
+        ID_ETAPE_FOLIO: {
           [Op.notIn]: [
             IDS_ETAPE_VOLUME.PLANIFICATION,
             IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO
@@ -393,14 +287,23 @@ const desarchivage = async (req, res) => {
       }
       return false;
     });
+    const volumes = HistoriqueRows.map((volume) => {
+      const foliovolume = result.rows.filter(
+        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
+      );  
+      return {
+        ...volume.toJSON(),
+        foliovolume,
+      };
+    });
 
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
       httpStatus: RESPONSE_STATUS.OK,
-      message: "Liste des utilisateurs",
+      message: "Liste",
       result: {
-        data: HistoriqueRows,
-        totalRecords: HistoriqueRows.length,
+        data: volumes,
+        totalRecords: volumes.length,
       },
     });
   } catch (error) {
@@ -486,14 +389,22 @@ const transmission = async (req, res) => {
       };
     }
 
-    const result = await Etapes_volume_historiques.findAndCountAll({
-      limit: parseInt(rows),
+    const result = await Folio.findAndCountAll({
+      // limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
-      attributes: ["ID_VOLUME"],
+      // attributes: ["ID_VOLUME"],
+      attributes: [
+        "NUMERO_FOLIO",
+        "CODE_FOLIO",
+        "ID_FOLIO",
+        "ID_VOLUME",
+        "ID_NATURE",
+        "IS_PREPARE"
+      ],
       where: {
         ...globalSearchWhereLike,
-        ID_ETAPE_VOLUME: {
+        ID_ETAPE_FOLIO: {
           [Op.notIn]: [  
             IDS_ETAPE_VOLUME.PLANIFICATION,
             IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO,
@@ -532,13 +443,22 @@ const transmission = async (req, res) => {
       }
       return false;
     });
+    const volumes = HistoriqueRows.map((volume) => {
+      const foliovolume = result.rows.filter(
+        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
+      );  
+      return {
+        ...volume.toJSON(),
+        foliovolume,
+      };
+    });
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
       httpStatus: RESPONSE_STATUS.OK,
       message: "Liste des utilisateurs",
       result: {
-        data: HistoriqueRows,
-        totalRecords: HistoriqueRows.length,
+        data: volumes,
+        totalRecords: volumes.length,
       },
     });
   } catch (error) {
