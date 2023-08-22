@@ -684,6 +684,149 @@ const activer_descativer_utilisateur = async (req, res) => {
 }
 
 
+/**
+ * permet de  compter le nombre d'utilisateur par profil
+ * @author Jospin BA <jospin@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 14/08/2023
+ * 
+ */
+
+const getnumber_user_by_profil = async (req, res) => {
+    try {
+        const { profilebackend } = req.query
+        const user_by_profil = await Users.findAndCountAll({
+          attributes:['ID_PROFIL'],
+          include:[{
+            model: Profils,
+            as: 'profil',
+            required: false,
+            attributes: ['DESCRIPTION'],
+            // where:{ID_PROFIL}
+
+            }]
+        })
+
+
+        const uniqueIds = [];
+        const folioHistoriqueRows = user_by_profil.rows.filter(element => {
+                  const isDuplicate = uniqueIds.includes(element.ID_PROFIL);
+                  if (!isDuplicate) {
+                            uniqueIds.push(element.ID_PROFIL);
+                            return true;
+                  }
+                  return false;
+        });
+        const folioHistorique = {
+          count: user_by_profil.count,
+          rows: folioHistoriqueRows
+        };
+
+        var profileInfo = {}
+        if (profilebackend) {
+            profileInfo = { ID_PROFIL: profilebackend }
+        }
+        const result = await Promise.all(folioHistorique.rows.map(async countObject => {
+
+            const util = countObject.toJSON()
+          
+            const fetCmpt = await Users.findAndCountAll({
+                // group:['ID_FOLIO'],
+               
+                include:[{
+                    model: Profils,
+                    as: 'profil',
+                    required: false,
+                    attributes: ['ID_PROFIL','DESCRIPTION'],
+                    }],
+                    where:{ID_PROFIL:util.ID_PROFIL,...profileInfo,}
+            })
+            return {
+                ...util,
+                count_users: fetCmpt.length,
+                fetCmpt: {
+                    rows: fetCmpt,
+                    count: fetCmpt.length
+                },
+            }
+
+        }))
+
+        const userProfil = result.map((uP)=> {
+            return uP.profil.DESCRIPTION
+         });
+// console.log(userProfil)
+         const numberUser=result.map((uP)=> {
+            return uP.fetCmpt.rows.count
+         });
+
+const rapport={
+// Highcharts.chart('container', {
+    chart: {
+        type: 'line'
+    },
+    title: {
+        text: 'Rapport par profil des utilisateurs'
+    },
+    subtitle: {
+        text: 'Ces utilisateurs sont groupés selon leur profil'
+    },
+    xAxis: {
+        // categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+       
+         categories : userProfil,
+    },
+    yAxis: {
+        title: {
+            text: 'Nombre des utilisateurs par profil'
+        },
+    },
+    plotOptions: {
+        spline: {
+            marker: {
+                radius: 4,
+                lineColor: '#666666',
+                lineWidth: 1
+            }
+        }
+    },
+    // plotOptions: {
+    //     line: {
+    //         dataLabels: {
+    //             enabled: true
+    //         },
+    //         enableMouseTracking: false
+    //     }
+    // },
+    series: [{
+        name: 'Utilisateurs',
+        // data: [16.0, 18.2, 23.1, 27.9, 32.2, 36.4, 39.8, 38.4, 35.5, 29.2,
+            // 22.0, 17.8,1,2,3,4,0,96]
+
+            data:numberUser
+    }]
+// })
+};
+
+          res.status(RESPONSE_CODES.OK).json({
+              statusCode: RESPONSE_CODES.OK,
+              httpStatus: RESPONSE_STATUS.OK,
+              message: "Le users by profil",
+              result: rapport
+          })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+  }
+
+
 module.exports = {
     createuser,
     Updateuser,
@@ -693,5 +836,5 @@ module.exports = {
     listeprofiles,
     activer_descativer_utilisateur,
     login,
-    listeInstitutions
+    getnumber_user_by_profil
 }

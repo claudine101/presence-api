@@ -179,6 +179,28 @@ const findUsersByFolio = async (req, res) => {
               attributes: ['ID_PROFIL', 'DESCRIPTION'],
             }
           },
+          {
+            model: Folio,
+            as: 'folio',
+            required: false,
+            attributes: [
+              'FOLIO','NUMERO_FOLIO'
+            ],
+            include:[{
+              model:Nature_folio,
+              as: 'natures',
+              required:false,
+              attributes:[
+                'DESCRIPTION'
+              ]
+            },
+          {
+            model: Volume,
+            as: 'volume',
+            attributes: ['NUMERO_VOLUME'],
+            required: false
+          },]
+          },
 
         ]
 

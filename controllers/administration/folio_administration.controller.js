@@ -32,7 +32,8 @@ const findAll = async (req, res) => {
                     ID_FOLIO: 'ID_FOLIO',
                     NUMERO_FOLIO: "NUMERO_FOLIO",
                     CODE_FOLIO: "CODE_FOLIO",
-                    DATE_INSERTION: "DATE_INSERTION"
+                    DATE_INSERTION: "DATE_INSERTION",
+                    FOLIO: "FOLIO"
 
                 }
             },
@@ -59,10 +60,6 @@ const findAll = async (req, res) => {
 
                 }
             },
-
-
-
-
         }
 
         var orderColumn, orderDirection
@@ -102,12 +99,10 @@ const findAll = async (req, res) => {
         const globalSearchColumns = [
             'NUMERO_FOLIO',
             'DATE_INSERTION',
+            'FOLIO',
             '$volume.NUMERO_VOLUME$',
             '$nature.DESCRIPTION$',
             '$etapes.NOM_ETAPE$'
-
-
-
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
