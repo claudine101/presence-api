@@ -14,6 +14,7 @@ const Folio = require('../../models/Folio');
 const Etapes_folio = require('../../models/Etapes_folio');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
+const Nature_folio = require('../../models/Nature_folio');
 
 
 
@@ -220,6 +221,7 @@ const findAllscanne = async (req, res) => {
                 }         
             },
             include:
+            [
             {
                 model: Volume,
                 as: 'volume',
@@ -231,7 +233,13 @@ const findAllscanne = async (req, res) => {
                     attributes: ['NOM_ETAPE'],
                     required: false
                 }
-            }
+            },
+            {
+                   model: Nature_folio,
+                    as: "nature",
+                    attributes: [ 'DESCRIPTION']
+               }
+        ]
 
         })
         const uniqueIds = [];
@@ -407,6 +415,7 @@ const findAllreachive = async (req, res) => {
                     required: false, 
                 }
             }
+            
         })
 
         const uniqueIds = [];
@@ -424,22 +433,42 @@ const findAllreachive = async (req, res) => {
             // const folioscane=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 1)
             // const foliononscane=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 0)
             const folioreachive = await Folio.findAll({
-                attributes :['NUMERO_FOLIO','CODE_FOLIO','ID_VOLUME'],
+                attributes :['NUMERO_FOLIO','CODE_FOLIO','ID_VOLUME','FOLIO','ID_FOLIO'],
 
                 where :{
                     ID_VOLUME :volume.volume.ID_VOLUME 
-                }
+                },
+
+                include:
+                [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    attributes: ['NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME', 'ID_VOLUME'],
+                    required: false,
+                    include: {
+                        model: Etapes_volumes,
+                        as: 'etapes_volumes',
+                        attributes: ['NOM_ETAPE'],
+                        required: false
+                    }
+                },
+                {
+                       model: Nature_folio,
+                        as: "nature",
+                        attributes: [ 'DESCRIPTION']
+                   }
+            ]
                 
             })
             
             return{
                 ...volume.toJSON(),
-                foliovolume,
+                // foliovolume,
                 folioreachive,
                 // foliononscane
             }
         }))
-
 
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,

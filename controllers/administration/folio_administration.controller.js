@@ -314,6 +314,11 @@ const finduploadedrms = async (req, res) => {
                         required: false
                     }
                 },
+                {
+                    model : Nature_folio,
+                    as :'nature',
+                    attributes:['DESCRIPTION']
+                }
                
 
             ]
