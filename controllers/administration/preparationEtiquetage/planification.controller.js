@@ -10,7 +10,7 @@ const Etapes_volumes = require("../../../models/Etapes_volumes");
 const Etapes_volume_historiques = require("../../../models/Etapes_volume_historiques");
 const Etapes_folio_historiques = require("../../../models/Etapes_folio_historiques");
 const Users = require("../../../models/Users");
-const Nature_folio = require("../../../models/Nature_folio");
+const natures = require("../../../models/Nature_folio");
 const Etapes_folio = require("../../../models/Etapes_folio");
 
 /**
@@ -24,7 +24,7 @@ const Etapes_folio = require("../../../models/Etapes_folio");
 
 const planification = async (req, res) => {
   try {
-      const { rows = 1000, first = 0, sortField, sortOrder, search } = req.query
+      const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
       const defaultSortDirection = "DESC"
       const sortColumns = {
         volume: {
@@ -89,17 +89,9 @@ const planification = async (req, res) => {
           };
         }
     const result = await Volume.findAndCountAll({
-      // limit: parseInt(rows),
+      limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
-      attributes: [
-        "NUMERO_FOLIO",
-        "CODE_FOLIO",
-        "ID_FOLIO",
-        "ID_VOLUME",
-        "ID_NATURE",
-        "IS_PREPARE"
-      ],
       attributes: [
         "NUMERO_VOLUME",
         "NOMBRE_DOSSIER",
@@ -108,9 +100,6 @@ const planification = async (req, res) => {
       ],
       where: {
         ...globalSearchWhereLike,
-        // ID_ETAPE_VOLUME: {
-        //   [Op.ne]: IDS_ETAPE_VOLUME.PLANIFICATION
-        // },
       },
       include: [
           {
@@ -118,11 +107,7 @@ const planification = async (req, res) => {
             as: "etapes_volumes",
             attributes: ["NOM_ETAPE"],
             required: false,
-          }{
-          model:Nature_folio,
-          as : "natures",
-          attributes :[ 'DESCRIPTION' ]
-        }
+          }
       ],
     });
 
@@ -144,7 +129,13 @@ const planification = async (req, res) => {
                     as: "etapes",
                     attributes: ["NOM_ETAPE"],
                     required: false,
-          }]
+          },{
+            model : natures,
+            as: "natures",
+            attributes: ["DESCRIPTION"],
+            required: false,
+         
+            }]
 })
       return {
         ...volume.toJSON(),
@@ -242,78 +233,82 @@ const desarchivage = async (req, res) => {
       };
     }
 
-    const result = await Folio.findAndCountAll({
+    const result = await Volume.findAndCountAll({
+      limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
-      // attributes: ["ID_VOLUME"],
       attributes: [
-        "NUMERO_FOLIO",
-        "CODE_FOLIO",
-        "ID_FOLIO",
+        "NUMERO_VOLUME",
+        "NOMBRE_DOSSIER",
+        "DATE_INSERTION",
         "ID_VOLUME",
-        "ID_NATURE",
-        "IS_PREPARE"
       ],
       where: {
         ...globalSearchWhereLike,
-        ID_ETAPE_FOLIO: {
-          [Op.in]: [
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
-            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
-            IDS_ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
-            IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-            IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
-            IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
-            IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
-            IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
-            IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
-            IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+        ID_ETAPE_VOLUME:{
+          [Op.in]:[
+            IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO,
+            IDS_ETAPE_VOLUME.DETAILLER_LES_FOLIO,
+            IDS_ETAPE_VOLUME.CHOIX_DES_AILES,
+            IDS_ETAPE_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES,
+            IDS_ETAPE_VOLUME.CHOIX_CHEF_PLATAEU,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_PLATEAU,
+            IDS_ETAPE_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING,
+            IDS_ETAPE_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+            IDS_ETAPE_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES,
+            IDS_ETAPE_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+          ]
+        }
 
-            // IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO
-          ],
-        },
       },
       include: [
-        {
-          model: Volume,
-          as: "volume",
-          required: false,
-          attributes: [
-            "NUMERO_VOLUME",
-            "NOMBRE_DOSSIER",
-            "DATE_INSERTION",
-            "ID_VOLUME",
-          ],
-          include: {
+          {
             model: Etapes_volumes,
             as: "etapes_volumes",
             attributes: ["NOM_ETAPE"],
             required: false,
-          },
-        },
+          }
       ],
     });
 
-    const uniqueIds = [];
-    const HistoriqueRows = result.rows.filter((element) => {
-      const isDuplicate = uniqueIds.includes(element.ID_VOLUME);
-      if (!isDuplicate) {
-        uniqueIds.push(element.ID_VOLUME);
-        return true;
-      }
-      return false;
-    });
-    const volumes = HistoriqueRows.map((volume) => {
-      const foliovolume = result.rows.filter(
-        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
-      );  
+     const volumes = await Promise.all(result.rows.map(async (volume) => {
+      const foliovolume = await Folio.findAll({
+          where: {
+                    ID_VOLUME: volume.toJSON().ID_VOLUME
+          },
+          attributes: [
+            "NUMERO_FOLIO",
+            "CODE_FOLIO",
+            "ID_FOLIO",
+            "ID_VOLUME",
+            "ID_NATURE",
+            "IS_PREPARE"
+          ],
+          include: [{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: ["NOM_ETAPE"],
+                    required: false,
+          },{
+            model : natures,
+            as: "natures",
+            attributes: ["DESCRIPTION"],
+            required: false,
+         
+            }]
+})
       return {
         ...volume.toJSON(),
         foliovolume,
       };
-    });
+    }));
 
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
@@ -321,7 +316,7 @@ const desarchivage = async (req, res) => {
       message: "Liste",
       result: {
         data: volumes,
-        totalRecords: volumes.length,
+        totalRecords: result.count,
       },
     });
   } catch (error) {
@@ -407,76 +402,89 @@ const transmission = async (req, res) => {
       };
     }
 
-    const result = await Folio.findAndCountAll({
-      // limit: parseInt(rows),
+    const result = await Volume.findAndCountAll({
+      limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
-      // attributes: ["ID_VOLUME"],
       attributes: [
-        "NUMERO_FOLIO",
-        "CODE_FOLIO",
-        "ID_FOLIO",
+        "NUMERO_VOLUME",
+        "NOMBRE_DOSSIER",
+        "DATE_INSERTION",
         "ID_VOLUME",
-        "ID_NATURE",
-        "IS_PREPARE"
       ],
       where: {
         ...globalSearchWhereLike,
-        ID_ETAPE_FOLIO: {
-          [Op.notIn]: [  
-            IDS_ETAPE_VOLUME.PLANIFICATION,
-            IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO,
-            IDS_ETAPE_VOLUME.DETAILLER_LES_FOLIO,
+        ID_ETAPE_VOLUME:{
+          [Op.in]:[
             IDS_ETAPE_VOLUME.CHOIX_DES_AILES,
-          ],
-        },
+            IDS_ETAPE_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES,
+            IDS_ETAPE_VOLUME.CHOIX_CHEF_PLATAEU,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_PLATEAU,
+            IDS_ETAPE_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING,
+            IDS_ETAPE_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+            IDS_ETAPE_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES,
+            IDS_ETAPE_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+          ]
+        }
+
       },
       include: [
-        {
-          model: Volume,
-          as: "volume",
-          required: false,
-          attributes: [
-            "NUMERO_VOLUME",
-            "NOMBRE_DOSSIER",
-            "DATE_INSERTION",
-            "ID_VOLUME",
-          ],
-          include: {
+          {
             model: Etapes_volumes,
             as: "etapes_volumes",
             attributes: ["NOM_ETAPE"],
             required: false,
-          },
-        },
+          }
       ],
     });
 
-    const uniqueIds = [];
-    const HistoriqueRows = result.rows.filter((element) => {
-      const isDuplicate = uniqueIds.includes(element.ID_VOLUME);
-      if (!isDuplicate) {
-        uniqueIds.push(element.ID_VOLUME);
-        return true;
-      }
-      return false;
-    });
-    const volumes = HistoriqueRows.map((volume) => {
-      const foliovolume = result.rows.filter(
-        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
-      );  
+     const volumes = await Promise.all(result.rows.map(async (volume) => {
+      const foliovolume = await Folio.findAll({
+          where: {
+                    ID_VOLUME: volume.toJSON().ID_VOLUME
+          },
+          attributes: [
+            "NUMERO_FOLIO",
+            "CODE_FOLIO",
+            "ID_FOLIO",
+            "ID_VOLUME",
+            "ID_NATURE",
+            "IS_PREPARE"
+          ],
+          include: [{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: ["NOM_ETAPE"],
+                    required: false,
+          },{
+            model : natures,
+            as: "natures",
+            attributes: ["DESCRIPTION"],
+            required: false,
+         
+            }]
+         
+})
       return {
         ...volume.toJSON(),
         foliovolume,
       };
-    });
+    }));
+
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
       httpStatus: RESPONSE_STATUS.OK,
       message: "Liste des utilisateurs",
       result: {
         data: volumes,
-        totalRecords: volumes.length,
+        totalRecords: result.count,
       },
     });
   } catch (error) {
@@ -499,78 +507,112 @@ const transmission = async (req, res) => {
 
 const etiquetage = async (req, res) => {
   try {
-    const folios = await Folio.findAll({
+    const result = await Volume.findAndCountAll({
       attributes: [
-        "NUMERO_FOLIO",
-        "CODE_FOLIO",
-        "ID_FOLIO",
+        "NUMERO_VOLUME",
+        "NOMBRE_DOSSIER",
+        "DATE_INSERTION",
         "ID_VOLUME",
-        "ID_NATURE",
-        "IS_PREPARE"
       ],
       where: {
-        ID_ETAPE_FOLIO: {
-          [Op.in]: [IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS],
-        },
+        ID_ETAPE_VOLUME:{
+          [Op.in]:[
+            IDS_ETAPE_VOLUME.CHOIX_DES_AILES,
+            IDS_ETAPE_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES,
+            IDS_ETAPE_VOLUME.CHOIX_CHEF_PLATAEU,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_PLATEAU,
+            IDS_ETAPE_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING,
+            IDS_ETAPE_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+            IDS_ETAPE_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES,
+            IDS_ETAPE_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING,
+            IDS_ETAPE_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+            IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+          ]
+        }
+
       },
-      include: {
-        model: Volume,
-        as: "volume",
-        attributes: [
-          "NOMBRE_DOSSIER",
-          "NUMERO_VOLUME",
-          "CODE_VOLUME",
-          "ID_VOLUME",
-        ],
-        required: false,
-        include: [
+      include: [
           {
             model: Etapes_volumes,
             as: "etapes_volumes",
             attributes: ["NOM_ETAPE"],
             required: false,
-          },
-        ],
-      },
-    });
-    const uniqueIds = [];
-    const volumesPure = folios.filter((element) => {
-      const isDuplicate = uniqueIds.includes(element.toJSON().ID_VOLUME);
-      if (!isDuplicate) {
-        uniqueIds.push(element.toJSON().ID_VOLUME);
-        return true;
-      }
-      return false;
+          }
+      ],
     });
 
-    const volumes = volumesPure.map((volume) => {
-      const foliovolume = folios.filter(
-        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
-      );
-      const folioprepare = folios.filter(
-        (f) =>
-          volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME &&
-          f.toJSON().IS_PREPARE == 1
-      );
-      const foliononprepare = folios.filter(
-        (f) =>
-          volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME &&
-          f.toJSON().IS_PREPARE == 0
-      );
+     const volumes = await Promise.all(result.rows.map(async (volume) => {
+      const foliovolume = await Folio.findAll({
+          where: {
+                    ID_VOLUME: volume.toJSON().ID_VOLUME
+          },
+          attributes: [
+            "NUMERO_FOLIO",
+            "CODE_FOLIO",
+            "ID_FOLIO",
+            "ID_VOLUME",
+            "ID_NATURE",
+            "IS_PREPARE"
+          ],
+          include: [{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: ["NOM_ETAPE"],
+                    required: false,
+          },{
+            model : natures,
+            as: "natures",
+            attributes: ["DESCRIPTION"],
+            required: false,
+
+          }]
+})
+ const  folioprepared = await Folio.findAll({
+     where:{
+        ID_VOLUME: volume.toJSON().ID_VOLUME,
+        IS_PREPARE : 1
+     },
+     include: [{
+      model : natures,
+      as: "natures",
+      attributes: ["DESCRIPTION"],
+      required: false,
+
+      }]
+ })
+ const  foliononprepared = await Folio.findAll({
+  where:{
+     ID_VOLUME: volume.toJSON().ID_VOLUME,
+     IS_PREPARE : 0
+  },
+  include: [{
+   model : natures,
+   as: "natures",
+   attributes: ["DESCRIPTION"],
+   required: false,
+
+   }]
+})
+
       return {
         ...volume.toJSON(),
         foliovolume,
-        folioprepare,
-        foliononprepare,
+        folioprepared,
+        foliononprepared
       };
-    });
+    }));
 
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
       httpStatus: RESPONSE_STATUS.OK,
       message: "Le nombre de volume scanner   est egal à",
       result: volumes,
-      totalRecords: volumes.length,
+      totalRecords: result.count,
     });
   } catch (error) {
     console.log(error);
