@@ -15,7 +15,7 @@ const Nature_folio = require('../../models/Nature_folio');
 const Etapes_folio = require('../../models/Etapes_folio');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
-const Nature_folio = require('../../models/Nature_folio');
+// const Nature_folio = require('../../models/Nature_folio');
 
 
 
@@ -243,7 +243,12 @@ const findAllscanne = async (req, res) => {
                    model: Nature_folio,
                     as: "nature",
                     attributes: [ 'DESCRIPTION']
-               }
+         },
+         {
+            model : Etapes_folio,
+            as :'etapes',
+            attributes:['NOM_ETAPE'] 
+        }
         ]
 
         })
@@ -461,7 +466,12 @@ const findAllreachive = async (req, res) => {
                        model: Nature_folio,
                         as: "nature",
                         attributes: [ 'DESCRIPTION']
-                   }
+                 },
+                 {
+                    model : Etapes_folio,
+                    as :'etapes',
+                    attributes:['NOM_ETAPE'] 
+                }
             ]
                 
             })

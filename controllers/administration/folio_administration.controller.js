@@ -313,6 +313,11 @@ const finduploadedrms = async (req, res) => {
                     model : Nature_folio,
                     as :'nature',
                     attributes:['DESCRIPTION']
+                },
+                {
+                    model : Etapes_folio,
+                    as :'etapes',
+                    attributes:['NOM_ETAPE'] 
                 }
                
 
