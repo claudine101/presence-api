@@ -15,7 +15,6 @@ const Nature_folio = require('../../models/Nature_folio');
 const Etapes_folio = require('../../models/Etapes_folio');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
-const Nature_folio = require('../../models/Nature_folio');
 
 
 
