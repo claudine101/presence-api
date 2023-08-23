@@ -397,13 +397,17 @@ const findAll = async (req, res) => {
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE }
+            condition = {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+            }
         }
         else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-            condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, 
-            USER_TRAITEMENT: req.userId,
-            ID_ETAPE_VOLUME:ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES }
+            condition = {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+                USER_TRAITEMENT: req.userId,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
+            }
         }
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
@@ -496,7 +500,7 @@ const findAgentSupAilleScanning = async (req, res) => {
     try {
         const distributeur = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -631,7 +635,7 @@ const findChefPlateau = async (req, res) => {
     try {
         const chefPlateaux = await Users.findAll({
             where: { ID_PROFIL: PROFILS.CHEF_PLATEAU_SCANNING },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -661,7 +665,7 @@ const findSuperviseurScanning = async (req, res) => {
     try {
         const chefPlateaux = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR_SCANNING },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -1195,41 +1199,60 @@ const updateRetourPlateauSup = async (req, res) => {
  * 
  */
 
-
 const findAllVolumerSupAille = async (req, res) => {
     try {
-        const userObject = await Users.findOne({
-            where: { USERS_ID: req.userId },
-            attributes: ['ID_PROFIL', 'USERS_ID']
-        })
-        const user = userObject.toJSON()
-
-        var condition = {}
-        if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-            condition = { 
-                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, 
-            ID_ETAPE_VOLUME:ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
-            // USER_TRAITEMENT: req.userId 
-        }
-        }
         const result = await Etapes_volume_historiques.findAll({
-            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                ...condition
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING
             },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION','PV_PATH'],
             include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
                 {
                     model: Volume,
                     as: 'volume',
-                    required: true,
-                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
-                }]
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME','NOMBRE_DOSSIER'],
+
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitant?.USERS_ID
+            const users = user.traitant
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+
+            }
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
-            result
+            message: "Liste des volumes par agent",
+            result: UserFolios
         })
     } catch (error) {
         console.log(error)
@@ -1240,6 +1263,51 @@ const findAllVolumerSupAille = async (req, res) => {
         })
     }
 }
+
+// const findAllVolumerSupAille = async (req, res) => {
+//     try {
+//         const userObject = await Users.findOne({
+//             where: { USERS_ID: req.userId },
+//             attributes: ['ID_PROFIL', 'USERS_ID']
+//         })
+//         const user = userObject.toJSON()
+
+//         var condition = {}
+//         if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
+//             condition = { 
+//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, 
+//             ID_ETAPE_VOLUME:ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+//             // USER_TRAITEMENT: req.userId 
+//         }
+//         }
+//         const result = await Etapes_volume_historiques.findAll({
+//             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+//             where: {
+//                 ...condition
+//             },
+//             include: [
+//                 {
+//                     model: Volume,
+//                     as: 'volume',
+//                     required: true,
+//                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+//                 }]
+//         })
+//         res.status(RESPONSE_CODES.OK).json({
+//             statusCode: RESPONSE_CODES.OK,
+//             httpStatus: RESPONSE_STATUS.OK,
+//             message: "Liste des volumes",
+//             result
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+//             message: "Erreur interne du serveur, réessayer plus tard",
+//         })
+//     }
+// }
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
