@@ -496,12 +496,12 @@ const findAgentSupAilleScanning = async (req, res) => {
     try {
         const distributeur = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des ailes",
+            message: "Liste des agents superviseurs ailes scanning",
             result: distributeur
         })
     } catch (error) {
@@ -631,7 +631,7 @@ const findChefPlateau = async (req, res) => {
     try {
         const chefPlateaux = await Users.findAll({
             where: { ID_PROFIL: PROFILS.CHEF_PLATEAU_SCANNING },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -661,7 +661,7 @@ const findSuperviseurScanning = async (req, res) => {
     try {
         const chefPlateaux = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR_SCANNING },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
