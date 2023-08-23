@@ -25,5 +25,6 @@ const folio_routes = express.Router()
  */
  folio_routes.get('/traitant/:ID_FOLIO', folio_controller.findTraitantFolio)
  folio_routes.get("/",foliocontroller.findAll);
+ folio_routes.get("/folio/edrms",foliocontroller.finduploadedrms);
 
 module.exports = folio_routes

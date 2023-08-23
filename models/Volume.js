@@ -54,6 +54,7 @@ const Volume = sequelize.define("volume", {
 })
 Volume.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volumes' })
 Volume.belongsTo(Maille, { foreignKey: "ID_MALLE", as: 'maille' })
+
 module.exports = Volume
 
 
