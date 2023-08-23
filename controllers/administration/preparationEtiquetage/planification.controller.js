@@ -10,6 +10,7 @@ const Etapes_volumes = require("../../../models/Etapes_volumes");
 const Etapes_volume_historiques = require("../../../models/Etapes_volume_historiques");
 const Etapes_folio_historiques = require("../../../models/Etapes_folio_historiques");
 const Users = require("../../../models/Users");
+const Etapes_folio = require("../../../models/Etapes_folio");
 
 /**
  * Permet d'afficher tous les volumes qui ont passe sur l'etape de planification
@@ -86,7 +87,7 @@ const planification = async (req, res) => {
             [Op.or]: searchWildCard,
           };
         }
-    const result = await Folio.findAndCountAll({
+    const result = await Volume.findAndCountAll({
       // limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
@@ -98,6 +99,12 @@ const planification = async (req, res) => {
         "ID_NATURE",
         "IS_PREPARE"
       ],
+      attributes: [
+        "NUMERO_VOLUME",
+        "NOMBRE_DOSSIER",
+        "DATE_INSERTION",
+        "ID_VOLUME",
+      ],
       where: {
         ...globalSearchWhereLike,
         // ID_ETAPE_VOLUME: {
@@ -105,52 +112,47 @@ const planification = async (req, res) => {
         // },
       },
       include: [
-        {
-          model: Volume,
-          as: "volume",
-          required: false,
-          attributes: [
-            "NUMERO_VOLUME",
-            "NOMBRE_DOSSIER",
-            "DATE_INSERTION",
-            "ID_VOLUME",
-          ],
-          include: {
+          {
             model: Etapes_volumes,
             as: "etapes_volumes",
             attributes: ["NOM_ETAPE"],
             required: false,
-          },
-
-        },
+          }
       ],
     });
 
-    const uniqueIds = [];
-    const HistoriqueRows = result.rows.filter((element) => {
-      const isDuplicate = uniqueIds.includes(element.ID_VOLUME);
-      if (!isDuplicate) {
-        uniqueIds.push(element.ID_VOLUME);
-        return true;
-      }
-      return false;
-    });
-     const volumes = HistoriqueRows.map((volume) => {
-      const foliovolume = result.rows.filter(
-        (f) => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME
-      );  
+     const volumes = await Promise.all(result.rows.map(async (volume) => {
+      const foliovolume = await Folio.findAll({
+          where: {
+                    ID_VOLUME: volume.toJSON().ID_VOLUME
+          },
+          attributes: [
+            "NUMERO_FOLIO",
+            "CODE_FOLIO",
+            "ID_FOLIO",
+            "ID_VOLUME",
+            "ID_NATURE",
+            "IS_PREPARE"
+          ],
+          include: [{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: ["NOM_ETAPE"],
+                    required: false,
+          }]
+})
       return {
         ...volume.toJSON(),
         foliovolume,
       };
-    });
+    }));
     res.status(RESPONSE_CODES.OK).json({
       statusCode: RESPONSE_CODES.OK,
       httpStatus: RESPONSE_STATUS.OK,
       message: "Liste des utilisateurs",
       result: {
         data: volumes,
-        totalRecords: volumes.length
+        totalRecords: result.count
       },
     });
   } catch (error) {
