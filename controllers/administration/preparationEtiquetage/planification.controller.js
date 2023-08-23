@@ -10,6 +10,7 @@ const Etapes_volumes = require("../../../models/Etapes_volumes");
 const Etapes_volume_historiques = require("../../../models/Etapes_volume_historiques");
 const Etapes_folio_historiques = require("../../../models/Etapes_folio_historiques");
 const Users = require("../../../models/Users");
+const Nature_folio = require("../../../models/Nature_folio");
 
 /**
  * Permet d'afficher tous les volumes qui ont passe sur l'etape de planification
@@ -122,7 +123,11 @@ const planification = async (req, res) => {
             required: false,
           },
 
-        },
+        },{
+          model:Nature_folio,
+          as : "natures",
+          attributes :[ 'DESCRIPTION' ]
+        }
       ],
     });
 
@@ -236,7 +241,6 @@ const desarchivage = async (req, res) => {
     }
 
     const result = await Folio.findAndCountAll({
-      // limit: parseInt(rows),
       offset: parseInt(first),
       order: [[sortModel, orderColumn, orderDirection]],
       // attributes: ["ID_VOLUME"],
@@ -251,9 +255,21 @@ const desarchivage = async (req, res) => {
       where: {
         ...globalSearchWhereLike,
         ID_ETAPE_FOLIO: {
-          [Op.notIn]: [
-            IDS_ETAPE_VOLUME.PLANIFICATION,
-            IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO
+          [Op.in]: [
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+            IDS_ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+            IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+            IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+            IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+            IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+            IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+            IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+            IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+
+            // IDS_ETAPE_VOLUME.SAISIS_NOMBRE_FOLIO
           ],
         },
       },
