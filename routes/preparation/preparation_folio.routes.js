@@ -55,9 +55,9 @@ const preparation_folio_routes = express.Router()
  * Une route  permet  un chef  plateau  de voir  les agents superviseur  valides
  * de voir  les agents superviseur   
  *@method GET
- * @url /preparation/folio/superviseurValides
+ * @url /preparation/folio/allsuperviseurValides
  */
- preparation_folio_routes.get('/superviseurValides', preparation_folio_controller.findAllSuperviseurs)
+ preparation_folio_routes.get('/allsuperviseurValides', preparation_folio_controller.findAllSuperviseurs)
 
 
  /**
@@ -99,12 +99,19 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.get('/nbrefolios/:AGENT_SUPERVISEUR', preparation_folio_controller.nbre)
 
-  /**
- * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
+   /**
+ * Une route  permet  un agent  superviseur de voir  leurs  folios 
  *@method GET
  * @url /preparation/folio/folios
  */
  preparation_folio_routes.get('/folios', preparation_folio_controller.findAllFolio)
+  /**
+ * Une route  permet  chef plateux de voir  leurs  folios 
+ *@method GET
+ * @url /preparation/folio/volumeFolios
+ */
+ preparation_folio_routes.get('/volumeFolios', preparation_folio_controller.findAllFolioChefPlateau)
+
 
 
  /**

@@ -132,15 +132,18 @@ const findAll = async (req, res) => {
         if (!orderColumn) {
             orderColumn = sortColumns.volume.fields.DATE_INSERTION
             sortModel = {
-                      model: 'volume',
-                      as: sortColumns.volume.as
+                model: 'volume',
+                as: sortColumns.volume.as
             }
-  }
+        }
         const user = userObject.toJSON()
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.CHEF_DIVISION_ARCHIGES) {
-            condition = { USERS_ID: req.userId }
+            condition = {
+                USERS_ID: req.userId,
+                USER_TRAITEMENT: req.userId
+            }
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.PLANIFICATION }
@@ -161,13 +164,11 @@ const findAll = async (req, res) => {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU, USER_TRAITEMENT: req.userId }
         }
         const result = await Etapes_volume_historiques.findAndCountAll({
-            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+            attributes: ['ID_VOLUME_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION'],
             order: [
-                ['DATE_INSERTION','DESC']
+                ['DATE_INSERTION', 'DESC']
             ],
-    //         order: [
-    //             [orderColumn, defaultSortDirection]
-    //   ],
+
             where: {
                 ...condition
             },
@@ -178,13 +179,13 @@ const findAll = async (req, res) => {
                     required: false,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
                     include:
-                        {
-                            model: Maille,
-                            as: 'maille',
-                            required: false,
-                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-        
-                        }
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
                 }]
 
         })
@@ -214,7 +215,7 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findAllVolume = async (req, res) => {
+const findAllVolume = async (req, res) => {
     try {
         const userObject = await Users.findOne({
             where: { USERS_ID: req.userId },
@@ -232,24 +233,24 @@ const findAll = async (req, res) => {
         if (!orderColumn) {
             orderColumn = sortColumns.volume.fields.DATE_INSERTION
             sortModel = {
-                      model: 'volume',
-                      as: sortColumns.volume.as
+                model: 'volume',
+                as: sortColumns.volume.as
             }
-  }
+        }
         const user = userObject.toJSON()
         var condition = {}
 
         if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_PLATEAU, USERS_ID: req.userId }
         }
-        
+
         const result = await Etapes_volume_historiques.findAndCountAll({
             order: [
-                ['DATE_INSERTION','DESC']
+                ['DATE_INSERTION', 'DESC']
             ],
-    
+
             where: {
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU, USERS_ID: req.userId 
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU, USERS_ID: req.userId
             },
             include: [
                 {
@@ -258,13 +259,13 @@ const findAll = async (req, res) => {
                     required: false,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
                     include:
-                        {
-                            model: Maille,
-                            as: 'maille',
-                            required: false,
-                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-        
-                        }
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
                 }]
 
         })
@@ -293,7 +294,7 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findCheckPlateau = async (req, res) => {
+const findCheckPlateau = async (req, res) => {
     try {
         const { etape, statut, rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const userObject = await Users.findOne({
@@ -313,10 +314,10 @@ const findAll = async (req, res) => {
         if (!orderColumn) {
             orderColumn = sortColumns.volume.fields.DATE_INSERTION
             sortModel = {
-                      model: 'volume',
-                      as: sortColumns.volume.as
+                model: 'volume',
+                as: sortColumns.volume.as
             }
-  }
+        }
         const user = userObject.toJSON()
         var condition = {}
 
@@ -344,11 +345,11 @@ const findAll = async (req, res) => {
         const result = await Etapes_volume_historiques.findAndCountAll({
             // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
             order: [
-                ['DATE_INSERTION','DESC']
+                ['DATE_INSERTION', 'DESC']
             ],
-    //         order: [
-    //             [orderColumn, defaultSortDirection]
-    //   ],
+            //         order: [
+            //             [orderColumn, defaultSortDirection]
+            //   ],
             where: {
                 ...condition
             },
@@ -359,13 +360,13 @@ const findAll = async (req, res) => {
                     required: false,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
                     include:
-                        {
-                            model: Maille,
-                            as: 'maille',
-                            required: false,
-                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-        
-                        }
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
                 }]
 
         })
@@ -489,7 +490,17 @@ const updateVolume = async (req, res) => {
         }
         const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
-        var filename_pv
+        const volumeDossier = (await Volume.findOne({
+            where: {
+                ID_VOLUME,
+                NOMBRE_DOSSIER: null
+
+            }
+
+        }))
+        
+        if(volumeDossier){
+            var filename_pv
         if (PV) {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
@@ -515,6 +526,16 @@ const updateVolume = async (req, res) => {
             message: "Reussi",
 
         })
+        }
+        else{
+            res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                statusCode: RESPONSE_CODES.UNAUTHORIZED,
+                httpStatus: RESPONSE_CODES.UNAUTHORIZED,
+                message: "Nombre de dossier  existe déjà",
+    
+            })
+        }
+        
 
     } catch (error) {
         console.log(error)
@@ -536,7 +557,7 @@ const updateVolume = async (req, res) => {
 const nommerDistributeur = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { AGENT_DISTRIBUTEUR,MAILLE } = req.body
+        const { AGENT_DISTRIBUTEUR, MAILLE } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -579,7 +600,7 @@ const nommerDistributeur = async (req, res) => {
         }
         const results = await Volume.update({
             ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES,
-            ID_MALLE:MAILLE
+            ID_MALLE: MAILLE
         }, {
             where: {
                 ID_VOLUME: ID_VOLUME
@@ -854,7 +875,7 @@ const findAllChefPlateau = async (req, res) => {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME','NOMBRE_DOSSIER', 'CODE_VOLUME'],
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'CODE_VOLUME'],
 
                 }
             ]
@@ -928,7 +949,7 @@ const findAllAgentSupAile = async (req, res) => {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME',  'NOMBRE_DOSSIER','NUMERO_VOLUME', 'CODE_VOLUME'],
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME'],
 
                 }
             ]
@@ -1024,24 +1045,24 @@ const retourChefPlateau = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-       
-            const results = await Volume.update({
+
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+        }, {
+            where: {
+                ID_VOLUME: volume,
+            }
+        })
+        await Etapes_volume_historiques.create(
+            {
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                USERS_ID: req.userId,
+                ID_VOLUME: volume,
+                USER_TRAITEMENT: CHEF_PLATEAU,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
-            }, {
-                where: {
-                    ID_VOLUME: volume,
-                }
-            })
-            await Etapes_volume_historiques.create(
-                {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    USERS_ID: req.userId,
-                    ID_VOLUME: volume,
-                    USER_TRAITEMENT: CHEF_PLATEAU,
-                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
-                }
-            )
-        
+            }
+        )
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1154,95 +1175,95 @@ const retourAgentSupAile = async (req, res) => {
  */
 const getVolumeDetail = async (req, res) => {
     try {
-              const { ID_VOLUME } = req.params
-              const volumes = (await Volume.findOne({
-                        where: {
-                            ID_VOLUME
-                        },
-                        include: [{
-                                  model: Folio,
-                                  as: 'folios',
-                                  required: false,
-                                  attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"]
-                        }]
-              })).toJSON()
-              const chefPlateau = await Etapes_volume_historiques.findOne({
-                        attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
-                        where: {
-                                  [Op.and]: [{
-                                            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
-                                  }]
-                        },
-                        include: [{
-                                  model: Users,
-                                  as: 'traitement',
-                                  required: false,
-                                  attributes: ['USERS_ID', 'NOM', 'PRENOM']
-                        }]
-              })
-              const chefPlateauRetour = await Etapes_volume_historiques.findOne({
-                        attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
-                        where: {
-                                  [Op.and]: [{
-                                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
-                                  }]
-                        },
-                        include: [{
-                                  model: Folio,
-                                  as: 'folio',
-                                  required: true,
-                                  attributes: ['ID_FOLIO'],
-                                  where: {
-                                            [Op.and]: [{
-                                                      ID_FOLIO: flash.folios[0].ID_FOLIO,
-                                            }, {
-                                                      IS_INDEXE: 1
-                                            }]
-                                  }
-                        }, {
-                                  model: Users,
-                                  as: 'traitement',
-                                  required: true,
-                                  attributes: ['USERS_ID', 'NOM', 'PRENOM']
-                        }]
-              })
-              var foliosPrepares= []
-              if(chefPlateauRetour) {
-                foliosPrepares = await Folio.findAll({
-                                  attributes: ['ID_VOLUME', 'IS_INDEXE', 'ID_FOLIO', 'NUMERO_FOLIO', 'ID_PREPARE'],
-                                  where: {
-                                            [Op.and]: [{
-                                                ID_VOLUME: ID_VOLUME,
-                                            }, {
-                                                ID_VOLUME: 1
-                                            }]
-                                  },
-                                  include: [{
-                                            model: Volume,
-                                            as: 'volume',
-                                            required: false,
-                                            attributes: ['ID_VOLUME', 'NUMERO_VOLUME']
-                                  }]
-                        })
-              }
-              res.status(RESPONSE_CODES.OK).json({
-                        statusCode: RESPONSE_CODES.OK,
-                        httpStatus: RESPONSE_STATUS.OK,
-                        message: "Detail d'un volume",
-                        result: {
-                                  ...volumes,
-                                  chefPlateau,
-                                  chefPlateauRetour,
-                                  foliosPrepares
-                        }
-              })
+        const { ID_VOLUME } = req.params
+        const volumes = (await Volume.findOne({
+            where: {
+                ID_VOLUME
+            },
+            include: [{
+                model: Folio,
+                as: 'folios',
+                required: false,
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"]
+            }]
+        })).toJSON()
+        const chefPlateau = await Etapes_volume_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
+                }]
+            },
+            include: [{
+                model: Users,
+                as: 'traitement',
+                required: false,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }]
+        })
+        const chefPlateauRetour = await Etapes_volume_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+                }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ['ID_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        ID_FOLIO: flash.folios[0].ID_FOLIO,
+                    }, {
+                        IS_INDEXE: 1
+                    }]
+                }
+            }, {
+                model: Users,
+                as: 'traitement',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }]
+        })
+        var foliosPrepares = []
+        if (chefPlateauRetour) {
+            foliosPrepares = await Folio.findAll({
+                attributes: ['ID_VOLUME', 'IS_INDEXE', 'ID_FOLIO', 'NUMERO_FOLIO', 'ID_PREPARE'],
+                where: {
+                    [Op.and]: [{
+                        ID_VOLUME: ID_VOLUME,
+                    }, {
+                        ID_VOLUME: 1
+                    }]
+                },
+                include: [{
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME']
+                }]
+            })
+        }
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Detail d'un volume",
+            result: {
+                ...volumes,
+                chefPlateau,
+                chefPlateauRetour,
+                foliosPrepares
+            }
+        })
     } catch (error) {
-              console.log(error)
-              res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                        message: "Erreur interne du serveur, réessayer plus tard",
-              })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 
@@ -1255,58 +1276,59 @@ const getVolumeDetail = async (req, res) => {
  */
 const getVolumeChefPlateau = async (req, res) => {
     try {
-              const { ID_VOLUME} = req.params
-              const chefPlateau = await Etapes_volume_historiques.findOne({
-                        attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
-                        where: {
-                                  ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
-                        },
-                        include: [{
-                                  model: Users,
-                                  as: 'traitant',
-                                  required: true,
-                                  attributes: ['USERS_ID', 'NOM', 'PRENOM']
-                        }]
-              })
-              const retour = await Etapes_volume_historiques.findOne({
-                        attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
-                        where: {
-                            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU
+        const { ID_VOLUME } = req.params
+        const chefPlateau = await Etapes_volume_historiques.findOne({
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
+                ID_VOLUME: ID_VOLUME
+            },
+            include: [{
+                model: Users,
+                as: 'traitant',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }]
+        })
+        const retour = await Etapes_volume_historiques.findOne({
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU,
+                ID_VOLUME: ID_VOLUME
+            },
+            include: [{
+                model: Users,
+                as: 'traitant',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }]
+        })
+        const check = await Folio.findAll({
+            attributes: ['ID_FOLIO'],
+            where: {
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                ID_VOLUME: ID_VOLUME
 
-                        },
-                        include: [ {
-                                  model: Users,
-                                  as: 'traitant',
-                                  required: true,
-                                  attributes: ['USERS_ID', 'NOM', 'PRENOM']
-                        }]
-              })
-              const check = await Folio.findAll({
-                attributes: ['ID_FOLIO'],
-                where: {
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                    ID_VOLUME:ID_VOLUME
+            },
 
-                },
-                
-      })
-              res.status(RESPONSE_CODES.OK).json({
-                        statusCode: RESPONSE_CODES.OK,
-                        httpStatus: RESPONSE_STATUS.OK,
-                        message: "Chef platteau de la volume",
-                        result: {
-                                  ...chefPlateau.toJSON(),
-                                  retour: retour ? retour.toJSON() : null,
-                                  check:check ?check: null
-                        }
-              })
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...chefPlateau.toJSON(),
+                retour: retour ? retour.toJSON() : null,
+                check: check ? check : null
+            }
+        })
     } catch (error) {
-              console.log(error)
-              res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                        message: "Erreur interne du serveur, réessayer plus tard",
-              })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 module.exports = {
@@ -1328,5 +1350,5 @@ module.exports = {
     getVolumeChefPlateau,
     findAllVolume
 
-    
+
 }

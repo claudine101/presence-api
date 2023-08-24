@@ -22,6 +22,7 @@ const DossiersUpload = require('../../class/uploads/DossiersUpload');
 const { Op } = require('sequelize');
 const Volume = require('../../models/Volume');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
+const Maille = require('../../models/Maille');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -392,14 +393,14 @@ const retourAgentPreparation = async (req, res) => {
                 IS_PREPARE: 0
             }, {
                 where: {
-                    ID_FOLIO: folio.folio.ID_FOLIO,
+                    ID_FOLIO: folio.ID_FOLIO,
                 }
             })
             await Etapes_folio_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     ID_USER: req.userId,
-                    ID_FOLIO: folio.folio.ID_FOLIO,
+                    ID_FOLIO: folio.ID_FOLIO,
                     USER_TRAITEMENT: AGENT_PREPARATION,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP
                 }
@@ -488,14 +489,14 @@ const retourAgentSuperviseur = async (req, res) => {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
             }, {
                 where: {
-                    ID_FOLIO: folio.folio.ID_FOLIO,
+                    ID_FOLIO: folio.ID_FOLIO,
                 }
             })
             await Etapes_folio_historiques.create(
                 {
                     PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                     ID_USER: req.userId,
-                    ID_FOLIO: folio.folio.ID_FOLIO,
+                    ID_FOLIO: folio.ID_FOLIO,
                     USER_TRAITEMENT: AGENT_SUPERVISEUR,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
                 }
@@ -616,12 +617,8 @@ const findAllFolio = async (req, res) => {
                         as: 'volume',
                         required: false,
                         attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
-
                     }
-
                 }]
-
-
         })
         var volumeFolios = []
         result.forEach(folio => {
@@ -664,6 +661,99 @@ const findAllFolio = async (req, res) => {
     }
 }
 /**
+ * Permet de afficher tous volume d'un  chef  plateau
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 24/08/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+const findAllFolioChefPlateau = async (req, res) => {
+    try {
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const sortColumns = {
+            volume: {
+                as: "volume",
+                fields: {
+                    DATE_INSERTION: 'volume.DATE_INSERTION',
+                }
+            },
+        }
+        var orderColumn
+        if (!orderColumn) {
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
+            sortModel = {
+                model: 'volume',
+                as: sortColumns.volume.as
+            }
+        }
+        const user = userObject.toJSON()
+        var condition = {}
+        condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU, USER_TRAITEMENT: req.userId }
+
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['ID_VOLUME_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
+                }]
+
+        })
+        const volume = await Promise.all(result?.map(async resObject => {
+            const util = resObject.toJSON()
+            const folios = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG
+                    }, {
+                        ID_VOLUME: util.volume.ID_VOLUME
+                    }]
+                },
+            })
+            return {
+                ...util,
+                folios
+            }
+
+        })
+        )
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: volume
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Une route  permet  un agents superviseur 
  * de voir  les agents preparation 
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -681,7 +771,7 @@ const findAllAgent = async (req, res) => {
                 '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
             },
 
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
@@ -698,36 +788,42 @@ const findAllAgent = async (req, res) => {
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
-
             }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
+
+
 
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
-            result: UserFolios
+            result: PvFolios
             // result:result
         })
     } catch (error) {
@@ -832,7 +928,7 @@ const findAllSuperviseurs = async (req, res) => {
             where: {
                 [Op.and]: [{ ID_USER: req.userId }]
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
@@ -844,7 +940,7 @@ const findAllSuperviseurs = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO','IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [ETAPES_FOLIO.SELECTION_AGENT_SUP,
@@ -856,37 +952,43 @@ const findAllSuperviseurs = async (req, res) => {
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
+            }
+            else {
+                PvFolios.push({
+                    PV_PATH,
                     users,
-                    folios: [user]
+                    date,
+                    folios: [folio]
                 })
-
             }
 
+
+
         })
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
-            result: UserFolios
-            // result:result
+            message: "Liste des pvs",
+            result: PvFolios
         })
     } catch (error) {
         console.log(error)
@@ -910,12 +1012,15 @@ const findAllSuperviseursValides = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: {
-                [Op.and]: [{ 
-                    ID_USER: req.userId ,
+                [Op.and]: [{
+                    ID_USER: req.userId,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
                 }]
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT',"PV_PATH" ,'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
                     model: Users,
@@ -927,40 +1032,46 @@ const findAllSuperviseursValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO','IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
-
             }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
+
+
 
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
-            result: UserFolios
+            message: "Liste des pvs retours",
+            result: PvFolios
             // result:result
         })
     } catch (error) {
@@ -1211,9 +1322,9 @@ const getPvsAgentPREPARATION = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
-
-        const pv = await Etapes_folio_historiques.findOne({
+        const pv = await Etapes_folio_historiques.findAll({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+
             where: {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
@@ -1226,7 +1337,43 @@ const getPvsAgentPREPARATION = async (req, res) => {
                         [Op.in]: IdsObjet
                     }
                 }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+
+            }]
+
+        })
+        var PvFolios = []
+        pv.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
             }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    date,
+                    folios: [folio]
+                })
+            }
+
+
 
         })
         const pvRetour = await Etapes_folio_historiques.findOne({
@@ -1249,60 +1396,32 @@ const getPvsAgentPREPARATION = async (req, res) => {
         var foliosNoPrepare = []
 
         if (pvRetour) {
-            foliosPrepares=await Etapes_folio_historiques.findAll({
-                attributes: ['ID_FOLIO_HISTORIQUE'],
-                where: {
-                    [Op.and]: [{
-                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
-                        ID_USER: req.userId,
-                        USER_TRAITEMENT: { [Op.not]: req.userId },
-                        
-                        ID_ETAPE_FOLIO: {
-                            [Op.in]: [
-                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                            ]
-                        }
-                    }]
-                },
-                include: [{
-                    model: Folio,
-                    as: 'folio',
-                    required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+            foliosPrepares =await Folio.findAll({
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
                     where: {
-                        [Op.and]: [ {
+                        [Op.and]: [{
                             IS_PREPARE: 1
+                        },
+                            , {
+                            ID_FOLIO: {
+                                 [Op.in]: IdsObjet
+                            }
                         }]
                     }
-                }]
-            })
+                })
 
-            foliosNoPrepare=await Etapes_folio_historiques.findAll({
-                attributes: ['ID_FOLIO_HISTORIQUE'],
+            foliosNoPrepare = await Folio.findAll({
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
                 where: {
                     [Op.and]: [{
-                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
-                        ID_USER: req.userId,
-                        USER_TRAITEMENT: { [Op.not]: req.userId },
-                        
-                        ID_ETAPE_FOLIO: {
-                            [Op.in]: [
-                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                            ]
+                        IS_PREPARE: 0
+                    },
+                        , {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
                         }
                     }]
-                },
-                include: [{
-                    model: Folio,
-                    as: 'folio',
-                    required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
-                    where: {
-                        [Op.and]: [ {
-                            IS_PREPARE: 0
-                        }]
-                    }
-                }]
+                }
             })
         }
         res.status(RESPONSE_CODES.OK).json({
@@ -1310,7 +1429,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Chef platteau de la volume",
             result: {
-                ...pv.toJSON(),
+                ...PvFolios[0],
                 pvRetour,
                 foliosPrepares,
                 foliosNoPrepare
@@ -1326,13 +1445,13 @@ const getPvsAgentPREPARATION = async (req, res) => {
         })
     }
 }
-const getPvsAgentSuperviseur= async (req, res) => {
+const getPvsAgentSuperviseur = async (req, res) => { 
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
-
-        const pv = await Etapes_folio_historiques.findOne({
+        const pv = await Etapes_folio_historiques.findAll({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+
             where: {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
@@ -1345,7 +1464,43 @@ const getPvsAgentSuperviseur= async (req, res) => {
                         [Op.in]: IdsObjet
                     }
                 }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+
+            }]
+
+        })
+        var PvFolios = []
+        pv.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
             }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    date,
+                    folios: [folio]
+                })
+            }
+
+
 
         })
         const pvRetour = await Etapes_folio_historiques.findOne({
@@ -1368,60 +1523,32 @@ const getPvsAgentSuperviseur= async (req, res) => {
         var foliosNoPrepare = []
 
         if (pvRetour) {
-            foliosPrepares=await Etapes_folio_historiques.findAll({
-                attributes: ['ID_FOLIO_HISTORIQUE'],
-                where: {
-                    [Op.and]: [{
-                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
-                        ID_USER: req.userId,
-                        USER_TRAITEMENT: { [Op.not]: req.userId },
-                        
-                        ID_ETAPE_FOLIO: {
-                            [Op.in]: [
-                                IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                            ]
-                        }
-                    }]
-                },
-                include: [{
-                    model: Folio,
-                    as: 'folio',
-                    required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+            foliosPrepares =await Folio.findAll({
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
                     where: {
-                        [Op.and]: [ {
+                        [Op.and]: [{
                             IS_PREPARE: 1
+                        },
+                            , {
+                            ID_FOLIO: {
+                                 [Op.in]: IdsObjet
+                            }
                         }]
                     }
-                }]
-            })
+                })
 
-            foliosNoPrepare=await Etapes_folio_historiques.findAll({
-                attributes: ['ID_FOLIO_HISTORIQUE'],
+            foliosNoPrepare = await Folio.findAll({
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
                 where: {
                     [Op.and]: [{
-                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
-                        ID_USER: req.userId,
-                        USER_TRAITEMENT: { [Op.not]: req.userId },
-                        
-                        ID_ETAPE_FOLIO: {
-                            [Op.in]: [
-                                IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                            ]
+                        IS_PREPARE: 0
+                    },
+                        , {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
                         }
                     }]
-                },
-                include: [{
-                    model: Folio,
-                    as: 'folio',
-                    required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
-                    where: {
-                        [Op.and]: [ {
-                            IS_PREPARE: 0
-                        }]
-                    }
-                }]
+                }
             })
         }
         res.status(RESPONSE_CODES.OK).json({
@@ -1429,14 +1556,15 @@ const getPvsAgentSuperviseur= async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Chef platteau de la volume",
             result: {
-                ...pv.toJSON(),
+                ...PvFolios[0],
                 pvRetour,
                 foliosPrepares,
                 foliosNoPrepare
 
             }
         })
-    } catch (error) {
+    }
+    catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
@@ -1467,7 +1595,7 @@ const findAllFolioPrepare = async (req, res) => {
                     ]
                 }
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
@@ -1488,37 +1616,42 @@ const findAllFolioPrepare = async (req, res) => {
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
-
             }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
+
+
 
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folios prépare et  non  prépare",
-            result: UserFolios
-            // result:result
+            result: PvFolios
         })
     } catch (error) {
         console.log(error)
@@ -1558,7 +1691,7 @@ const getAgentDetail = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"]
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"]
                 }]
             })).toJSON()
 
@@ -1585,30 +1718,30 @@ const getAgentDetail = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
-               
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+
             }]
         })
-        const agentPreparationRetour = 
-        await Etapes_folio_historiques.findOne({
-            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
-            where: {
-                [Op.and]: [{
-                    USER_TRAITEMENT: USERS_ID,
-                    ID_USER: req.userId,
-                    USER_TRAITEMENT: { [Op.not]: req.userId },
-                    ID_ETAPE_FOLIO: {
-                        [Op.in]: [
-                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                        ]
-                    }
-                }]
-            },
-           
-        })
+        const agentPreparationRetour =
+            await Etapes_folio_historiques.findOne({
+                attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
+                where: {
+                    [Op.and]: [{
+                        USER_TRAITEMENT: USERS_ID,
+                        ID_USER: req.userId,
+                        USER_TRAITEMENT: { [Op.not]: req.userId },
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                            ]
+                        }
+                    }]
+                },
+
+            })
         var foliosPrepares = []
         if (agentPreparationRetour) {
-            foliosPrepares=await Etapes_folio_historiques.findOne({
+            foliosPrepares = await Etapes_folio_historiques.findOne({
                 attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
                 where: {
                     [Op.and]: [{
@@ -1631,9 +1764,9 @@ const getAgentDetail = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","FOLIO"],
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
                     where: {
-                        [Op.and]: [ {
+                        [Op.and]: [{
                             IS_PREPARE: 1
                         }]
                     }
@@ -1679,5 +1812,6 @@ module.exports = {
     getAgentDetail,
     getPvsAgentPREPARATION,
     findAllSuperviseursValides,
-    getPvsAgentSuperviseur
+    getPvsAgentSuperviseur,
+    findAllFolioChefPlateau
 }

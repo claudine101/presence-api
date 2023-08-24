@@ -34,7 +34,7 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
 /**
  * Une route  permet  de recuperer les folios d'un agent  uploadEDRMS
  *@method GET
- * @url uploadEDMRS/folio/chef_equipe
+ * @url uploadEDMRS/folio/agent
  */
  upload_folio_routes.get("/agent", upload_folio_contoller.getFlashByAgent)
 
@@ -87,6 +87,12 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  */
  upload_folio_routes.get("/noEnregistre", upload_folio_contoller.getFolioNoEnregistre)
 
+  /**
+ * Une route  de faire retour  entre agent  upload et  chef equipe
+ *@method GET
+ * @url uploadEDMRS/folio/retour
+ */
+ upload_folio_routes.post("/retour", upload_folio_contoller.retourAgentUpload)
 
 
 
