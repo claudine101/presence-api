@@ -1026,12 +1026,16 @@ const findAllVolumerRetour = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: {
-                [Op.and]: [{
-                    ID_USER: req.userId,
-                }]
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
                 {
                     model: Folio,
                     as: 'folio',
@@ -1046,22 +1050,8 @@ const findAllVolumerRetour = async (req, res) => {
                             ]
                         }
                     },
-                    // include: [
-                    //     {
-                    //         model: Equipes,
-                    //         as: 'equipe',
-                    //         required: false,
-                    //         attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
-                    //     }
-                    // ]
-                },
-                {
-                    model: Users,
-                    as: 'traitement',
-                    required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
-                },
-            ]
+                }
+            ]         
         })
         var UserFolios = []
         result.forEach(user => {
@@ -1206,7 +1196,7 @@ const findAllVolumerSupAille = async (req, res) => {
                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING
             },
-            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION','PV_PATH'],
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
             include: [
                 {
                     model: Users,
@@ -1218,7 +1208,7 @@ const findAllVolumerSupAille = async (req, res) => {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME','NOMBRE_DOSSIER'],
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
 
                 }
             ]
