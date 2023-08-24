@@ -16,6 +16,7 @@ const flash_routes=require('./flashs.routes')
 const aile_routes=require('./aile.routes')
 const folio_routes = require('./folio.routes')
 const institution_routes=require('./institution.routes')
+const uploadEDRMS_routes =require('./rapport_phase_uploadEDRMS.routes')
 
 const administrationRouter=express.Router();
 
@@ -35,5 +36,6 @@ administrationRouter.use('/naturefolio',naturefolio_routes)
 administrationRouter.use('/foliotypedocument',foliotypedocument_routes)
 administrationRouter.use('/flashs',flash_routes)
 administrationRouter.use('/aile',aile_routes)
+administrationRouter.use('/rapport_edrms',uploadEDRMS_routes)
 
 module.exports = administrationRouter
