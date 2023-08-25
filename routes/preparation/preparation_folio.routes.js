@@ -22,6 +22,18 @@ const preparation_folio_routes = express.Router()
  * @url /preparation/folio/agents
  */
  preparation_folio_routes.get('/agents', preparation_folio_controller.findAllAgents)
+ /**
+ * Une route d'afficher  agents de preparation et leurs folio PREPARE ET  NON  PREPARE
+ *@method GET
+ * @url /preparation/folio/allFOlios
+ */
+ preparation_folio_routes.get('/allFOlios', preparation_folio_controller.findAllFolioPrepare)
+ /**
+ * Une route d'afficher les details des agents de preparation et leurs folio PREPARE ET  NON  PREPARE
+ *@method GET
+ * @url /preparation/folio/getDetails
+ */
+ preparation_folio_routes.get('/getDetails/:USERS_ID', preparation_folio_controller.getAgentDetail)
 
  /**
  * Une route  permet  un chef  plateau 
@@ -32,13 +44,52 @@ const preparation_folio_routes = express.Router()
  preparation_folio_routes.get('/superviseur', preparation_folio_controller.findAllSuperviseurs)
 
   /**
+ * Une route  permet  un chef  plateau  de voir  les agent  sup  valides
+ * de voir  les agents superviseur   
+ *@method GET
+ * @url /preparation/folio/superviseurValides
+ */
+ preparation_folio_routes.get('/superviseurValides', preparation_folio_controller.findAllSuperviseursValides)
+
+ /**
+ * Une route  permet  un chef  plateau  de voir  les agents superviseur  valides
+ * de voir  les agents superviseur   
+ *@method GET
+ * @url /preparation/folio/allsuperviseurValides
+ */
+ preparation_folio_routes.get('/allsuperviseurValides', preparation_folio_controller.findAllSuperviseurs)
+
+
+ /**
+ * Une route  permet les PV d un chef  plateau  et  agent  superviseur
+ *@method POST
+ * @url /preparation/folio/getPv
+ */
+ preparation_folio_routes.post('/getPv', preparation_folio_controller.getPvs)
+  /**
+ * Une route  permet les PV d un   agent  superviseur et  agent  de preparation
+ *@method POST
+ * @url /preparation/folio/getPvAgentPreparation
+ */
+ preparation_folio_routes.post('/getPvAgentPreparation', preparation_folio_controller.getPvsAgentPREPARATION)
+
+  /**
+ * Une route  permet les PV d un  chef plateau et   agent  superviseur 
+ *@method POST
+ * @url /preparation/folio/getPvAgentSuperviseur
+ */
+ preparation_folio_routes.post('/getPvAgentSuperviseur', preparation_folio_controller.getPvsAgentSuperviseur)
+ 
+
+
+  /**
  * Une route  permet  de voir si tel  agent  superviseur phase preparation 
  * ont  déja effectuer  retour  avec agent  preparation
  * de voir  les agents superviseur   
- *@method GET
+ *@method POST
  * @url /preparation/folio/checkAgentsup
  */
- preparation_folio_routes.get('/checkAgentsup/:USERS_ID', preparation_folio_controller.checkAgentsup)
+ preparation_folio_routes.post('/checkAgentsup', preparation_folio_controller.checkAgentsup)
 
 
  /**
@@ -48,12 +99,19 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.get('/nbrefolios/:AGENT_SUPERVISEUR', preparation_folio_controller.nbre)
 
-  /**
- * Une route  permet  un chef  de divisions des archives d'ajouter   les folios 
+   /**
+ * Une route  permet  un agent  superviseur de voir  leurs  folios 
  *@method GET
  * @url /preparation/folio/folios
  */
  preparation_folio_routes.get('/folios', preparation_folio_controller.findAllFolio)
+  /**
+ * Une route  permet  chef plateux de voir  leurs  folios 
+ *@method GET
+ * @url /preparation/folio/volumeFolios
+ */
+ preparation_folio_routes.get('/volumeFolios', preparation_folio_controller.findAllFolioChefPlateau)
+
 
 
  /**

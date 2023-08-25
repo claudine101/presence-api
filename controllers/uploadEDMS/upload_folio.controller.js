@@ -321,7 +321,11 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                 ID_ETAPE_FOLIO: {
                     [Op.in]: [
                         IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS
+                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+
                     ]
                 }
             }
@@ -409,7 +413,7 @@ const getFlashByChefEquipeENattante = async (req, res) => {
 const getDocuments = async (req, res) => {
     try {
         const { ID_NATURE } = req.params
-
+console.log(ID_NATURE)
         const type = await Folio_types_documents.findAll({
             attributes: {
                 include: ['ID_TYPE_FOLIO_DOCUMENT', 'ID_NATURE', 'NOM_DOCUMENT']
@@ -946,6 +950,86 @@ const getFolioNoEnregistre = async (req, res) => {
         })
     }
 }
+/**
+ * Permet d'enregistrer le retour entre agent  upload  et le chef d'equipe
+ * @author claudine <claudine@mediabox.bi>
+ * @date 24/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const retourAgentUpload = async (req, res) => {
+    try {
+              const userId = req.userId
+              const { AGENT_UPLOAD, ID_FLASH } = req.body
+              const { pv } = req.files || {}
+              const validation = new Validation({ ...req.body, ...req.files || {} }, {
+                ID_FLASH: {
+                                  required: true
+                        },
+                        pv: {
+                                  image: 4000000
+                        },
+                        AGENT_UPLOAD:  {
+                                  required: true
+                        }
+              })
+              await validation.run();
+              const isValid = await validation.isValidate()
+              const errors = await validation.getErrors()
+              if (!isValid) {
+                        return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                                  statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                                  httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                                  message: "Probleme de validation des donnees",
+                                  result: errors
+                        })
+              }
+              const foliosEnregistre = await Folio.findAll({
+                        attributes: ['ID_FOLIO'],
+                        where: {
+                                  ID_FLASH,
+                                  IS_UPLOADED_EDRMS: 1,
+                                  IS_DOCUMENT_BIEN_ENREGISTRE: 1,
+                        }
+              })
+              // update des folios indexes
+              await Folio.update({
+                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
+              }, {
+                        where: {
+                                  ID_FLASH,
+                                  IS_UPLOADED_EDRMS: 1,
+                                  IS_DOCUMENT_BIEN_ENREGISTRE: 1,
+
+                        }
+              })
+              const pvUpload = new VolumePvUpload()
+              const { fileInfo } = await pvUpload.upload(pv, false)
+              const PV_PATH = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${fileInfo.fileName}`
+              const etapes_folio_historiques = foliosEnregistre.map(folio => {
+                        return {
+                                  ID_USER: userId,
+                                  USER_TRAITEMENT: AGENT_UPLOAD,
+                                  ID_FOLIO: folio.ID_FOLIO,
+                                  ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
+                                  PV_PATH
+                        }
+              })
+              await Etapes_folio_historiques.bulkCreate(etapes_folio_historiques)
+              res.status(RESPONSE_CODES.CREATED).json({
+                        statusCode: RESPONSE_CODES.CREATED,
+                        httpStatus: RESPONSE_STATUS.CREATED,
+                        message: "Agent upload enregisté avec succes"
+              })
+    } catch (error) {
+              console.log(error)
+              res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                        message: "Erreur interne du serveur, réessayer plus tard",
+              })
+    }
+}
 module.exports = {
     getFlashByChefEquipe,
     getAgentsByProfil,
@@ -958,5 +1042,6 @@ module.exports = {
     getFolioUploads,
     enregistreFolio,
     getFolioEnregistre,
+    retourAgentUpload,
     getFolioNoEnregistre
 }
