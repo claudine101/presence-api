@@ -747,7 +747,6 @@ const findAllAgentsFolio = async (req, res) => {
                 }
             ]
         })
-        console.log(result)
         var UserFolios = []
         result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
