@@ -61,7 +61,7 @@ const find_volume_planifie = async (req, res) => {
       users.map(async (countObject) => {
         const util = countObject.toJSON();
         const volumes = await Etapes_volume_historiques.findAndCountAll({
-          attributes: ["ID_VOLUME_HISTORIQUE", "USERS_ID", "ID_VOLUME"],
+          attributes: ["ID_VOLUME_HISTORIQUE", "USERS_ID", "ID_VOLUME","DATE_INSERTION"],
           where: {
             USERS_ID: util.USERS_ID,
             ...dateWhere,
@@ -74,6 +74,11 @@ const find_volume_planifie = async (req, res) => {
               where: {
                 ...dateWhere,
               },
+            },
+             {
+              model: Etapes_volumes,
+              as: "etapes_volumes",
+              attributes: ["NOM_ETAPE"],
             },
           ],
         });
@@ -147,7 +152,7 @@ const find_volume_prepare = async (req, res) => {
       users.map(async (countObject) => {
         const util = countObject.toJSON();
         const folio_prepared = await Etapes_folio_historiques.findAll({
-          attributes: ["ID_FOLIO_HISTORIQUE", "ID_USER", "ID_FOLIO"],
+          attributes: ["ID_FOLIO_HISTORIQUE", "ID_USER", "ID_FOLIO","DATE_INSERTION"],
           where: {
             ID_USER: util.USERS_ID,
             ...dateWhere,
@@ -165,6 +170,10 @@ const find_volume_prepare = async (req, res) => {
                 as: "natures",
                 attributes: ["ID_NATURE_FOLIO", "DESCRIPTION"],
               },
+            },{
+              model: Etapes_folio,
+              as: "etapes",
+              attributes: ["NOM_ETAPE"],
             },
           ],
         });
@@ -180,7 +189,7 @@ const find_volume_prepare = async (req, res) => {
         });
 
         const folio_non_prepared = await Etapes_folio_historiques.findAll({
-          attributes: ["ID_FOLIO_HISTORIQUE", "ID_USER", "ID_FOLIO"],
+          attributes: ["ID_FOLIO_HISTORIQUE", "ID_USER", "ID_FOLIO","DATE_INSERTION"],
           where: {
             ID_USER: util.USERS_ID,
             ID_ETAPE_FOLIO: {
@@ -221,7 +230,11 @@ const find_volume_prepare = async (req, res) => {
                 as: "natures",
                 attributes: ["ID_NATURE_FOLIO", "DESCRIPTION"],
               },
-            },
+            },{
+              model: Etapes_folio,
+              as: "etapes",
+              attributes: ["NOM_ETAPE"],
+            }
           ],
         });
 
@@ -301,12 +314,13 @@ const agent_chefplateau_preparation = async (req, res) => {
         const util = countObject.toJSON();
         const etapes_folio_histo_chefplateau = await Etapes_folio_historiques.findAndCountAll(
           {
+            attributes:["DATE_INSERTION"],
             where: {
-              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
               ID_USER: util.USERS_ID,
               ...dateWhere,
             },
-            include: {
+            include: [{
               model: Folio,
               as: "folio",
               required: true,
@@ -331,7 +345,12 @@ const agent_chefplateau_preparation = async (req, res) => {
                   attributes: ["ID_ETAPE_FOLIO", "NOM_ETAPE", "ID_PHASE"],
                 },
               ],
-            },
+            },{
+              model: Etapes_folio,
+              as: "etapes",
+              required: true,
+              attributes: ["ID_ETAPE_FOLIO", "NOM_ETAPE", "ID_PHASE"],
+            }],
           }
         );
         return {
@@ -396,12 +415,13 @@ const agent_chefequipe_preparation = async (req, res) => {
         const util = countObject.toJSON();
         const etapes_folio_histo_chefequipe = await Etapes_folio_historiques.findAndCountAll(
           {
+            attributes:["DATE_INSERTION"],
             where: {
               ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
               ID_USER: util.USERS_ID,
               ...dateWhere,
             },
-            include: {
+            include: [{
               model: Folio,
               as: "folio",
               required: true,
@@ -426,7 +446,11 @@ const agent_chefequipe_preparation = async (req, res) => {
                   attributes: ["ID_ETAPE_FOLIO", "NOM_ETAPE", "ID_PHASE"],
                 },
               ],
-            },
+            },{
+              model: Etapes_folio,
+              as: "etapes",
+              attributes: ["NOM_ETAPE"],
+            }],
           }
         );
         return {
@@ -491,12 +515,13 @@ const agent_superviseur_preparation = async (req, res) => {
         const util = countObject.toJSON();
         const etapes_folio_histo_agent_sup = await Etapes_folio_historiques.findAndCountAll(
           {
+            attributes :["DATE_INSERTION"],
             where: {
               ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
               ID_USER: util.USERS_ID,
               ...dateWhere,
             },
-            include: {
+            include: [{
               model: Folio,
               as: "folio",
               required: true,
@@ -513,15 +538,13 @@ const agent_superviseur_preparation = async (req, res) => {
                   as: "natures",
                   required: true,
                   attributes: ["ID_NATURE_FOLIO", "DESCRIPTION"],
-                },
-                {
-                  model: Etapes_folio,
-                  as: "etapes",
-                  required: true,
-                  attributes: ["ID_ETAPE_FOLIO", "NOM_ETAPE", "ID_PHASE"],
-                },
+                }
               ],
-            },
+            },{
+              model: Etapes_folio,
+              as: "etapes",
+              attributes: ["NOM_ETAPE"],
+            }],
           }
         );
         return {
