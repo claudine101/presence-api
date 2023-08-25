@@ -698,7 +698,6 @@ const findAllFolioChefPlateau = async (req, res) => {
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
-
             where: {
                 ...condition
             },
@@ -770,7 +769,9 @@ const findAllAgent = async (req, res) => {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
                 '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
             },
-
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             include: [
                 {
@@ -928,6 +929,9 @@ const findAllSuperviseurs = async (req, res) => {
             where: {
                 [Op.and]: [{ ID_USER: req.userId }]
             },
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION'],
             include: [
                 {
@@ -1094,7 +1098,10 @@ const findAllSuperviseursValides = async (req, res) => {
  */
 const checkAgentsup = async (req, res) => {
     try {
-        const { USERS_ID } = req.params
+        const { USERS_ID ,
+            folioIds
+        } = req.body
+        const IdsObjet = JSON.parse(folioIds)
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID }]
@@ -1112,12 +1119,20 @@ const checkAgentsup = async (req, res) => {
                     as: 'folio',
                     required: true,
                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+
                     where: {
-                        ID_ETAPE_FOLIO: {
-                            [Op.in]: [
-                                ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                                ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
-                        }
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO: {
+                                [Op.in]: [
+                                    ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                                    ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
+                            }
+                        }, {
+                           
+                            ID_FOLIO: {
+                                [Op.in]: IdsObjet
+                            }
+                        },]
                     }
                 }
             ]
@@ -1265,7 +1280,6 @@ const getPvs = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
-        console.log(folioIds)
 
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
@@ -1595,6 +1609,9 @@ const findAllFolioPrepare = async (req, res) => {
                     ]
                 }
             },
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             include: [
                 {

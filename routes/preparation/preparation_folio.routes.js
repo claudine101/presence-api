@@ -86,10 +86,10 @@ const preparation_folio_routes = express.Router()
  * Une route  permet  de voir si tel  agent  superviseur phase preparation 
  * ont  déja effectuer  retour  avec agent  preparation
  * de voir  les agents superviseur   
- *@method GET
+ *@method POST
  * @url /preparation/folio/checkAgentsup
  */
- preparation_folio_routes.get('/checkAgentsup/:USERS_ID', preparation_folio_controller.checkAgentsup)
+ preparation_folio_routes.post('/checkAgentsup', preparation_folio_controller.checkAgentsup)
 
 
  /**

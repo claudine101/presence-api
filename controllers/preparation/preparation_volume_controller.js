@@ -863,6 +863,9 @@ const findAllChefPlateau = async (req, res) => {
                 USERS_ID: req.userId, '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU,
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
             },
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
             include: [
                 {
