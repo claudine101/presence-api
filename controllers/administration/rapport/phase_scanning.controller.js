@@ -239,9 +239,6 @@ const rapport_agent_desarchivage = async (req, res) => {
           as:'volum',
           required:true,
           attributes: ['ID_VOLUME', 'NUMERO_VOLUME'],
-          // where:{
-          //   USERS_ID:util.USERS_ID
-          // },
           include:{
             model:Etapes_volumes,
             as:'etapes_volumes',
