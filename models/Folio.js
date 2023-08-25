@@ -55,6 +55,10 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    IS_PREPARE: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
         allowNull: true
