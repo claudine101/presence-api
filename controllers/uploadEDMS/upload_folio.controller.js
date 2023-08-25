@@ -550,7 +550,7 @@ const getFolioUpload = async (req, res) => {
                     as: 'documents',
                     required: true,
                     attributes: ['ID_FOLIO_DOCUMENT'],
-                    where: { USERS_ID: req.userId },
+                    // where: { USERS_ID: req.userId },
                     include: {
                         model: Folio_types_documents,
                         as: 'types',

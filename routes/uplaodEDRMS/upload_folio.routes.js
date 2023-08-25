@@ -31,6 +31,15 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  */
  upload_folio_routes.get("/chef_equipe", upload_folio_contoller.getFlashByChefEquipeENattante)
 
+ 
+ /**
+ * Une route  permet  de recuperer les  flash valide
+ * dans l'histo par un chef equipe phase uploadEDRMS
+ *@method GET
+ * @url uploadEDMRS/folio/flashValide
+ */
+ upload_folio_routes.get("/flashValide", upload_folio_contoller.getFlashByChefEquipeENattante)
+
 /**
  * Une route  permet  de recuperer les folios d'un agent  uploadEDRMS
  *@method GET
