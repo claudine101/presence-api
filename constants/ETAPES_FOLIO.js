@@ -19,20 +19,6 @@ const IDS_ETAPES_FOLIO = {
         */
         RETOUR_AGENT_PEPARATION_V_AGENT_SUP: 3,
 
-         /**
-          * 22 - Folio  enregistre
-          */
-        FOLIO_ENREG: 22,
-        /**
-         * 23 - Ajout  details dans un folio
-         */
-        ADD_DETAILLER_FOLIO: 23,
-        
-         /**
-        * 24 - Retour: agent superviseur phase de preparation vers  chef plateaus
-        */
-         RETOUR__AGENT_SUP_V_CHEF_PLATEAU: 24,
-
         /**
         * 4 - Selection d'un agent sup. scanning
         */
@@ -116,6 +102,26 @@ const IDS_ETAPES_FOLIO = {
           * 21 - Folio no enregistre to EDRMS
           */
         FOLIO_NO_ENREG_TO_EDRMS: 21,
+
+        
+
+        /**
+          * 22 - Folio  enregistre
+          */
+        FOLIO_ENREG: 22,
+        /**
+         * 23 - Ajout  details dans un folio
+         */
+        ADD_DETAILLER_FOLIO: 23,
+        
+         /**
+        * 24 - Retour: agent superviseur phase de preparation vers  chef plateaus
+        */
+         RETOUR__AGENT_SUP_V_CHEF_PLATEAU: 24,
+         /**
+          * 25- Retour: Agent upload vers Chef equipe
+          */
+        RETOUR_AGENT_UPLOAD_CHEF_EQUIPE: 25,
 
 }
 
