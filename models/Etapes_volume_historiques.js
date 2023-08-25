@@ -51,6 +51,7 @@ const Etapes_volume_historiques = sequelize.define("etapes_volume_historiques", 
 })
 
 Etapes_volume_historiques.belongsTo(Etapes_volumes, { foreignKey: "ID_ETAPE_VOLUME", as: 'etapes_volumes' })
+Etapes_volume_historiques.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volum' })
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USERS_ID", as: 'users' })
 Etapes_volume_historiques.belongsTo(Users, { foreignKey:"USER_TRAITEMENT", as: 'traitant' })
 
