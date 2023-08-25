@@ -80,4 +80,11 @@ scanning_volumeRetour_routes.put('/agent/desarchivages/:ID_VOLUME', scanning_vol
 */
 scanning_volumeRetour_routes.get('/agent/chefEquipe/envoyer', scanning_volumeRetour_controller.findAllVolumerEnvoyerScanning)
 
+  /**
+* Une route pour recuperer les pvs qu'on a signe lors de chef plateau en allant
+*@method POST
+* @url /scanning/retour/agent/pvs
+*/
+scanning_volumeRetour_routes.post('/agent/pvs', scanning_volumeRetour_controller.findFoliosGetsPvsPlateau)
+
 module.exports = scanning_volumeRetour_routes

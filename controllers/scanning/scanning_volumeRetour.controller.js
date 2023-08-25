@@ -667,6 +667,73 @@ const findAllVolumerEnvoyerScanning = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuper les pvs d'un chef plateau deja signer sur les folios dejs donnees
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  25/08/2023
+ * 
+ */
+
+const findFoliosGetsPvsPlateau = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        console.log(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        // const pvRetour = await Etapes_folio_historiques.findOne({
+        //     attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+        //     where: {
+        //         [Op.and]: [{
+        //             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+        //         }, {
+        //             ID_USER: req.userId
+        //         }, {
+        //             USER_TRAITEMENT: AGENT_SUPERVISEUR
+        //         }, {
+        //             ID_FOLIO: {
+        //                 [Op.in]: IdsObjet
+        //             }
+        //         }]
+        //     }
+        // })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...pv.toJSON(),
+                // pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     volumeScanningRetourAgentAille,
     volumeScanningRetourChefEquipe,
@@ -678,5 +745,6 @@ module.exports = {
     findAgentDesarchivages,
     volumeScanningRetourDesarchivages,
     volumeAileScanning,
-    findAllVolumerEnvoyerScanning
+    findAllVolumerEnvoyerScanning,
+    findFoliosGetsPvsPlateau
 }
