@@ -316,7 +316,7 @@ const agent_chefplateau_preparation = async (req, res) => {
           {
             attributes:["DATE_INSERTION"],
             where: {
-              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
               ID_USER: util.USERS_ID,
               ...dateWhere,
             },

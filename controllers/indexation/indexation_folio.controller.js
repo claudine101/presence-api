@@ -78,6 +78,7 @@ const getAgentsByProfil = async (req, res) => {
           try {
                     const { ID_PROFIL } = req.params
                     const agents = await Users.findAll({
+                              attributes: [`USERS_ID`, `ID_INSTITUTION`, `NOM`, `PRENOM`, `EMAIL`, `TELEPHONE`, `ID_PROFIL`, `PASSEWORD`, `PHOTO_USER`, `IS_ACTIF`],
                               where: {
                                         ID_PROFIL: ID_PROFIL
                               }
