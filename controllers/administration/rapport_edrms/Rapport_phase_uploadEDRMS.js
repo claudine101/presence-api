@@ -51,7 +51,6 @@ const phaseUpload = async (req, res) => {
       //count dossiers uploades
       const uploade = await Promise.all(users.map(async countObject => {
         const util = countObject.toJSON()
-        console.log(util)
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
@@ -104,7 +103,7 @@ const phaseUpload = async (req, res) => {
  //count dossiers non uploades
       const nonuploades = await Promise.all(users.map(async countObject => {
         const util = countObject.toJSON()
-        console.log(util)
+        
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
@@ -142,21 +141,15 @@ const phaseUpload = async (req, res) => {
                         attributes:['NOM_ETAPE'] 
                     }]
             },
-           
-
         ]
-          
-  
         })
         return {
           ...util,
           folios
         }
       }))
-
       const enttanteploades = await Promise.all(users.map(async countObject => {
         const util = countObject.toJSON()
-        console.log(util)
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
@@ -197,8 +190,6 @@ const phaseUpload = async (req, res) => {
            
 
         ]
-          
-  
         })
         return {
           ...util,
@@ -260,10 +251,8 @@ const phaseUpload = async (req, res) => {
             ID_PROFIL : PROFILS.AGENT_UPLOAD_EDRMS
         }
       });
-
       const alldossier = await Promise.all(users.map(async countObject => {
         const util = countObject.toJSON()
-        console.log(util)
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
@@ -365,7 +354,6 @@ const phaseUpload = async (req, res) => {
 
       const allverificateurdossier = await Promise.all(users.map(async countObject => {
         const util = countObject.toJSON()
-        console.log(util)
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
@@ -467,7 +455,6 @@ const phaseUpload = async (req, res) => {
 
       const allchefeauipedossier = await Promise.all(users.map(async countObject => {
         const util = countObject.toJSON()
-        console.log(util)
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{

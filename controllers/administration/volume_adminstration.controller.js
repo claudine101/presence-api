@@ -206,6 +206,7 @@ const findAllscanne = async (req, res) => {
             where: {
                 ID_ETAPE_FOLIO:{
                     [Op.in]:[
+                        IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                         IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                         IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
                         IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
