@@ -532,6 +532,7 @@ const agent_chefequipe=async(req,res)=>{
     })
   }
 }
+
 module.exports = {
   phaseScanning,
   rapport_agent_desarchivage,
