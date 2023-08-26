@@ -257,12 +257,6 @@ const get_rapport_all_indexation = async (req, res) => {
         },
         include: [
           {
-            model: Users,
-            as: 'user',
-            required:true,
-            attributes: ['USERS_ID'],
-          },
-          {
               model: Folio,
               as: 'folio',
               required: true, 
@@ -353,25 +347,16 @@ const get_rapport_agent_superviseur = async (req, res) => {
           where:{
               [Op.and]: [{
                   ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION
+              },{
+                  USER_TRAITEMENT :util.USERS_ID
               }],
               ...dateWhere
         },
         include: [
-          {
-            model: Users,
-            as: 'user',
-            required:true,
-            attributes: ['USERS_ID'],
-          },
-          {
+            {
               model: Folio,
               as: 'folio',
               required: true, 
-              where: {
-                  [Op.and]: [{
-                      ID_USERS: util.USERS_ID
-                  }]
-              },
               include: [
                   {
                       model: Volume,
@@ -453,25 +438,16 @@ const get_rapport_chef_ekip = async (req, res) => {
           where:{
               [Op.and]: [{
                   ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH
-              }],
+              },{
+                ID_USER:util.USERS_ID
+            }],
               ...dateWhere
         },
         include: [
           {
-            model: Users,
-            as: 'user',
-            required:true,
-            attributes: ['USERS_ID'],
-          },
-          {
               model: Folio,
               as: 'folio',
-              required: true, 
-              where: {
-                  [Op.and]: [{
-                      ID_USERS: util.USERS_ID
-                  }]
-              },
+              required: true,
               include: [
                   {
                       model: Volume,
@@ -553,25 +529,16 @@ const get_rapport_chef_plateau = async (req, res) => {
           where:{
               [Op.and]: [{
                   ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION
-              }],
+              },{
+                USER_TRAITEMENT :util.USERS_ID
+            }],
               ...dateWhere
         },
         include: [
           {
-            model: Users,
-            as: 'traitement',
-            required:true,
-            attributes: ['USERS_ID'],
-          },
-          {
               model: Folio,
               as: 'folio',
-              required: true, 
-              where: {
-                  [Op.and]: [{
-                      ID_USERS: util.USERS_ID
-                  }]
-              },
+              required: true,
               include: [
                   {
                       model: Volume,
