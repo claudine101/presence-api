@@ -300,23 +300,90 @@ const getFlashByAgent = async (req, res) => {
  */
 const getFlashByChefEquipeENattante = async (req, res) => {
     try {
-        const { precision } = req.query
-        var whereFilter = {}
+        const flashs = await Etapes_folio_historiques.findAll({
+            attributes: {
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
+            },
+            where: {
+                [Op.and]: [{
+                    ID_USER: req.userId,
+                },
+              {  ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE}]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
+                include: {
+                    model: Flashs,
+                    as: 'flash',
+                    required: true,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                },
+                where: {ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE}
+            }, {
+                model: Users,
+                as: 'traitement',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }],
+            order: [['DATE_INSERTION', 'DESC']]
+        })
+        var FlashFolios = []
+        flashs.forEach(flash => {
+            const ID_FLASH = flash.folio?.ID_FLASH
+            const flashs = flash.folio.flash
+            const users = flash.traitement
+            const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
+            if (isExists) {
+                const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
+                const newFolios = { ...folio, folios: [...folio.folios, flash] }
 
-        if (precision == 'valides') {
-            whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.notIn]: [
-                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
-                        IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
-                        IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
-                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
-                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
-                    ]
-                }
+                FlashFolios = FlashFolios.map(flash => {
+                    if (flash.ID_FLASH == ID_FLASH) {
+                        return newFolios
+                    } else {
+                        return flash
+                    }
+                })
+            } else {
+                FlashFolios.push({
+                    ID_FLASH,
+                    flashs,
+                    users,
+                    folios: [flash]
+                })
+
             }
-        }
-        else {
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des flash indexe",
+            result: FlashFolios
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer les USB des d'un chef d'equipe
+ * @author claudine <claudine@mediabox.bi>
+ * @date 04/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const getFlashByChefEquipeValide = async (req, res) => {
+    try {
+        var whereFilter = {}
             whereFilter = {
                 ID_ETAPE_FOLIO: {
                     [Op.in]: [
@@ -325,11 +392,9 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                         IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
                         IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
                         IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
-
                     ]
                 }
             }
-        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
