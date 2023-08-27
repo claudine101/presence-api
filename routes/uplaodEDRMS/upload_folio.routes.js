@@ -94,6 +94,14 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  */
  upload_folio_routes.post("/retour", upload_folio_contoller.retourAgentUpload)
 
+  /**
+ * Une route  de faire retour  entre agent  upload et  chef equipe
+ *@method GET
+ * @url uploadEDMRS/folio/retour
+ */
+ upload_folio_routes.get("/check/:ID_FLASH", upload_folio_contoller.check)
+
+
 
 
  

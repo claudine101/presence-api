@@ -90,6 +90,7 @@ const getAgentsByProfil = async (req, res) => {
     try {
         const { ID_PROFIL } = req.params
         const agents = await Users.findAll({
+            attributes: [`USERS_ID`, `ID_INSTITUTION`, `NOM`, `PRENOM`, `EMAIL`, `TELEPHONE`, `ID_PROFIL`, `PASSEWORD`, `PHOTO_USER`, `IS_ACTIF`],
             where: {
                 ID_PROFIL: ID_PROFIL
             }
@@ -300,6 +301,36 @@ const getFlashByAgent = async (req, res) => {
  */
 const getFlashByChefEquipeENattante = async (req, res) => {
     try {
+        const { precision } = req.query
+        var whereFilter = {}
+
+        if (precision == 'valides') {
+            whereFilter = {
+                ID_ETAPE_FOLIO: {
+                    [Op.notIn]: [
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
+                    ]
+                }
+            }
+        }
+        else {
+            whereFilter = {
+                ID_ETAPE_FOLIO: {
+                    [Op.in]: [
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+
+                    ]
+                }
+            }
+        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
@@ -308,7 +339,7 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                 [Op.and]: [{
                     ID_USER: req.userId,
                 },
-              {  ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE}]
+                    whereFilter]
             },
             include: [{
                 model: Folio,
@@ -321,7 +352,7 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 },
-                where: {ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE}
+                where: whereFilter
             }, {
                 model: Users,
                 as: 'traitement',
@@ -384,17 +415,17 @@ const getFlashByChefEquipeENattante = async (req, res) => {
 const getFlashByChefEquipeValide = async (req, res) => {
     try {
         var whereFilter = {}
-            whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.in]: [
-                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
-                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
-                    ]
-                }
+        whereFilter = {
+            ID_ETAPE_FOLIO: {
+                [Op.in]: [
+                    IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                    IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                ]
             }
+        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
@@ -478,7 +509,7 @@ const getFlashByChefEquipeValide = async (req, res) => {
 const getDocuments = async (req, res) => {
     try {
         const { ID_NATURE } = req.params
-console.log(ID_NATURE)
+        console.log(ID_NATURE)
         const type = await Folio_types_documents.findAll({
             attributes: {
                 include: ['ID_TYPE_FOLIO_DOCUMENT', 'ID_NATURE', 'NOM_DOCUMENT']
@@ -803,7 +834,7 @@ const enregistreFolio = async (req, res) => {
                 result: errors
             })
         }
-       
+
         folioObjet = JSON.parse(FOLIO_ENREGISTRE)
         const folio_enregistres = folioObjet.map(folio => folio.ID_FOLIO)
         await Folio.update({
@@ -840,7 +871,7 @@ const enregistreFolio = async (req, res) => {
         const folio_no_enregistres = folios.map(folio => folio.toJSON().ID_FOLIO)
         await Folio.update({
             IS_DOCUMENT_BIEN_ENREGISTRE: 0,
-            IS_UPLOADED_EDRMS:0,
+            IS_UPLOADED_EDRMS: 0,
             ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
 
         }, {
@@ -906,8 +937,8 @@ const getFolioEnregistre = async (req, res) => {
             },
             where: {
                 [Op.and]: [whereFilter,
-                    {ID_USER:req.userId},
-                    {USER_TRAITEMENT:req.userId}
+                    { ID_USER: req.userId },
+                    { USER_TRAITEMENT: req.userId }
                 ]
             },
             include: [{
@@ -986,7 +1017,7 @@ const getFolioNoEnregistre = async (req, res) => {
             },
             where: {
                 [Op.and]: [
-                    {USERS_ID:req.userId},
+                    { USERS_ID: req.userId },
                 ]
             },
             include: [{
@@ -1024,75 +1055,171 @@ const getFolioNoEnregistre = async (req, res) => {
  */
 const retourAgentUpload = async (req, res) => {
     try {
-              const userId = req.userId
-              const { AGENT_UPLOAD, ID_FLASH } = req.body
-              const { pv } = req.files || {}
-              const validation = new Validation({ ...req.body, ...req.files || {} }, {
-                ID_FLASH: {
-                                  required: true
-                        },
-                        pv: {
-                                  image: 4000000
-                        },
-                        AGENT_UPLOAD:  {
-                                  required: true
-                        }
-              })
-              await validation.run();
-              const isValid = await validation.isValidate()
-              const errors = await validation.getErrors()
-              if (!isValid) {
-                        return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                                  statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                                  httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                                  message: "Probleme de validation des donnees",
-                                  result: errors
-                        })
-              }
-              const foliosEnregistre = await Folio.findAll({
-                        attributes: ['ID_FOLIO'],
-                        where: {
-                                  ID_FLASH,
-                                  IS_UPLOADED_EDRMS: 1,
-                                  IS_DOCUMENT_BIEN_ENREGISTRE: 1,
-                        }
-              })
-              // update des folios indexes
-              await Folio.update({
-                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
-              }, {
-                        where: {
-                                  ID_FLASH,
-                                  IS_UPLOADED_EDRMS: 1,
-                                  IS_DOCUMENT_BIEN_ENREGISTRE: 1,
+        const userId = req.userId
+        const { AGENT_UPLOAD, ID_FLASH } = req.body
+        const { pv } = req.files || {}
+        const validation = new Validation({ ...req.body, ...req.files || {} }, {
+            ID_FLASH: {
+                required: true
+            },
+            pv: {
+                image: 4000000
+            },
+            AGENT_UPLOAD: {
+                required: true
+            }
+        })
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const foliosEnregistre = await Folio.findAll({
+            attributes: ['ID_FOLIO'],
+            where: {
+                ID_FLASH,
+                IS_UPLOADED_EDRMS: 1,
+                IS_DOCUMENT_BIEN_ENREGISTRE: 1,
+            }
+        })
+        // update des folios indexes
+        await Folio.update({
+            ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
+        }, {
+            where: {
+                ID_FLASH,
+                IS_UPLOADED_EDRMS: 1,
+                IS_DOCUMENT_BIEN_ENREGISTRE: 1,
 
-                        }
-              })
-              const pvUpload = new VolumePvUpload()
-              const { fileInfo } = await pvUpload.upload(pv, false)
-              const PV_PATH = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${fileInfo.fileName}`
-              const etapes_folio_historiques = foliosEnregistre.map(folio => {
-                        return {
-                                  ID_USER: userId,
-                                  USER_TRAITEMENT: AGENT_UPLOAD,
-                                  ID_FOLIO: folio.ID_FOLIO,
-                                  ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
-                                  PV_PATH
-                        }
-              })
-              await Etapes_folio_historiques.bulkCreate(etapes_folio_historiques)
-              res.status(RESPONSE_CODES.CREATED).json({
-                        statusCode: RESPONSE_CODES.CREATED,
-                        httpStatus: RESPONSE_STATUS.CREATED,
-                        message: "Agent upload enregisté avec succes"
-              })
+            }
+        })
+        const pvUpload = new VolumePvUpload()
+        const { fileInfo } = await pvUpload.upload(pv, false)
+        const PV_PATH = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${fileInfo.fileName}`
+        const etapes_folio_historiques = foliosEnregistre.map(folio => {
+            return {
+                ID_USER: userId,
+                USER_TRAITEMENT: AGENT_UPLOAD,
+                ID_FOLIO: folio.ID_FOLIO,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
+                PV_PATH
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(etapes_folio_historiques)
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "Agent upload enregisté avec succes"
+        })
     } catch (error) {
-              console.log(error)
-              res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                        message: "Erreur interne du serveur, réessayer plus tard",
-              })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer les USB des d'un agent uploadEDRMS
+ * @author claudine <claudine@mediabox.bi>
+ * @date 10/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const check = async (req, res) => {
+    try {
+        const { ID_FLASH } = req.params
+        var whereFilter = {}
+
+        whereFilter = {
+            ID_ETAPE_FOLIO: {
+                [Op.in]: [
+                    IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                ]
+            }
+        }
+        const flashs = await Etapes_folio_historiques.findAll({
+            attributes: {
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
+                    'DATE_INSERTION']
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                    'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
+                    'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
+                where: {
+                    [Op.and]: [
+                        { ID_FLASH: ID_FLASH },
+                        whereFilter]
+                },
+                include: {
+                    model: Flashs,
+                    as: 'flash',
+                    required: true,
+                    where: { ID_FLASH: ID_FLASH },
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                },
+            }, {
+                model: Users,
+                as: 'traitement',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }],
+            order: [['DATE_INSERTION', 'DESC']]
+        })
+        var FlashFolios = []
+        flashs.forEach(flash => {
+            const ID_FLASH = flash.folio?.ID_FLASH
+            const flashs = flash.folio.flash
+            const users = flash.traitement
+            const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
+            if (isExists) {
+                const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
+                const newFolios = { ...folio, folios: [...folio.folios, flash] }
+
+                FlashFolios = FlashFolios.map(flash => {
+                    if (flash.ID_FLASH == ID_FLASH) {
+                        return newFolios
+                    } else {
+                        return flash
+                    }
+                })
+            } else {
+                FlashFolios.push({
+                    ID_FLASH,
+                    flashs,
+                    users,
+                    folios: [flash]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des flash indexe",
+            result: FlashFolios
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 module.exports = {
@@ -1108,5 +1235,6 @@ module.exports = {
     enregistreFolio,
     getFolioEnregistre,
     retourAgentUpload,
-    getFolioNoEnregistre
+    getFolioNoEnregistre,
+    check
 }
