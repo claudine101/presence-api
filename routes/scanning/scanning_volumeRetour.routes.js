@@ -37,6 +37,20 @@ scanning_volumeRetour_routes.put('/agent/distributeur/:ID_VOLUME', scanning_volu
 */
 scanning_volumeRetour_routes.get('/agent/allVolume', scanning_volumeRetour_controller.findAllVolumerRetourDistributeur)
 
+/**
+* Une route pour retourner le valumes qui attends le pv de retours chez un agent superviseur archives
+*@method GET
+* @url /scanning/retour/agent/allVolume/archives
+*/
+scanning_volumeRetour_routes.get('/agent/allVolume/archives', scanning_volumeRetour_controller.findAllVolumerRetourAgentSupeArchives)
+
+/**
+* Une route pour afficher les volumes retpurner chez un agent desarchivages
+*@method GET
+* @url /scanning/retour/agent/allVolume/desarchivages
+*/
+scanning_volumeRetour_routes.get('/agent/allVolume/desarchivages', scanning_volumeRetour_controller.findAllVolumerRetourDesarchivages)
+
  /**
 * Une route pour recuperer la liste des agents distributeurs
 *@method GET

@@ -142,7 +142,7 @@ const findAgentDistributeur = async (req, res) => {
     try {
         const distributeur = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_DISTRIBUTEUR },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -250,50 +250,262 @@ const volumeScanningRetourAgentDistributeur = async (req, res) => {
  * @date  4/08/2023
  * 
  */
+// const findAllVolumerRetourDistributeur = async (req, res) => {
+//     try {
+//         const userObject = await Users.findOne({
+//             where: { USERS_ID: req.userId },
+//             attributes: ['ID_PROFIL', 'USERS_ID']
+//         })
+//         const user = userObject.toJSON()
+
+//         var condition = {}
+
+//         if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
+//             condition = {
+//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR, USER_TRAITEMENT: req.userId,
+//                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR
+//             }
+//         } else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
+//             condition = {
+//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE, USER_TRAITEMENT: req.userId
+//                 , ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE
+//             }
+//         } else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
+//             condition = {
+//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE, USER_TRAITEMENT: req.userId
+//                 , ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE
+//             }
+//         }
+//         const result = await Etapes_volume_historiques.findAll({
+//             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+//             where: {
+//                 ...condition
+//             },
+//             include: [
+//                 {
+//                     model: Volume,
+//                     as: 'volume',
+//                     required: false,
+//                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+//                 }]
+//         })
+//         res.status(RESPONSE_CODES.OK).json({
+//             statusCode: RESPONSE_CODES.OK,
+//             httpStatus: RESPONSE_STATUS.OK,
+//             message: "Liste des volumes",
+//             result
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+//             message: "Erreur interne du serveur, réessayer plus tard",
+//         })
+//     }
+// }
 const findAllVolumerRetourDistributeur = async (req, res) => {
     try {
-        const userObject = await Users.findOne({
-            where: { USERS_ID: req.userId },
-            attributes: ['ID_PROFIL', 'USERS_ID']
-        })
-        const user = userObject.toJSON()
-
-        var condition = {}
-
-        if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
-            condition = {
-                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR, USER_TRAITEMENT: req.userId,
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR
-            }
-        } else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
-            condition = {
-                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE, USER_TRAITEMENT: req.userId
-                , ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE
-            }
-        } else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
-            condition = {
-                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE, USER_TRAITEMENT: req.userId
-                , ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE
-            }
-        }
         const result = await Etapes_volume_historiques.findAll({
-            attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                ...condition
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR
             },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
             include: [
+                {
+                    model: Users,
+                    as: 'users',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
                 {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
-                }]
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitant?.USERS_ID
+            const users = user.traitant
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+
+            }
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
-            result
+            result:UserFolios
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire recuperer les volumes retourner chez un agent superviseur archives
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
+
+const findAllVolumerRetourAgentSupeArchives = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            include: [
+                {
+                    model: Users,
+                    as: 'users',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitant?.USERS_ID
+            const users = user.traitant
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result:UserFolios
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire recuperer les volumes retourner chez un agent desarchivages
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
+
+const findAllVolumerRetourDesarchivages = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            include: [
+                {
+                    model: Users,
+                    as: 'users',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitant?.USERS_ID
+            const users = user.traitant
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result:UserFolios
         })
     } catch (error) {
         console.log(error)
@@ -317,7 +529,7 @@ const findAgentSuperviseurArchives = async (req, res) => {
     try {
         const superviseur = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_ARCHIVE },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -336,7 +548,7 @@ const findAgentSuperviseurArchives = async (req, res) => {
 }
 
 /**
- * Permet de faire la mise a jour des volume envoyer chez un agent superviseur aille phase scanning
+ * Permet de faire le retour de volume d'un agent disributeur ves un agent superviseur archives
  * @author Vanny Boy <vanny@mediabox.bi>
  * @param {express.Request} req
  * @param {express.Response} res 
@@ -429,7 +641,7 @@ const findAgentDesarchivages = async (req, res) => {
     try {
         const desarchivage = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_DESARCHIVAGES },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -1127,5 +1339,7 @@ module.exports = {
     getFoliosAll,
     findGetsPvsAgentSupervieur,
     checkRetourAgentSupScann,
-    updateRetourPlateauSup
+    updateRetourPlateauSup,
+    findAllVolumerRetourAgentSupeArchives,
+    findAllVolumerRetourDesarchivages
 }
