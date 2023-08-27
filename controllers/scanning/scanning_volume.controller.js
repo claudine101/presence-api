@@ -844,7 +844,8 @@ const updateRetourEquipe = async (req, res) => {
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
                 {
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                    IS_RECONCILIE:1
                 }, {
                 where: {
                     ID_FOLIO: folio.folio.ID_FOLIO,
@@ -1094,90 +1095,7 @@ const findAllVolumerRetour = async (req, res) => {
     }
 }
 
-/**
- * Permet de faire signer un pv agent un scanning et le chef plateau
- * @author Vanny Boy <vanny@mediabox.bi>
- * @param {express.Request} req
- * @param {express.Response} res 
- * @date  4/08/2023
- * 
- */
 
-const updateRetourPlateauSup = async (req, res) => {
-    try {
-        const {
-            folio
-        } = req.body;
-        const PV = req.files?.PV
-        const validation = new Validation(
-            { ...req.body, ...req.files },
-            {
-                PV: {
-                    required: true,
-                    image: 21000000
-                }
-            },
-            {
-                PV: {
-                    image: "La taille invalide",
-                    required: "Le pv est obligatoire"
-                }
-            }
-        );
-        await validation.run();
-        const isValid = await validation.isValidate()
-        const errors = await validation.getErrors()
-        if (!isValid) {
-            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                message: "Probleme de validation des donnees",
-                result: errors
-            })
-        }
-        const volumeUpload = new VolumePvUpload()
-        var filename_pv
-        if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
-            filename_pv = fileInfo_2
-        }
-        var folioObjet = {}
-        folioObjet = JSON.parse(folio)
-
-        await Promise.all(folioObjet.map(async (folio) => {
-            const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            await Folio.update(
-                {
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU
-                }, {
-                where: {
-                    ID_FOLIO: folio.folio.ID_FOLIO,
-                }
-            }
-            )
-            await Etapes_folio_historiques.create({
-                ID_USER: req.userId,
-                USER_TRAITEMENT: req.userId,
-                ID_FOLIO: folio.folio.ID_FOLIO,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
-                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-            })
-        }))
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "modification faite  avec succès",
-            // result: reponse
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
-}
 
 /**
  * Permet de faire le retour des volumes chez un agent superviseur aille
@@ -1398,7 +1316,6 @@ module.exports = {
     findAllFolioScannimg,
     findAllVolumeFolioRencolier,
     findAllVolumerRetour,
-    updateRetourPlateauSup,
     findAllVolumerSupAille,
     volumeScanningRetourAgentAille
 }

@@ -88,6 +88,13 @@ scanning_volumeRetour_routes.get('/agent/chefEquipe/envoyer', scanning_volumeRet
 scanning_volumeRetour_routes.post('/agent/pvs', scanning_volumeRetour_controller.findFoliosGetsPvsPlateau)
 
   /**
+* Une route pour recuperer les pvs d'agent superviseur signe avec equipe
+*@method POST
+* @url /scanning/retour/agent/equipe/pvs
+*/
+scanning_volumeRetour_routes.post('/agent/equipe/pvs', scanning_volumeRetour_controller.findGetsPvsAgentSupervieur)
+
+  /**
  * Une route  permet  si le chef plateau est pret a signer le pv de retours un agent superviseur  
  *@method GET
  * @url /scanning/retour/agent/retour/pvs
@@ -95,10 +102,24 @@ scanning_volumeRetour_routes.post('/agent/pvs', scanning_volumeRetour_controller
  scanning_volumeRetour_routes.get('/agent/retour/pvs/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefPlateau)
 
    /**
+ * Une route  permet  si agent superviseur scanning est pret a signer le pv de retours une equipe scanning
+ *@method GET
+ * @url /scanning/retour/agent/retour/equipeScanning
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/equipeScanning/:USERS_ID', scanning_volumeRetour_controller.checkRetourAgentSupScann)
+
+   /**
  * Une route  permet de recuperer les folios d'un agents superviseur 
  *@method GET
  * @url /scanning/retour/agent/foliosRecus
  */
  scanning_volumeRetour_routes.get('/agent/foliosRecus', scanning_volumeRetour_controller.getFoliosAll)
+
+ /**
+ * Une route pour faire le retour entre un agent superviseur et le chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau', scanning_volumeRetour_controller.updateRetourPlateauSup)
 
 module.exports = scanning_volumeRetour_routes

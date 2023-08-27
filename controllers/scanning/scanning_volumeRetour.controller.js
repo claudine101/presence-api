@@ -878,6 +878,238 @@ const getFoliosAll = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuper les pvs d'un agent superviseur scanning signe avec une equipe scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
+
+const findGetsPvsAgentSupervieur = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        // const pvRetour = await Etapes_folio_historiques.findOne({
+        //     attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+        //     where: {
+        //         [Op.and]: [{
+        //             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+        //         }, {
+        //             ID_USER: req.userId
+        //         }, {
+        //             USER_TRAITEMENT: AGENT_SUPERVISEUR
+        //         }, {
+        //             ID_FOLIO: {
+        //                 [Op.in]: IdsObjet
+        //             }
+        //         }]
+        //     }
+        // })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "PVS agent superviseur",
+            result: {
+                ...pv.toJSON(),
+                // pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de verfier si un agent scanning est pret a signer le pvs de retour avec l'equipe scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
+
+const checkRetourAgentSupScann = async (req, res) => {
+    try {
+        const { USERS_ID } = req.params
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: {
+                            [Op.and]: [
+                                ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,]
+                        }
+                    }
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste de folios qui attend le retour",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire signer un pv agent un scanning et le chef plateau
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  4/08/2023
+ * 
+ */
+
+const updateRetourPlateauSup = async (req, res) => {
+    try {
+        const {
+            folio
+        } = req.body;
+        const PV = req.files?.PV
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "Le pv est obligatoire"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        var folioObjet = {}
+        folioObjet = JSON.parse(folio)
+
+        await Promise.all(folioObjet.map(async (folio) => {
+            const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            await Folio.update(
+                {
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                    IS_VALIDE:1
+                }, {
+                where: {
+                    ID_FOLIO: folio.folio.ID_FOLIO,
+                }
+            }
+            )
+            await Etapes_folio_historiques.create({
+                ID_USER: req.userId,
+                USER_TRAITEMENT: req.userId,
+                ID_FOLIO: folio.folio.ID_FOLIO,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            })
+        }))
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+            // result: reponse
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     volumeScanningRetourAgentAille,
     volumeScanningRetourChefEquipe,
@@ -892,5 +1124,8 @@ module.exports = {
     findAllVolumerEnvoyerScanning,
     findFoliosGetsPvsPlateau,
     checkRetourChefPlateau,
-    getFoliosAll
+    getFoliosAll,
+    findGetsPvsAgentSupervieur,
+    checkRetourAgentSupScann,
+    updateRetourPlateauSup
 }

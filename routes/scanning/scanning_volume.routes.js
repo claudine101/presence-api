@@ -11,12 +11,12 @@ scanning_volume_routes.put('/retour/chef', scanning_volume_controller.updateReto
 
 
 
- /**
-* Une route pour faire le retour entre un agent superviseur et le chef plateau
-*@method PUT
-* @url /scanning/volume
-*/
-scanning_volume_routes.put('/retour/plateau', scanning_volume_controller.updateRetourPlateauSup)
+//  /**
+// * Une route pour faire le retour entre un agent superviseur et le chef plateau
+// *@method PUT
+// * @url /scanning/volume
+// */
+// scanning_volume_routes.put('/retour/plateau', scanning_volume_controller.updateRetourPlateauSup)
 
 
 /**
