@@ -1125,7 +1125,6 @@ const getFolioEnregistre = async (req, res) => {
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
-                where: whereFilter
             }],
             order: [['DATE_INSERTION', 'DESC']]
         })
@@ -1204,7 +1203,6 @@ const getFolioNoEnregistre = async (req, res) => {
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
-                where: whereFilter
             }],
             order: [['DATE_INSERTION', 'DESC']]
         })
