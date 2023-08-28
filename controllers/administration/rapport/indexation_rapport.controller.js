@@ -53,7 +53,9 @@ const get_rapport_indexation = async (req, res) => {
             where:{
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-                }],
+                },{
+                  USER_TRAITEMENT: util.USERS_ID
+              }],
                 ...dateWhere
           },
           include: [
@@ -63,8 +65,6 @@ const get_rapport_indexation = async (req, res) => {
                 required: true, 
                 where: {
                     [Op.and]: [{
-                        ID_USERS: util.USERS_ID
-                    }, {
                       IS_INDEXE: 1,
                     }]
                 },
@@ -101,7 +101,9 @@ const get_rapport_indexation = async (req, res) => {
             where:{
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-                }],
+                },{
+                  USER_TRAITEMENT: util.USERS_ID
+              }],
                 ...dateWhere
       
           },
@@ -112,8 +114,6 @@ const get_rapport_indexation = async (req, res) => {
                 required: true, 
                 where: {
                     [Op.and]: [{
-                        ID_USERS: util.USERS_ID
-                    }, {
                       IS_INDEXE: 0,
                     }]
                 },
@@ -151,7 +151,9 @@ const get_rapport_indexation = async (req, res) => {
             where:{
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-                }],
+                },{
+                  USER_TRAITEMENT: util.USERS_ID
+              }],
                 ...dateWhere
       
           },
@@ -162,8 +164,6 @@ const get_rapport_indexation = async (req, res) => {
                 required: true, 
                 where: {
                     [Op.and]: [{
-                        ID_USERS: util.USERS_ID
-                    }, {
                       IS_INDEXE: null,
                     }]
                 },
@@ -252,7 +252,9 @@ const get_rapport_all_indexation = async (req, res) => {
           where:{
               [Op.and]: [{
                   ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-              }],
+              },{
+                USER_TRAITEMENT: util.USERS_ID
+            }],
               ...dateWhere
         },
         include: [
@@ -260,11 +262,11 @@ const get_rapport_all_indexation = async (req, res) => {
               model: Folio,
               as: 'folio',
               required: true, 
-              where: {
-                  [Op.and]: [{
-                      ID_USERS: util.USERS_ID
-                  }]
-              },
+              // where: {
+              //     [Op.and]: [{
+              //         ID_USERS: util.USERS_ID
+              //     }]
+              // },
               include: [
                   {
                       model: Volume,
