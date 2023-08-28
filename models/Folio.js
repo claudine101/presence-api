@@ -158,7 +158,6 @@ Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
 Folio.belongsTo(Folio_documents, { foreignKey: "ID_FOLIO", as: 'documents' })
-
 Folio.belongsTo(Users, { foreignKey: "ID_USERS", as: 'user' })
 
 
