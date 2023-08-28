@@ -136,4 +136,39 @@ scanning_volumeRetour_routes.post('/agent/equipe/pvs', scanning_volumeRetour_con
  */
  scanning_volumeRetour_routes.put('/agent/retour/plateau', scanning_volumeRetour_controller.updateRetourPlateauSup)
 
+ /**
+ * Une route  recuperer  les volumes retourner d'un chef plateau
+ *@method GET
+ * @url /scanning/retour/agent/volume/plateau
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/plateau', scanning_volumeRetour_controller.findAllVolumePlateauChef)
+
+  /**
+ * Une route  recuperer  les volumes deja traitees d'un chef plateau
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau', scanning_volumeRetour_controller.findAllVolumePlateauChefTraites)
+
+   /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetour)
+
+  /**
+ * Une route  recuperer  les volumes deja traitees d'un agent superviseur aile scanning
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/supaillescanning
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/supaillescanning', scanning_volumeRetour_controller.findAllVolumeSupAileScanningTraites)
+
+   /**
+* Une route pour recuperer les pvs de retour d'un agent superviseur aille signe avec chef plateau
+*@method POST
+* @url /scanning/retour/agent/supAille/retour/pvs
+*/
+scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeRetour_controller.findGetsPvsSupAilleScanRetour)
+
 module.exports = scanning_volumeRetour_routes
