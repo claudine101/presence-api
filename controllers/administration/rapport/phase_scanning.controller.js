@@ -490,36 +490,23 @@ const agent_chefequipe=async(req,res)=>{
     //compte le nombre des chefs equipes
     const count_chefequipe=await Promise.all(chefequipe.map(async countObject=>{
       const util=countObject.toJSON()
-      const etapes_folio_histo_chefequipe=await Etapes_folio_historiques.findAndCountAll({
+      const etapes_folio_histo_chefequipe=await Etapes_volume_historiques.findAndCountAll({
         where:{
-          ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+          ID_ETAPE_VOLUME:ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
           USER_TRAITEMENT:util.USERS_ID,
           ...dateWhere  
         },
         include:{
-          model: Folio,
-          as: 'folio',
-          required: true,
-          attributes: ['ID_FOLIO', 'FOLIO','NUMERO_FOLIO'],
-          include: [{
-            model: Volume,
-            as: 'volume',
-            required: true,
-            attributes: ['ID_VOLUME', 'NUMERO_VOLUME']
-          },
-          {
-            model: Nature_folio,
-            as: 'natures',
-            required: true,
-            attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION']
-          },
-          {
-            model: Etapes_folio,
-            as: 'etapes',
-            required: true,
-            attributes: ['ID_ETAPE_FOLIO', 'NOM_ETAPE', 'ID_PHASE']
+          model:Volume,
+          as:'volum',
+          required:true,
+          attributes: ['ID_VOLUME', 'NUMERO_VOLUME'],
+          include:{
+            model:Etapes_volumes,
+            as:'etapes_volumes',
+            required:true,
+            attributes:['ID_ETAPE_VOLUME','NOM_ETAPE']
           }
-          ]
         }
       })
       return{
@@ -545,6 +532,7 @@ const agent_chefequipe=async(req,res)=>{
     })
   }
 }
+
 module.exports = {
   phaseScanning,
   rapport_agent_desarchivage,
