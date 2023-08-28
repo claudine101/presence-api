@@ -605,7 +605,10 @@ const findAllFolio = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: { USER_TRAITEMENT: req.userId, '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.SELECTION_AGENT_SUP },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO','DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
                     model: Folio,
@@ -624,6 +627,7 @@ const findAllFolio = async (req, res) => {
         result.forEach(folio => {
             const ID_VOLUME = folio.folio.ID_VOLUME
             const volume = folio.folio.volume
+            const  date=folio.DATE_INSERTION
             const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
             if (isExists) {
                 const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
@@ -640,6 +644,7 @@ const findAllFolio = async (req, res) => {
                 volumeFolios.push({
                     ID_VOLUME,
                     volume,
+                    date,
                     folios: [folio]
                 })
             }
@@ -785,7 +790,6 @@ const findAllAgent = async (req, res) => {
                     as: 'folio',
                     required: false,
                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-
                 }
             ]
         })
@@ -820,6 +824,7 @@ const findAllAgent = async (req, res) => {
 
 
         })
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,

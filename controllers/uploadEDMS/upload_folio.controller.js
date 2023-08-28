@@ -221,6 +221,7 @@ const getFlashByAgent = async (req, res) => {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
                     'DATE_INSERTION']
             },
+            order: [['DATE_INSERTION', 'DESC']],
             where: {
                 [Op.and]: [{
                     USER_TRAITEMENT: req.userId,
@@ -254,6 +255,7 @@ const getFlashByAgent = async (req, res) => {
             const ID_FLASH = flash.folio?.ID_FLASH
             const flashs = flash.folio.flash
             const users = flash.traitement
+            const date=flash.DATE_INSERTION
             const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
             if (isExists) {
                 const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
@@ -271,6 +273,7 @@ const getFlashByAgent = async (req, res) => {
                     ID_FLASH,
                     flashs,
                     users,
+                    date,
                     folios: [flash]
                 })
 
