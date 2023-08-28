@@ -845,7 +845,7 @@ const updateRetourEquipe = async (req, res) => {
             await Folio.update(
                 {
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-                    IS_RECONCILIE:1
+                    IS_RECONCILIE: 1
                 }, {
                 where: {
                     ID_FOLIO: folio.folio.ID_FOLIO,
@@ -890,10 +890,10 @@ const findAllFolioScannimg = async (req, res) => {
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 ID_USER: req.userId,
-                '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                // '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             include: [
                 {
                     model: Folio,
@@ -912,36 +912,39 @@ const findAllFolioScannimg = async (req, res) => {
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.USER_TRAITEMENT
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
-
             }
-
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folio",
-            UserFolios
+            PvFolios
             // result:result
         })
     } catch (error) {
@@ -1051,7 +1054,7 @@ const findAllVolumerRetour = async (req, res) => {
                         }
                     },
                 }
-            ]         
+            ]
         })
         var UserFolios = []
         result.forEach(user => {

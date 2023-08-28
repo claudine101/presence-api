@@ -1322,6 +1322,8 @@ const updateRetourPlateauSup = async (req, res) => {
     }
 }
 
+
+
 module.exports = {
     volumeScanningRetourAgentAille,
     volumeScanningRetourChefEquipe,
