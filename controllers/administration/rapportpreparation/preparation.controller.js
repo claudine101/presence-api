@@ -280,7 +280,7 @@ const find_volume_prepare = async (req, res) => {
  * rapport des agents chefs plateau phase preparation
  * @param {express.Request} req
  * @param {express.Response} res
- * @author leonard<nirema.eloge@mediabox.bi>
+ * @author Eloge<nirema.eloge@mediabox.bi>
  * @date 24/08/2023
  */
 
@@ -381,7 +381,7 @@ const agent_chefplateau_preparation = async (req, res) => {
  * Fonction du rapport des chefs d'equipe phase preparation
  * @param {express.Request} req
  * @param {express.Response} res
- * @author leonard<nirema.eloge@mediabox.bi>
+ * @author Eloge<nirema.eloge@mediabox.bi>
  * @date 24/08/2023
  */
 
@@ -481,7 +481,7 @@ const agent_chefequipe_preparation = async (req, res) => {
  * Fonction du rapport des agents superviseur,
  * @param {express.Request} req
  * @param {express.Response} res
- * @author leonard<leonard@mdiabox.bi>
+ * @author Eloge<nirema.eloge@mdiabox.bi>
  * @date 24/08/2023
  */
 

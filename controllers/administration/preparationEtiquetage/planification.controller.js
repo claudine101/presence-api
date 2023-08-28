@@ -53,7 +53,7 @@ const planification = async (req, res) => {
       }
     }
     if (!orderColumn || !sortModel) {
-      orderColumn = sortColumns.volume.fields.NUMERO_VOLUME;
+      orderColumn = sortColumns.volume.fields.DATE_INSERTION;
       sortModel = {
         model: "Etapes_volume_historiques",
         as: sortColumns.volume,
