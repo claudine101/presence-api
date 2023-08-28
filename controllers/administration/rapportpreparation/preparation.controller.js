@@ -165,11 +165,19 @@ const find_volume_prepare = async (req, res) => {
               where: {
                 IS_PREPARE: 1,
               },
-              include: {
+              include: [{
                 model: Nature_folio,
                 as: "natures",
                 attributes: ["ID_NATURE_FOLIO", "DESCRIPTION"],
-              },
+              },{
+                model: Volume,
+                as: "volume",
+                attributes: ["ID_VOLUME", "NUMERO_VOLUME"],
+              },{
+                model: Etapes_folio,
+                as: "etapes",
+                attributes: ["NOM_ETAPE"],
+              }]
             },{
               model: Etapes_folio,
               as: "etapes",
@@ -225,11 +233,19 @@ const find_volume_prepare = async (req, res) => {
               where: {
                 IS_PREPARE: 0,
               },
-              include: {
+              include: [{
                 model: Nature_folio,
                 as: "natures",
                 attributes: ["ID_NATURE_FOLIO", "DESCRIPTION"],
-              },
+              },{
+                model: Volume,
+                as: "volume",
+                attributes: ["ID_VOLUME", "NUMERO_VOLUME"],
+              },{
+                model: Etapes_folio,
+                as: "etapes",
+                attributes: ["NOM_ETAPE"],
+              }]
             },{
               model: Etapes_folio,
               as: "etapes",
@@ -280,7 +296,7 @@ const find_volume_prepare = async (req, res) => {
  * rapport des agents chefs plateau phase preparation
  * @param {express.Request} req
  * @param {express.Response} res
- * @author leonard<nirema.eloge@mediabox.bi>
+ * @author Eloge<nirema.eloge@mediabox.bi>
  * @date 24/08/2023
  */
 
@@ -381,7 +397,7 @@ const agent_chefplateau_preparation = async (req, res) => {
  * Fonction du rapport des chefs d'equipe phase preparation
  * @param {express.Request} req
  * @param {express.Response} res
- * @author leonard<nirema.eloge@mediabox.bi>
+ * @author Eloge<nirema.eloge@mediabox.bi>
  * @date 24/08/2023
  */
 
@@ -413,43 +429,32 @@ const agent_chefequipe_preparation = async (req, res) => {
     const count_chefequipe = await Promise.all(
       chefequipe.map(async (countObject) => {
         const util = countObject.toJSON();
-        const etapes_folio_histo_chefequipe = await Etapes_folio_historiques.findAndCountAll(
+
+        // const volumes = await .findAndCountAll({
+        //   attributes: ["ID_VOLUME_HISTORIQUE", "USERS_ID", "ID_VOLUME","DATE_INSERTION"],
+
+        const etapes_folio_histo_chefequipe = await Etapes_volume_historiques.findAndCountAll(
           {
-            attributes:["DATE_INSERTION"],
+            attributes: ["ID_VOLUME_HISTORIQUE", "USERS_ID", "ID_VOLUME","DATE_INSERTION","ID_ETAPE_VOLUME"],
             where: {
-              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
-              ID_USER: util.USERS_ID,
+              // ID_ETAPE_VOLUME: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+              ID_ETAPE_VOLUME: IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
+              USERS_ID: util.USERS_ID,
               ...dateWhere,
             },
             include: [{
-              model: Folio,
-              as: "folio",
-              required: true,
-              attributes: ["ID_FOLIO", "FOLIO", "NUMERO_FOLIO"],
-              include: [
-                {
-                  model: Volume,
+              model: Volume,
                   as: "volume",
                   required: true,
                   attributes: ["ID_VOLUME", "NUMERO_VOLUME"],
-                },
+              include: [
                 {
-                  model: Nature_folio,
-                  as: "natures",
+                  model: Etapes_volumes,
+                  as: "etapes_volumes",
                   required: true,
-                  attributes: ["ID_NATURE_FOLIO", "DESCRIPTION"],
-                },
-                {
-                  model: Etapes_folio,
-                  as: "etapes",
-                  required: true,
-                  attributes: ["ID_ETAPE_FOLIO", "NOM_ETAPE", "ID_PHASE"],
+                  attributes: ["ID_ETAPE_VOLUME", "NOM_ETAPE"],
                 },
               ],
-            },{
-              model: Etapes_folio,
-              as: "etapes",
-              attributes: ["NOM_ETAPE"],
             }],
           }
         );
@@ -481,7 +486,7 @@ const agent_chefequipe_preparation = async (req, res) => {
  * Fonction du rapport des agents superviseur,
  * @param {express.Request} req
  * @param {express.Response} res
- * @author leonard<leonard@mdiabox.bi>
+ * @author Eloge<nirema.eloge@mdiabox.bi>
  * @date 24/08/2023
  */
 
