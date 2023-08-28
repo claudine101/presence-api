@@ -1731,6 +1731,255 @@ const findGetsPvsSupAilleScanRetour = async (req, res) => {
     }
 }
 
+/**
+ * Permet de faire retourner le volumees deja traiter par un chef d'equipe scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  28/08/2023
+ * 
+ */
+const findAllVolumeChefEquipScanningTraites = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
+
+                }
+            ]
+        })
+        var PvVolume = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const volume = histo.volume
+            const users = histo.traitant
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvVolume.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvVolume.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, volumes: [...allFolio.volumes, volume] }
+                PvVolume = PvVolume.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvVolume.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    volumes: [volume]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes traitees",
+            PvVolume
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire retourner le volumees deja traiter par un agent distributeur
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  28/08/2023
+ * 
+ */
+const findAllVolumeAgentDistributeurTraites = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
+
+                }
+            ]
+        })
+        var PvVolume = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const volume = histo.volume
+            const users = histo.traitant
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvVolume.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvVolume.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, volumes: [...allFolio.volumes, volume] }
+                PvVolume = PvVolume.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvVolume.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    volumes: [volume]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes traitees",
+            PvVolume
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire retourner le volumees deja traiter par un agent superviseur archives
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  28/08/2023
+ * 
+ */
+const findAllVolumeAgenSupArchivesTraites = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
+
+                }
+            ]
+        })
+        var PvVolume = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const volume = histo.volume
+            const users = histo.traitant
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvVolume.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvVolume.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, volumes: [...allFolio.volumes, volume] }
+                PvVolume = PvVolume.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvVolume.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    volumes: [volume]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes traitees",
+            PvVolume
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 
 module.exports = {
@@ -1757,5 +2006,8 @@ module.exports = {
     findAllVolumePlateauChefTraites,
     findGetsPvsChefPlateauRetour,
     findAllVolumeSupAileScanningTraites,
-    findGetsPvsSupAilleScanRetour
+    findGetsPvsSupAilleScanRetour,
+    findAllVolumeChefEquipScanningTraites,
+    findAllVolumeAgentDistributeurTraites,
+    findAllVolumeAgenSupArchivesTraites
 }

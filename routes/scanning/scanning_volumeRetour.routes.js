@@ -171,4 +171,25 @@ scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs', scanning_volu
 */
 scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeRetour_controller.findGetsPvsSupAilleScanRetour)
 
+  /**
+ * Une route  recuperer  les volumes deja traitees un chef d'equipe scannings
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/chefEquiScanning
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/chefEquiScanning', scanning_volumeRetour_controller.findAllVolumeChefEquipScanningTraites)
+
+   /**
+ * Une route  recuperer  les volumes deja traitees un agent distributeur
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/agentDistributeur
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/agentDistributeur', scanning_volumeRetour_controller.findAllVolumeAgentDistributeurTraites)
+
+    /**
+ * Une route  recuperer  les volumes deja traitees un agent superviseur archives
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/agentSupArchives
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/agentSupArchives', scanning_volumeRetour_controller.findAllVolumeAgenSupArchivesTraites)
+
 module.exports = scanning_volumeRetour_routes
