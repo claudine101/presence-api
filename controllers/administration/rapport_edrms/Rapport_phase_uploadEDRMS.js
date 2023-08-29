@@ -54,7 +54,8 @@ const phaseUpload = async (req, res) => {
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                    ID_USER: util.USERS_ID
                 }],
                 ...dateWhere
       
@@ -65,9 +66,7 @@ const phaseUpload = async (req, res) => {
                 as: 'folio',
                 required: true, 
                 where: {
-                    [Op.and]: [{
-                        ID_USERS: util.USERS_ID
-                     }, 
+                    [Op.and]: [
                      {
                         IS_UPLOADED_EDRMS: 1,
                     }
@@ -107,7 +106,8 @@ const phaseUpload = async (req, res) => {
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                    ID_USERS: util.USERS_ID
                 }]
       
           },
@@ -118,8 +118,6 @@ const phaseUpload = async (req, res) => {
                 required: true, 
                 where: {
                     [Op.and]: [{
-                        ID_USERS: util.USERS_ID
-                    }, {
                         IS_UPLOADED_EDRMS: 0,
                     }]
                 },
@@ -153,7 +151,8 @@ const phaseUpload = async (req, res) => {
         const folios = await Etapes_folio_historiques.findAndCountAll({
             where:{
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                    ID_USERS: util.USERS_ID
                 }]
       
           },
@@ -164,8 +163,6 @@ const phaseUpload = async (req, res) => {
                 required: true, 
                 where: {
                     [Op.and]: [{
-                        ID_USERS: util.USERS_ID
-                    }, {
                         ID_ETAPE_FOLIO: null,
                     }]
                 },

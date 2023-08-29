@@ -353,10 +353,14 @@ const finduploadedrms = async (req, res) => {
                     model :Folio,
                     as: 'folio',
                    attributes: ['NUMERO_FOLIO'],
+                   include: [{
+                    model: Volume,
+                    as: 'volume',
                     required: true,
                     where :{
                         ID_VOLUME :folio.volume.ID_VOLUME 
                     }
+                   }]
                 },
                 {
                     model: Users,
@@ -380,10 +384,14 @@ const finduploadedrms = async (req, res) => {
                     model :Folio,
                     as: 'folio',
                    attributes: ['NUMERO_FOLIO'],
+                   include: [{
+                    model: Volume,
+                    as: 'volume',
                     required: true,
                     where :{
                         ID_VOLUME :folio.volume.ID_VOLUME 
                     }
+                   }]
                 },
                 {
                     model: Users,
