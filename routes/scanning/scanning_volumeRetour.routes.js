@@ -192,4 +192,18 @@ scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeR
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/agentSupArchives', scanning_volumeRetour_controller.findAllVolumeAgenSupArchivesTraites)
 
+ /**
+ * Une route pour archives les volumes retournez chez un agent de desarchivages
+ *@method PUT
+ * @url /scanning/retour/agent/desarchivages/archivevol
+ */
+ scanning_volumeRetour_routes.put('/agent/desarchivages/archivevol/:ID_VOLUME', scanning_volumeRetour_controller.volumeArchivesAgentDesarchivages)
+
+     /**
+ * Une route  recuperer  les volumes deja archives par un agent desarchivages
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/agentDesarchivages
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/agentDesarchivages', scanning_volumeRetour_controller.findAllVolumeAgenDesarchivagesTraites)
+
 module.exports = scanning_volumeRetour_routes

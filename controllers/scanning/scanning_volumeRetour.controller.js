@@ -1996,6 +1996,153 @@ const findAllVolumeAgenSupArchivesTraites = async (req, res) => {
 }
 
 
+/**
+ * Permet de valider si une volumes est dejs archivez ou non
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  29/08/2023
+ * 
+ */
+
+const volumeArchivesAgentDesarchivages = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const { ARCHIVER } = req.body
+        const validation = new Validation(
+            { ...req.body},
+            {
+                ARCHIVER: {
+                    required: true,
+                }
+            },
+            {
+                ARCHIVER: {
+                    required: "ARCHIVER est obligatoire",
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        if(ARCHIVER==1){
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES
+            }, {
+                where: {
+                    ID_VOLUME: ID_VOLUME
+                }
+            })
+            await Etapes_volume_historiques.create({
+                USERS_ID: req.userId,
+                USER_TRAITEMENT: req.userId,
+                ID_VOLUME: ID_VOLUME,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES
+            })
+        }
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "modification faite  avec succès",
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire retourner le volumees deja traiter par un agent desarchivages
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  29/08/2023
+ * 
+ */
+const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES,
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
+
+                }
+            ]
+        })
+//         var PvVolume = []
+//         result.forEach(histo => {
+//             const PV_PATH = histo.PV_PATH
+//             const volume = histo.volume
+//             const users = histo.traitant
+//             const date = histo.DATE_INSERTION
+
+//             const isExists = PvVolume.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+//             if (isExists) {
+//                 const allFolio = PvVolume.find(pv => pv.PV_PATH == PV_PATH)
+//                 const newFolios = { ...allFolio, volumes: [...allFolio.volumes, volume] }
+//                 PvVolume = PvVolume.map(pv => {
+//                     if (pv.PV_PATH == PV_PATH) {
+//                         return newFolios
+//                     } else {
+//                         return pv
+//                     }
+//                 })
+//             }
+//             else {
+//                 PvVolume.push({
+//                     PV_PATH,
+//                     users,
+//                     date,
+//                     volumes: [volume]
+//                 })
+//             }
+//         })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes traitees",
+            // PvVolume
+            result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -2024,5 +2171,7 @@ module.exports = {
     findGetsPvsSupAilleScanRetour,
     findAllVolumeChefEquipScanningTraites,
     findAllVolumeAgentDistributeurTraites,
-    findAllVolumeAgenSupArchivesTraites
+    findAllVolumeAgenSupArchivesTraites, 
+    volumeArchivesAgentDesarchivages,
+    findAllVolumeAgenDesarchivagesTraites
 }
