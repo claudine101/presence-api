@@ -1464,6 +1464,9 @@ const findAllVolumePlateauChefTraites = async (req, res) => {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
             include: [
                 {
                     model: Users,
@@ -1613,6 +1616,9 @@ const findAllVolumeSupAileScanningTraites = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
             include: [
                 {
                     model: Users,
@@ -1746,6 +1752,9 @@ const findAllVolumeChefEquipScanningTraites = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
             include: [
                 {
                     model: Users,
@@ -1829,6 +1838,9 @@ const findAllVolumeAgentDistributeurTraites = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
             include: [
                 {
                     model: Users,
@@ -1912,6 +1924,9 @@ const findAllVolumeAgenSupArchivesTraites = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
             include: [
                 {
                     model: Users,
