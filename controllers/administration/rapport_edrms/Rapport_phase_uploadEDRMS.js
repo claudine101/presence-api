@@ -107,7 +107,7 @@ const phaseUpload = async (req, res) => {
             where:{
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
-                    ID_USERS: util.USERS_ID
+                    ID_USER: util.USERS_ID
                 }]
       
           },
@@ -152,7 +152,7 @@ const phaseUpload = async (req, res) => {
             where:{
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
-                    ID_USERS: util.USERS_ID
+                    ID_USER: util.USERS_ID
                 }]
       
           },
