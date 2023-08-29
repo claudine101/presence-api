@@ -125,8 +125,8 @@ const createfolio = async (req, res) => {
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
+        })
+    }
 }
 /**
  * Permet de afficher tous volume
@@ -540,7 +540,7 @@ const nbre = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
                 },
                 {
                     model: Folio,
@@ -605,7 +605,7 @@ const findAllFolio = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: { USER_TRAITEMENT: req.userId, '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.SELECTION_AGENT_SUP },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO','DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
@@ -627,7 +627,7 @@ const findAllFolio = async (req, res) => {
         result.forEach(folio => {
             const ID_VOLUME = folio.folio.ID_VOLUME
             const volume = folio.folio.volume
-            const  date=folio.DATE_INSERTION
+            const date = folio.DATE_INSERTION
             const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
             if (isExists) {
                 const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
@@ -723,6 +723,7 @@ const findAllFolioChefPlateau = async (req, res) => {
                 }]
 
         })
+        const allVolume = []
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
@@ -735,18 +736,19 @@ const findAllFolioChefPlateau = async (req, res) => {
                     }]
                 },
             })
-            return {
-                ...util,
-                folios
+            if (folios?.length > 0) {
+                allVolume.push({
+                    ...util,
+                    folios,
+                });
             }
-
         })
         )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
-            result: volume
+            message: "Liste des volume",
+            result: allVolume
         })
     } catch (error) {
         console.log(error)
@@ -783,7 +785,7 @@ const findAllAgent = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
                 },
                 {
                     model: Folio,
@@ -864,7 +866,7 @@ const findAllAgents = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
                 },
                 {
                     model: Folio,
@@ -1026,7 +1028,7 @@ const findAllSuperviseursValides = async (req, res) => {
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
                 }]
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT',"PV_PATH" ,'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', "PV_PATH", 'DATE_INSERTION'],
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
@@ -1103,7 +1105,7 @@ const findAllSuperviseursValides = async (req, res) => {
  */
 const checkAgentsup = async (req, res) => {
     try {
-        const { USERS_ID ,
+        const { USERS_ID,
             folioIds
         } = req.body
         const IdsObjet = JSON.parse(folioIds)
@@ -1117,7 +1119,7 @@ const checkAgentsup = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
                 },
                 {
                     model: Folio,
@@ -1133,7 +1135,7 @@ const checkAgentsup = async (req, res) => {
                                     ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
                             }
                         }, {
-                           
+
                             ID_FOLIO: {
                                 [Op.in]: IdsObjet
                             }
@@ -1415,19 +1417,19 @@ const getPvsAgentPREPARATION = async (req, res) => {
         var foliosNoPrepare = []
 
         if (pvRetour) {
-            foliosPrepares =await Folio.findAll({
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
-                    where: {
-                        [Op.and]: [{
-                            IS_PREPARE: 1
-                        },
-                            , {
-                            ID_FOLIO: {
-                                 [Op.in]: IdsObjet
-                            }
-                        }]
-                    }
-                })
+            foliosPrepares = await Folio.findAll({
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+                where: {
+                    [Op.and]: [{
+                        IS_PREPARE: 1
+                    },
+                        , {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
+                }
+            })
 
             foliosNoPrepare = await Folio.findAll({
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
@@ -1464,7 +1466,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
         })
     }
 }
-const getPvsAgentSuperviseur = async (req, res) => { 
+const getPvsAgentSuperviseur = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
@@ -1542,19 +1544,19 @@ const getPvsAgentSuperviseur = async (req, res) => {
         var foliosNoPrepare = []
 
         if (pvRetour) {
-            foliosPrepares =await Folio.findAll({
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
-                    where: {
-                        [Op.and]: [{
-                            IS_PREPARE: 1
-                        },
-                            , {
-                            ID_FOLIO: {
-                                 [Op.in]: IdsObjet
-                            }
-                        }]
-                    }
-                })
+            foliosPrepares = await Folio.findAll({
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+                where: {
+                    [Op.and]: [{
+                        IS_PREPARE: 1
+                    },
+                        , {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
+                }
+            })
 
             foliosNoPrepare = await Folio.findAll({
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
@@ -1623,7 +1625,7 @@ const findAllFolioPrepare = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: true,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
 
                 },
                 {
