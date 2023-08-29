@@ -61,7 +61,7 @@ const login = async (req, res) => {
         }
         const userObject = await Users.findOne({
             where: { EMAIL: EMAIL, ID_PROFIL: PROFILS.ADMIN },
-            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL','PHOTO_USER','NOM', 'PRENOM', 'IS_ACTIF'],
             include: [{
                 model: Profils,
                 as: 'profil',
@@ -827,6 +827,133 @@ const rapport={
   }
 
 
+  
+/**
+ * Permet de modifier le mot de passe
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author ELOGE<nirema.eloge@mediabox.bi>
+ * @date 29/08/2023
+ */
+const changePWD = async (req, res) => {
+    try {
+
+        const { USERS_ID } = req.params;
+        const { OLDPWD, NEWPWD, CONFIRMPWD} = req.body;
+        const validation = new Validation(
+            req.body,
+            {
+                OLDPWD:
+                {   
+                    length :[2,8],
+                    required: true,
+                },
+                NEWPWD:
+                {
+                    length :[2,8],
+                    required: true,
+                },
+                CONFIRMPWD:
+                {
+                    length :[2,8],
+                    required: true,
+                },
+            },
+            {
+                OLDPWD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+                NEWPWD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+                CONFIRMPWD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+
+               
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const userObject = await Users.findOne({
+            where: {USERS_ID: USERS_ID },
+            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+        })
+        // if (userObject) {
+            const user = userObject.toJSON()
+            console.log(md5(OLDPWD));
+            // console.log(user.PASSEWORD);
+            if (md5(OLDPWD) == user.PASSEWORD) {
+                if (md5(NEWPWD)==md5(CONFIRMPWD)) {
+                    console.log("Deux mot de passe identiques");
+                    const password = `${CONFIRMPWD}`;
+
+                    console.log(md5(password));
+                    await Users.update(
+                        { 
+                            PASSEWORD: md5(password)
+                        },
+                        {
+                            where: {
+                                USERS_ID: USERS_ID,
+                            },
+                        }
+                    );
+
+                    res.status(RESPONSE_CODES.CREATED).json({
+                        statusCode: RESPONSE_CODES.CREATED,
+                        httpStatus: RESPONSE_STATUS.CREATED,
+                        message: "Vous êtes connecté avec succès",
+                        result: {
+                            user
+                            // token
+                        }
+                    })
+
+                }else{
+                    // console.log("Deux mot de passe n'est pas identiques");
+                    res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                        message: "Deux mot de passe ne sont pas identiques",
+                    })
+
+                }
+                // console.log(" Ancien Mot de passe correct");
+                
+            }else{
+                console.log("Ancien Mot de passe incorrect");
+                res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                    message: "Ancien Mot de passe incorrect",
+                })
+
+            }
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
 module.exports = {
     createuser,
     Updateuser,
@@ -837,5 +964,6 @@ module.exports = {
     activer_descativer_utilisateur,
     login,
     getnumber_user_by_profil,
-    listeInstitutions
+    listeInstitutions,
+    changePWD
 }

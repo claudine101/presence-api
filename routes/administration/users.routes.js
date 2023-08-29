@@ -13,6 +13,7 @@ utilisateurs_routes.put('/activation/:USERS_ID',utilisateurs_controller.activer_
 utilisateurs_routes.post('/login/',utilisateurs_controller.login)
 utilisateurs_routes.get('/user_rapport',utilisateurs_controller.getnumber_user_by_profil)
 utilisateurs_routes.get('/institution/',utilisateurs_controller.listeInstitutions)
+utilisateurs_routes.put('/changePwd/:USERS_ID',utilisateurs_controller.changePWD)
 
 module.exports = utilisateurs_routes
 
