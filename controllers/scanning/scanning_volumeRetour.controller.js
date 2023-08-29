@@ -1420,7 +1420,7 @@ const findAllVolumePlateauChef = async (req, res) => {
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
-                        ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
                     }, {
                         ID_VOLUME: util.volume.ID_VOLUME
                     }]
