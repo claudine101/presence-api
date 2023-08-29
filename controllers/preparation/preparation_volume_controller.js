@@ -12,7 +12,7 @@ const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
 const PROFILS = require('../../constants/PROFILS');
 const Nature_folio = require('../../models/Nature_folio');
 const Folio = require('../../models/Folio');
-const { Op } = require("sequelize");  
+const { Op } = require("sequelize");
 const Maille = require('../../models/Maille');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 
@@ -198,6 +198,125 @@ const findAll = async (req, res) => {
                 data: result.rows,
                 totalRecords: result.count
             }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de afficher tous volume desarchive par  un agent  desarchivage
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 28/08/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+const findAllDesarchive = async (req, res) => {
+    try {
+        condition = {
+            USERS_ID: req.userId,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO
+        }
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['ID_VOLUME_HISTORIQUE','ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
+                },
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER'],
+                }]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes désarchives",
+            result: result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de afficher tous volume distributeur par  un agent distributeur
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 29/08/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAllDistribue = async (req, res) => {
+    try {
+        condition = {
+            USERS_ID: req.userId,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_AGENT_SUPERVISEUR_DES_AILES
+        }
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['ID_VOLUME_HISTORIQUE', 'PV_PATH','ID_ETAPE_VOLUME',  'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
+                },
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER'],
+                }]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes désarchives",
+            result: result
         })
     } catch (error) {
         console.log(error)
@@ -408,7 +527,59 @@ const findDetailler = async (req, res) => {
         }
 
         const result = await Etapes_volume_historiques.findAndCountAll({
-            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
+         attributes: ['ID_VOLUME'],
+            where: {
+                ...condition
+            },
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                }]
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: {
+                data: result.rows,
+                totalRecords: result.count
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de afficher tous volume superviser par un agebr sup archives
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 28/08/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAllVolumeSuperviser = async (req, res) => {
+    try {
+        var condition = {}
+        condition = {
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_DES_AILES,
+            USERS_ID: req.userId
+        }
+        const result = await Etapes_volume_historiques.findAndCountAll({
+            attributes: ['ID_VOLUME', 'PV_PATH','ID_ETAPE_VOLUME', 'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             where: {
                 ...condition
             },
@@ -418,6 +589,12 @@ const findDetailler = async (req, res) => {
                     as: 'volume',
                     required: false,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                },
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER'],
                 }]
 
         })
@@ -499,44 +676,44 @@ const updateVolume = async (req, res) => {
             }
 
         }))
-        
-        if(volumeDossier){
-            var filename_pv
-        if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
-            filename_pv = fileInfo_2
-        }
-        const results = await Volume.update({
-            NOMBRE_DOSSIER,
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO
-        }, {
-            where: {
-                ID_VOLUME: ID_VOLUME
-            }
-        })
-        await Etapes_volume_historiques.create({
-            USERS_ID: req.userId,
-            USER_TRAITEMENT: ID_USERS,
-            ID_VOLUME: ID_VOLUME,
-            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO
-        })
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Reussi",
 
-        })
+        if (volumeDossier) {
+            var filename_pv
+            if (PV) {
+                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+                filename_pv = fileInfo_2
+            }
+            const results = await Volume.update({
+                NOMBRE_DOSSIER,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO
+            }, {
+                where: {
+                    ID_VOLUME: ID_VOLUME
+                }
+            })
+            await Etapes_volume_historiques.create({
+                USERS_ID: req.userId,
+                USER_TRAITEMENT: ID_USERS,
+                ID_VOLUME: ID_VOLUME,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SAISIS_NOMBRE_FOLIO
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Reussi",
+
+            })
         }
-        else{
+        else {
             res.status(RESPONSE_CODES.UNAUTHORIZED).json({
                 statusCode: RESPONSE_CODES.UNAUTHORIZED,
                 httpStatus: RESPONSE_CODES.UNAUTHORIZED,
                 message: "Nombre de dossier  existe déjà",
-    
+
             })
         }
-        
+
 
     } catch (error) {
         console.log(error)
@@ -947,7 +1124,7 @@ const findAllAgentSupAile = async (req, res) => {
                     model: Users,
                     as: 'users',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
                 },
                 {
                     model: Volume,
@@ -1202,7 +1379,7 @@ const getVolumeDetail = async (req, res) => {
                 model: Users,
                 as: 'traitement',
                 required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER']
             }]
         })
         const chefPlateauRetour = await Etapes_volume_historiques.findOne({
@@ -1228,7 +1405,7 @@ const getVolumeDetail = async (req, res) => {
                 model: Users,
                 as: 'traitement',
                 required: true,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER']
             }]
         })
         var foliosPrepares = []
@@ -1291,7 +1468,7 @@ const getVolumeChefPlateau = async (req, res) => {
                 model: Users,
                 as: 'traitant',
                 required: true,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER']
             }]
         })
         const retour = await Etapes_volume_historiques.findOne({
@@ -1304,7 +1481,7 @@ const getVolumeChefPlateau = async (req, res) => {
                 model: Users,
                 as: 'traitant',
                 required: true,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                attributes: ['USERS_ID', 'NOM', 'PRENOM','PHOTO_USER']
             }]
         })
         const check = await Folio.findAll({
@@ -1352,7 +1529,10 @@ module.exports = {
     findCheckPlateau,
     getVolumeDetail,
     getVolumeChefPlateau,
-    findAllVolume
+    findAllVolume,
+    findAllDesarchive,
+    findAllDistribue,
+    findAllVolumeSuperviser
 
 
 }
