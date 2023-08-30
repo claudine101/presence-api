@@ -19,6 +19,11 @@ const Flashs = sequelize.define("flashs", {
         type: DataTypes.STRING(255),
         allowNull: false
     },
+    IS_DISPO: {
+        type:  DataTypes.INTEGER,
+        defaultValue:1,
+        allowNull: false
+    },
     DATE_INSERTION: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -31,7 +36,6 @@ const Flashs = sequelize.define("flashs", {
 })
 Flashs.hasMany(Folio, { foreignKey: 'ID_FLASH', as:'folios' })
 Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH', as:'flash' })
-
 Folio.belongsTo(Flashs, { foreignKey: 'ID_FLASH_INDEXE', as:'flashindexe' })
 
 Folio
