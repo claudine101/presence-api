@@ -873,7 +873,6 @@ const changePWD = async (req, res) => {
                     required: "Le mot de passe est obligatoire",
                 },
 
-               
             }
         );
         await validation.run();
@@ -889,18 +888,12 @@ const changePWD = async (req, res) => {
         }
         const userObject = await Users.findOne({
             where: {USERS_ID: USERS_ID },
-            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+            attributes: ['USERS_ID', 'PASSEWORD', 'EMAIL'],
         })
-        // if (userObject) {
             const user = userObject.toJSON()
-            console.log(md5(OLDPWD));
-            // console.log(user.PASSEWORD);
             if (md5(OLDPWD) == user.PASSEWORD) {
                 if (md5(NEWPWD)==md5(CONFIRMPWD)) {
-                    console.log("Deux mot de passe identiques");
                     const password = `${CONFIRMPWD}`;
-
-                    console.log(md5(password));
                     await Users.update(
                         { 
                             PASSEWORD: md5(password)
@@ -918,12 +911,10 @@ const changePWD = async (req, res) => {
                         message: "Vous êtes connecté avec succès",
                         result: {
                             user
-                            // token
                         }
                     })
 
                 }else{
-                    // console.log("Deux mot de passe n'est pas identiques");
                     res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
                         statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
                         httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
@@ -931,8 +922,6 @@ const changePWD = async (req, res) => {
                     })
 
                 }
-                // console.log(" Ancien Mot de passe correct");
-                
             }else{
                 console.log("Ancien Mot de passe incorrect");
                 res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
