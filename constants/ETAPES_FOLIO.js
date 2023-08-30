@@ -102,9 +102,6 @@ const IDS_ETAPES_FOLIO = {
           * 21 - Folio no enregistre to EDRMS
           */
         FOLIO_NO_ENREG_TO_EDRMS: 21,
-
-        
-
         /**
           * 22 - Folio  enregistre
           */
@@ -122,6 +119,15 @@ const IDS_ETAPES_FOLIO = {
           * 25- Retour: Agent upload vers Chef equipe
           */
         RETOUR_AGENT_UPLOAD_CHEF_EQUIPE: 25,
+         /**
+         * 26 - Retour: Sans reconcilie et sans Scan (equipe scanning vers agent sup. scanning)
+         */
+         RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING: 26,
+
+          /**
+         * 27 - Retour: is non Valide meme si il'est reconcilier (agent sup. scanning vers chef plateau scanning)
+         */
+          RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU: 27,
 
 }
 

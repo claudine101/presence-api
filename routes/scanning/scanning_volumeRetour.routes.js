@@ -213,4 +213,25 @@ scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeR
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/chefequipepreparation', scanning_volumeRetour_controller.findAllVolumeChefEquipePrepqrqtionTraites)
 
+   /**
+ * Une route  recuperer  les volumes non valide d'un chef plateau
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/nonvalide
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/nonvalide', scanning_volumeRetour_controller.findAllVolumePlateauChefNonValide)
+
+    /**
+ * Une route  recuperer  les volumes non valide chez chef plateau retourner vers agent superviseur
+ *@method GET
+ * @url /scanning/retour/agent/volume/plateau/retour/nonvalide
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/plateau/retour/nonvalide', scanning_volumeRetour_controller.findAllVolumePlateauChefNonValideRetour)
+
+   /**
+* Une route pour recuperer les pvs d'un chef plateau signe avec un agent superviseur
+*@method POST
+* @url /scanning/retour/agent/equipe/pvs/retour/nonVilid
+*/
+scanning_volumeRetour_routes.post('/agent/equipe/pvs/retour/nonVilid', scanning_volumeRetour_controller.findGetsPvsAgentSupervieurRetourNonValid)
+
 module.exports = scanning_volumeRetour_routes

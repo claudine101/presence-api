@@ -1292,21 +1292,34 @@ const checkRetourAgentSupScann = async (req, res) => {
  * 
  */
 
+
 const updateRetourPlateauSup = async (req, res) => {
     try {
-        const {
-            folio
-        } = req.body;
+        const { ID_FOLIO, folio } = req.body
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
+                ID_FOLIO: {
+                    required: true
+                },
+                folio: {
+                    required: true
+                },
                 PV: {
                     required: true,
                     image: 21000000
                 }
             },
             {
+                ID_FOLIO: {
+                    image: "Id_folio est inavlide",
+                    required: "Le pv est obligatoire"
+                },
+                folio: {
+                    image: "folio est inavlide",
+                    required: "Le pv est obligatoire"
+                },
                 PV: {
                     image: "La taille invalide",
                     required: "Le pv est obligatoire"
@@ -1330,34 +1343,73 @@ const updateRetourPlateauSup = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        var folioObjet = {}
         folioObjet = JSON.parse(folio)
-
-        await Promise.all(folioObjet.map(async (folio) => {
-            const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            await Folio.update(
-                {
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
-                    IS_VALIDE:1
-                }, {
-                where: {
-                    ID_FOLIO: folio.folio.ID_FOLIO,
+        console.log(folioObjet)
+        const folio_reconcilier = folioObjet.map(folio => folio.folio.ID_FOLIO)
+        console.log(folio_reconcilier)
+      
+        await Folio.update({
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+            IS_VALIDE:1
+        }, {
+            where: {
+                ID_FOLIO: {
+                    [Op.in]: folio_reconcilier
                 }
             }
-            )
-            await Etapes_folio_historiques.create({
+        })
+        const folio_historiques_reconcilier = folioObjet.map(folio => {
+            return {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: req.userId,
                 ID_FOLIO: folio.folio.ID_FOLIO,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-            })
-        }))
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "modification faite  avec succès",
-            // result: reponse
+
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(folio_historiques_reconcilier)
+
+        folioAllObjet = JSON.parse(ID_FOLIO)
+        const folios = await Folio.findAll({
+            attributes: ['ID_FOLIO'],
+            where: {
+                ID_FOLIO:{
+                    [Op.in]: folioAllObjet,
+                },
+                IS_VALIDE: null 
+            }
+
+        })
+        const folio_no_reconciliers = folios.map(folio => folio.toJSON().ID_FOLIO)
+        await Folio.update({
+            IS_VALIDE: 0,
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+
+        }, {
+            where: {
+                ID_FOLIO: {
+                    [Op.in]: folio_no_reconciliers
+                }
+            }
+        })
+
+        const folio_historiques_no_reconciliers = folios.map(folio => {
+            return {
+                ID_USER: req.userId,
+                USER_TRAITEMENT: req.userId,
+                ID_FOLIO: folio.ID_FOLIO,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(folio_historiques_no_reconciliers)
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio scan reconcilier",
+            // result: FlashFolios
         })
     } catch (error) {
         console.log(error)
@@ -2231,6 +2283,242 @@ const findAllVolumeChefEquipePrepqrqtionTraites = async (req, res) => {
     }
 }
 
+/**
+ * Permet de faire retourner le volumees non valide par chef plateau
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  28/08/2023
+ * 
+ */
+const findAllVolumePlateauChefNonValide = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO','IS_RECONCILIE','IS_VALIDE'],
+                    where: {
+                        ID_ETAPE_FOLIO: {
+                            [Op.and]: [
+                                ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+                            ]
+                        }
+                    },
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            required: false,
+                            attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                            include:
+                            {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+        
+                            }
+                        }]
+
+                }
+            ]
+        })
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio donnees",
+            PvFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de faire retourner le volumees non valide chez chef plateau retour chez agent superviseur
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  30/08/2023
+ * 
+ */
+const findAllVolumePlateauChefNonValideRetour = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO','IS_RECONCILIE','IS_VALIDE'],
+                    where: {
+                        [Op.and]: [{
+                            IS_RECONCILIE: 1,
+                        },{
+                            IS_VALIDE: 0,
+                        }
+                    ]
+                    },
+
+                }
+            ]
+        })
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio donnees",
+            PvFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuper les pvs  d'un chef plateau signe avec un agent superviseur scanning 
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  30/08/2023
+ * 
+ */
+
+const findGetsPvsAgentSupervieurRetourNonValid = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                }, {
+                    ID_USER: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "PVS agent superviseur",
+            result: {
+                ...pv.toJSON(),
+                // pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -2262,5 +2550,8 @@ module.exports = {
     findAllVolumeAgenSupArchivesTraites, 
     volumeArchivesAgentDesarchivages,
     findAllVolumeAgenDesarchivagesTraites,
-    findAllVolumeChefEquipePrepqrqtionTraites
+    findAllVolumeChefEquipePrepqrqtionTraites,
+    findAllVolumePlateauChefNonValide,
+    findAllVolumePlateauChefNonValideRetour,
+    findGetsPvsAgentSupervieurRetourNonValid
 }
