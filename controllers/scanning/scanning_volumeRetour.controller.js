@@ -1414,6 +1414,7 @@ const findAllVolumePlateauChef = async (req, res) => {
                 }]
 
         })
+        const allVolume = []
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
@@ -1426,18 +1427,19 @@ const findAllVolumePlateauChef = async (req, res) => {
                     }]
                 },
             })
-            return {
-                ...util,
-                folios
+            if (folios?.length > 0) {
+                allVolume.push({
+                    ...util,
+                    folios,
+                });
             }
-
         })
         )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
-            result: volume
+            result: allVolume
         })
     } catch (error) {
         console.log(error)
@@ -2143,6 +2145,92 @@ const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
     }
 }
 
+/**
+ * Permet de faire retourner le volumees deja traiter par un chef d'equipe preparation
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  30/08/2023
+ * 
+ */
+const findAllVolumeChefEquipePrepqrqtionTraites = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order:[
+                ["DATE_INSERTION","DESC"]
+            ],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
+
+                }
+            ]
+        })
+        var PvVolume = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const volume = histo.volume
+            const users = histo.traitant
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvVolume.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvVolume.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, volumes: [...allFolio.volumes, volume] }
+                PvVolume = PvVolume.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvVolume.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    volumes: [volume]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes traitees",
+            PvVolume
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -2173,5 +2261,6 @@ module.exports = {
     findAllVolumeAgentDistributeurTraites,
     findAllVolumeAgenSupArchivesTraites, 
     volumeArchivesAgentDesarchivages,
-    findAllVolumeAgenDesarchivagesTraites
+    findAllVolumeAgenDesarchivagesTraites,
+    findAllVolumeChefEquipePrepqrqtionTraites
 }

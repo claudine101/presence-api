@@ -59,7 +59,7 @@ const login = async (req, res) => {
               }
               const userObject = await Users.findOne({
                         where: { EMAIL: email },
-                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF', 'PHOTO_USER'],
                         include: [{
                               model: Profils,
                               as: 'profil',

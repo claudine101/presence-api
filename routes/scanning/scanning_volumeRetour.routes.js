@@ -206,4 +206,11 @@ scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeR
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/agentDesarchivages', scanning_volumeRetour_controller.findAllVolumeAgenDesarchivagesTraites)
 
+     /**
+ * Une route  recuperer  les volumes deja traitees un chef d'equipe preparations
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/chefequipepreparation
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/chefequipepreparation', scanning_volumeRetour_controller.findAllVolumeChefEquipePrepqrqtionTraites)
+
 module.exports = scanning_volumeRetour_routes
