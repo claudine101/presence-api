@@ -353,7 +353,7 @@ const saveAgentIndexation = async (req, res) => {
 const retourAgentIndexation = async (req, res) => {
     try {
         const userId = req.userId
-        const { ID_FLASH_INDEXES, foliosIndexesIds: foliosIndexesIdsStr, ID_AGENT_INDEXATION } = req.body
+        const {ID_FLASH, ID_FLASH_INDEXES, foliosIndexesIds: foliosIndexesIdsStr, ID_AGENT_INDEXATION } = req.body
         const { pv } = req.files || {}
         const foliosIndexesIds = JSON.parse(foliosIndexesIdsStr)
         const validation = new Validation({ ...req.body, ...req.files || {} }, {
@@ -381,52 +381,46 @@ const retourAgentIndexation = async (req, res) => {
                 result: errors
             })
         }
-        const foliosNoIndexes = await Etapes_folio_historiques.findAll({
-            attributes: ['ID_FOLIO_HISTORIQUE', 'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO'],
-            where: {
-                [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-                }, {
-                    ID_USER: userId
-                }, {
-                    USER_TRAITEMENT: ID_AGENT_INDEXATION
-                }, {
-                    ID_FOLIO: {
-                        [Op.notIn]: foliosIndexesIds
-                    }
-                }]
-            },
-            include: [{
-                model: Folio,
-                as: 'folio',
-                required: true,
-                attributes: ['ID_FOLIO']
-            }]
-        })
+        // const foliosNoIndexes = await Folio.findAll({
+        //     attributes: ['ID_FOLIO'],
+        //     where: {
+        //         [Op.and]: [{
+        //             ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
+        //         }, {
+        //             ID_FLASH: ID_FLASH
+        //         }, {
+        //             ID_FOLIO: {
+        //                 [Op.notIn]: foliosIndexesIds
+        //             }
+        //         }]
+        //     },
+           
+        // })
 
-        // update des folios no indexes
-        if (foliosNoIndexes.length > 0) {
-            const foliosNoIndexesIds = foliosNoIndexes.map(folioObject => {
-                const folio = folioObject.toJSON()
-                return folio.folio.ID_FOLIO
-            })
-            await Folio.update({
-                IS_INDEXE: 0
-            }, {
-                where: {
-                    ID_FOLIO: {
-                        [Op.in]: foliosNoIndexesIds
-                    }
-                }
-            })
-            await Flashs.update({
-                IS_DISPO: 0
-            }, {
-                where: {
-                    ID_FLASH: ID_FLASH_INDEXES
-                }
-            })
-        }
+        // // update des folios no indexes
+        // if (foliosNoIndexes.length > 0) {
+        //     const foliosNoIndexesIds = foliosNoIndexes.map(folioObject => {
+        //         const folio = folioObject.toJSON()
+        //         return folio.ID_FOLIO
+        //     })
+        //     await Folio.update({
+        //         IS_INDEXE: 0
+        //     }, {
+        //         where: {
+        //             ID_FOLIO: {
+        //                 [Op.in]: foliosNoIndexesIds
+        //             }
+        //         }
+        //     })
+            
+        // }
+        await Flashs.update({
+            IS_DISPO: 0
+        }, {
+            where: {
+                ID_FLASH: ID_FLASH_INDEXES
+            }
+        })
 
         // update des folios indexes
         await Folio.update({
@@ -539,7 +533,7 @@ const getFlashBySupAile = async (req, res) => {
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -587,16 +581,16 @@ const getFlashBySupAile = async (req, res) => {
  */
 const getFlashBySupAileENattante = async (req, res) => {
     try {
-            var whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.in]: [
-                        IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
-                        IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
-                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
-                    ]
-                }
+        var whereFilter = {
+            ID_ETAPE_FOLIO: {
+                [Op.in]: [
+                    IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                    IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                    IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
+                ]
             }
-        
+        }
+
         const allFlashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
@@ -634,7 +628,7 @@ const getFlashBySupAileENattante = async (req, res) => {
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -682,16 +676,16 @@ const getFlashBySupAileENattante = async (req, res) => {
  */
 const getFlashBySupAileValide = async (req, res) => {
     try {
-        
-            var whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.notIn]: [
-                        // IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
-                        // IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
-                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
-                    ]
-                }
+
+        var whereFilter = {
+            ID_ETAPE_FOLIO: {
+                [Op.notIn]: [
+                    // IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                    // IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                    IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
+                ]
             }
+        }
         const allFlashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
@@ -729,7 +723,7 @@ const getFlashBySupAileValide = async (req, res) => {
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -805,7 +799,7 @@ const getFlashByChefEquipe = async (req, res) => {
         }
         const allFlashs = await Etapes_folio_historiques.findAll({
             attributes: {
-                include: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'ID_FOLIO', 'DATE_INSERTION']
+                include: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'ID_FOLIO', 'DATE_INSERTION']
             },
             where: {
                 [Op.and]: [{
@@ -837,7 +831,7 @@ const getFlashByChefEquipe = async (req, res) => {
 
 
 
-        const allFlash= await Etapes_folio_historiques.findAll({
+        const allFlash = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
             },
@@ -895,7 +889,7 @@ const getFlashByChefEquipe = async (req, res) => {
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -944,7 +938,6 @@ const getFlashByChefEquipe = async (req, res) => {
  */
 const getFlashByChefPlateauIndexation = async (req, res) => {
     try {
-        const { precision } = req.query
         var ID_ETAPE_FOLIO = IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION
         var whereFilter = {
             ID_ETAPE_FOLIO: ID_ETAPE_FOLIO
@@ -952,31 +945,12 @@ const getFlashByChefPlateauIndexation = async (req, res) => {
         var filterUser = {
             USER_TRAITEMENT: req.userId
         }
-        if (precision == 'ettente_retour') {
-            ID_ETAPE_FOLIO = IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-            var whereFilter = {
-                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-            }
-            var filterUser = {
-                ID_USER: req.userId
-            }
-        } else if (precision == 'valides') {
-            var whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.notIn]: [IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION, IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION]
-                }
-            }
-            var filterUser = {
-                ID_USER: req.userId
-            }
-        }
-
         const allFlashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
             },
             where: {
-               ...filterUser
+                ...filterUser
             },
             include: [{
                 model: Folio,
@@ -986,18 +960,20 @@ const getFlashByChefPlateauIndexation = async (req, res) => {
                 where: {
                     ...whereFilter
                 },
-                include:[ {
+                include: [{
                     model: Flashs,
                     as: 'flash',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 },
-               { model: Flashs,
-                as: 'flashindexe',
-                required: false,
-                attributes: ['ID_FLASH', 'NOM_FLASH']}
-            ]
-                
+                {
+                    model: Flashs,
+                    as: 'flashindexe',
+                    required: false,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                }
+                ]
+
             }, {
                 model: Users,
                 as: 'user',
@@ -1043,7 +1019,196 @@ const getFlashByChefPlateauIndexation = async (req, res) => {
         })
     }
 }
+/**
+ * Permet de recuperer les les USB qui sont en attante de retour
+ * @author darcydev <darcy@mediabox.bi>
+ * @date 03/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const getFlashByChefPlateauEnAttante = async (req, res) => {
+    try {
+        const allFlashs = await Etapes_folio_historiques.findAll({
+            attributes: {
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
+            },
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
+                }, {
+                    ID_USER: req.userId
+                }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ['ID_FOLIO', 'ID_FLASH'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
+                    },
+                    
+                    {IS_INDEXE: null}
+                ]
+                },
+                include: [{
+                    model: Flashs,
+                    as: 'flash',
+                    required: true,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                },
+                {
+                    model: Flashs,
+                    as: 'flashindexe',
+                    required: false,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                }
+                ]
 
+            }, {
+                model: Users,
+                as: 'user',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }],
+            // group: ['folio->flash.ID_FLASH'],
+            order: [['DATE_INSERTION', 'DESC']]
+        })
+        const uniqueIds = [];
+        const uniqueFlashs = allFlashs.filter(element => {
+            const isDuplicate = uniqueIds.includes(element.folio.flash.ID_FLASH);
+            if (!isDuplicate) {
+                uniqueIds.push(element.folio.flash.ID_FLASH);
+                return true;
+            }
+            return false;
+        });
+        const flashs = await Promise.all(uniqueFlashs.map(async flashObject => {
+            const flash = flashObject.toJSON()
+            const folioCounts = await Folio.count({
+                where: {
+                    ID_FLASH: flash.folio.flash.ID_FLASH
+                }
+            })
+            return {
+                ...flash,
+                folioCounts
+            }
+        }))
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des flash indexe",
+            result: flashs
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
+ * Permet de recuperer les les USB qui est valide par  un chef plateau indexation
+ * @author NDAYSISABA claudine <claudine@mediabox.bi>
+ * @date 31/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const getFlashByChefPlateauValides = async (req, res) => {
+    try {
+        var whereFilter = {
+            ID_ETAPE_FOLIO: {
+                [Op.notIn]: [IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION]
+            }
+        }
+        var filterUser = {
+            ID_USER: req.userId
+        }
+        const allFlashs = await Etapes_folio_historiques.findAll({
+            attributes: {
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
+            },
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
+                }, {
+                    ID_USER: req.userId
+                }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ['ID_FOLIO', 'ID_FLASH'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
+                    }]
+                },
+                include: [{
+                    model: Flashs,
+                    as: 'flash',
+                    required: true,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                },
+                {
+                    model: Flashs,
+                    as: 'flashindexe',
+                    required: false,
+                    attributes: ['ID_FLASH', 'NOM_FLASH']
+                }
+                ]
+
+            }, {
+                model: Users,
+                as: 'user',
+                required: true,
+                attributes: ['USERS_ID', 'NOM', 'PRENOM']
+            }],
+            // group: ['folio->flash.ID_FLASH'],
+            order: [['DATE_INSERTION', 'DESC']]
+        })
+        const uniqueIds = [];
+        const uniqueFlashs = allFlashs.filter(element => {
+            const isDuplicate = uniqueIds.includes(element.folio.flash.ID_FLASH);
+            if (!isDuplicate) {
+                uniqueIds.push(element.folio.flash.ID_FLASH);
+                return true;
+            }
+            return false;
+        });
+        const flashs = await Promise.all(uniqueFlashs.map(async flashObject => {
+            const flash = flashObject.toJSON()
+            const folioCounts = await Folio.count({
+                where: {
+                    ID_FLASH: flash.folio.flash.ID_FLASH
+                }
+            })
+            return {
+                ...flash,
+                folioCounts
+            }
+        }))
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des flash indexe",
+            result: flashs
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 /**
  * Permet de recuperer les details d'une cle USB
  * @author darcydev <darcy@mediabox.bi>
@@ -1456,5 +1621,7 @@ module.exports = {
     getFrashSupAileIndexation,
     retourSupAileIndexation,
     getFlashBySupAileENattante,
-    getFlashBySupAileValide
+    getFlashBySupAileValide,
+    getFlashByChefPlateauEnAttante,
+    getFlashByChefPlateauValides
 }
