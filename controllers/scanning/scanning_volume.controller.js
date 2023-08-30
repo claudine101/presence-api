@@ -894,6 +894,9 @@ const findAllFolioScannimg = async (req, res) => {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
                     model: Folio,
