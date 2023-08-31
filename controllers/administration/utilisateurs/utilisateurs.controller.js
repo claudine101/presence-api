@@ -303,11 +303,26 @@ const Updateuser = async (req, res) => {
                 USERS_ID: USERS_ID
             }
         })
+
+         const userInformation = await Users.findOne({
+            where: { USERS_ID: USERS_ID },
+            attributes: ['TELEPHONE', 'EMAIL','PHOTO_USER','NOM', 'PRENOM'],
+            include: [{
+                model: Profils,
+                as: 'profil',
+                required: false,
+                attributes: ['ID_PROFIL', 'DESCRIPTION']
+            }]
+        })
+        const userInformation_json = userInformation.toJSON()
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "L'utilisateur  a bien été modifie avec succes",
-            result: userUpdate
+            result: {
+                userUpdate,
+                userInformation_json
+            }
         })
 
 
