@@ -2427,6 +2427,9 @@ const findAllVolumePlateauChefNonValideRetour = async (req, res) => {
                             IS_RECONCILIE: 1,
                         },{
                             IS_VALIDE: 0,
+                        },
+                        {
+                            ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU
                         }
                     ]
                     },

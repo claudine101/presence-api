@@ -1458,6 +1458,11 @@ const findAllFolioScannimgNonReconcilier = async (req, res) => {
                     as: 'folio',
                     required: false,
                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
+                    where:{
+                        [Op.and]:[{
+                            ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
+                        }]
+                    },
                     include: [
                         {
                             model: Equipes,
