@@ -327,7 +327,13 @@ const findAllVolumerRetourDistributeur = async (req, res) => {
                     as: 'volume',
                     required: false,
                     attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
-
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
                 }
             ]
         })
@@ -404,6 +410,13 @@ const findAllVolumerRetourAgentSupeArchives = async (req, res) => {
                     as: 'volume',
                     required: false,
                     attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    include: [
+                        {
+                                model: Maille,
+                                as: 'maille',
+                                required: false,
+                                attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
 
                 }
             ]
