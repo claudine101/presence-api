@@ -234,4 +234,33 @@ scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeR
 */
 scanning_volumeRetour_routes.post('/agent/equipe/pvs/retour/nonVilid', scanning_volumeRetour_controller.findGetsPvsAgentSupervieurRetourNonValid)
 
+   /**
+* Une route pour recuperer les volumes retour d'un agents superviseur ailles scanning
+*@method GET
+* @url /scanning/retour/agent/allVolume/supAilleScanning
+*/
+scanning_volumeRetour_routes.get('/agent/allVolume/supAillescanning', scanning_volumeRetour_controller.findVolumeAssocierAgentsupAilleScan)
+
+ /**
+ * Une route pour archives les volumes retournez d'un agent sup ailles
+ *@method PUT
+ * @url /scanning/retour/agent/supaille/chefEquipeScan
+ */
+ scanning_volumeRetour_routes.put('/agent/supaille/chefEquipeScan', scanning_volumeRetour_controller.retourAgentSupAile)
+
+    /**
+ * Une route  permet de recuperer les folios reourner pour se faire scanner
+ *@method GET
+ * @url /scanning/retour/agent/foliosRecus/retours
+ */
+ scanning_volumeRetour_routes.get('/agent/foliosRecus/retours', scanning_volumeRetour_controller.getFoliosAllRetourner)
+
+ 
+    /**
+ * Une route  permet de recuperer les folios reourner pour se faire scanner
+ *@method GET
+ * @url /scanning/retour/agent/foliosRecus/retours/notValid
+ */
+ scanning_volumeRetour_routes.get('/agent/foliosRecus/retours/notValid', scanning_volumeRetour_controller.getFoliosAllRetournernotValid)
+
 module.exports = scanning_volumeRetour_routes

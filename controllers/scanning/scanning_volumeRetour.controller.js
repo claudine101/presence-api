@@ -110,7 +110,7 @@ const volumeScanningRetourAgentAille = async (req, res) => {
 const volumeScanningRetourChefEquipe = async (req, res) => {
     try {
         const volu = await Volume.findAll({
-            where: { ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING },
+            where: { ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING },
             attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -312,6 +312,9 @@ const findAllVolumerRetourDistributeur = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
                     model: Users,
@@ -386,6 +389,9 @@ const findAllVolumerRetourAgentSupeArchives = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
                     model: Users,
@@ -460,6 +466,9 @@ const findAllVolumerRetourDesarchivages = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
                     model: Users,
@@ -939,7 +948,6 @@ const findFoliosGetsPvsPlateau = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
-        console.log(folioIds)
 
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
@@ -2519,6 +2527,303 @@ const findGetsPvsAgentSupervieurRetourNonValid = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuper les volumes retourner chez un agent superviseur scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  31/08/2023
+ * 
+ */
+
+const findVolumeAssocierAgentsupAilleScan = async (req, res) => {
+    try {
+        const result = await Etapes_volume_historiques.findAll({
+            where: {
+                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING
+            },
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME','PV_PATH'],
+            include: [
+                {
+                    model: Users,
+                    as: 'users',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL','PHOTO_USER'],
+                },
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.users?.USERS_ID
+            const users = user.users
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    volumes: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuper les volumes retourner chez un chef equipe scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  31/08/2023
+ * 
+ */
+const retourAgentSupAile = async (req, res) => {
+    try {
+        const {volume } = req.body
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        var volumeObjet = {}
+        volumeObjet = JSON.parse(volume)
+        await Promise.all(volumeObjet.map(async (volume) => {
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING
+            }, {
+                where: {
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                }
+            })
+            await Etapes_volume_historiques.create(
+                {
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                    USERS_ID: req.userId,
+                    ID_VOLUME: volume.volume.ID_VOLUME,
+                    USER_TRAITEMENT: req.userId,
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING
+                }
+            )
+        }))
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer la liste des folios retourner pour scannings
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  31/08/2023
+ * 
+ */
+
+const getFoliosAllRetourner = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{
+                    USER_TRAITEMENT: req.userId,
+                    ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING 
+                }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO','DATE_INSERTION'],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO','IS_RECONCILIE','IS_VALIDE'],
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
+                        }]
+                    },
+                    include: {
+                        model: Volume,
+                        as: 'volume',
+                        required: false,
+                        attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'CODE_VOLUME','DATE_INSERTION'],
+
+                    }
+                }]
+
+
+        })
+        // var volumeFolios = []
+        // result.forEach(folio => {
+        //     console.log(folio)
+        //     const ID_VOLUME = folio.folio.ID_VOLUME
+        //     const volume = folio.folio.volume
+        //     const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
+        //     if (isExists) {
+        //         const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
+
+        //         const newVolumes = { ...volume, folios: [...volume.folios, folio] }
+        //         volumeFolios = volumeFolios.map(vol => {
+        //             if (vol.ID_VOLUME == ID_VOLUME) {
+        //                 return newVolumes
+        //             } else {
+        //                 return vol
+        //             }
+        //         })
+        //     } else {
+        //         volumeFolios.push({
+        //             ID_VOLUME,
+        //             volume,
+        //             folios: [folio]
+        //         })
+        //     }
+        // })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folios d'un volumnes",
+            // result: volumeFolios
+            result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuperer la liste des folios retourner pour scannings
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  31/08/2023
+ * 
+ */
+
+const getFoliosAllRetournernotValid = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU 
+                }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO','DATE_INSERTION'],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO','IS_RECONCILIE','IS_VALIDE'],
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU
+                        }]
+                    },
+                    include: {
+                        model: Volume,
+                        as: 'volume',
+                        required: false,
+                        attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'CODE_VOLUME','DATE_INSERTION'],
+
+                    }
+                }]
+
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folios d'un volumnes",
+            // result: volumeFolios
+            result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -2553,5 +2858,9 @@ module.exports = {
     findAllVolumeChefEquipePrepqrqtionTraites,
     findAllVolumePlateauChefNonValide,
     findAllVolumePlateauChefNonValideRetour,
-    findGetsPvsAgentSupervieurRetourNonValid
+    findGetsPvsAgentSupervieurRetourNonValid,
+    findVolumeAssocierAgentsupAilleScan,
+    retourAgentSupAile,
+    getFoliosAllRetourner,
+    getFoliosAllRetournernotValid
 }
