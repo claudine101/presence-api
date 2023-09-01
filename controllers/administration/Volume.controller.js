@@ -16,6 +16,7 @@ const Etapes_folio = require("../../models/Etapes_folio")
 const PROFILS = require("../../constants/PROFILS")
 const IDS_ETAPES_FOLIO = require("../../constants/ETAPES_FOLIO")
 const Etapes_volumes = require("../../models/Etapes_volumes")
+const moment = require('moment')
 
 
 /**
@@ -390,49 +391,6 @@ const get_rapport_by_volume = async (req, res) => {
         // });
         
         //count dossiers indexé
-        // const indexe = await Etapes_folio_historiques.findAndCountAll({
-        //     attributes: ['ID_USER', 'ID_FOLIO', 'ID_ETAPE_FOLIO'],
-        //     where:{
-        //             ...dateWhere
-        //       },
-        //     include: [
-        //         {
-        //             model: Users,
-        //             as: 'traitement',
-        //             attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
-        //             required: false,
-        //             include: [
-        //                 {
-        //                     model: Profils,
-        //                     as: 'profil',
-        //                     attributes: ['ID_PROFIL', 'DESCRIPTION'],
-        //                     required: false,
-        //                 }
-        //             ]
-        //         },
-        //         {
-        //             model: Etapes_folio,
-        //             as: 'etapes',
-        //             attributes: ['ID_ETAPE_FOLIO', 'NOM_ETAPE'],
-        //             required: false
-        //         },
-        //         {
-        //             model: Folio,
-        //             as: "folio",
-        //             attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME','FOLIO','NUMERO_FOLIO'],
-        //             where: {
-        //                 ID_VOLUME: ID_VOLUME, IS_INDEXE:1
-        //             },
-        //             include:[{
-        //                 model: Volume,
-        //                 as: 'volume',
-        //                 attributes:['NUMERO_VOLUME'],
-        //                 required: false,
-        //             },
-        //         ]
-        //         }
-        //     ],
-        // })
         const indexe = await Folio.findAndCountAll({
             attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_INDEXE'],
             where: {
@@ -462,7 +420,7 @@ const get_rapport_by_volume = async (req, res) => {
          const all_dossier = await Folio.findAndCountAll({
             attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION'],
             where: {
-                ID_VOLUME: ID_VOLUME
+                ID_VOLUME: ID_VOLUME,...dateWhere
             },
             // include: [
             //     {
@@ -498,7 +456,7 @@ const get_rapport_by_volume = async (req, res) => {
         const prepare = await Folio.findAndCountAll({
             attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_PREPARE'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_PREPARE:1,
+                ID_VOLUME: ID_VOLUME,IS_PREPARE:1,...dateWhere,
             },
                     include: [
                         {
@@ -523,7 +481,7 @@ const get_rapport_by_volume = async (req, res) => {
         const uploade = await Folio.findAndCountAll({
             attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_UPLOADED_EDRMS'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_UPLOADED_EDRMS:1,
+                ID_VOLUME: ID_VOLUME,IS_UPLOADED_EDRMS:1,...dateWhere,
             },
                     include: [
                         {
@@ -548,7 +506,7 @@ const get_rapport_by_volume = async (req, res) => {
         const scanne = await Folio.findAndCountAll({
             attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_RECONCILIE'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_RECONCILIE:1,
+                ID_VOLUME: ID_VOLUME,IS_RECONCILIE:1,...dateWhere,
             },
                     include: [
                         {
