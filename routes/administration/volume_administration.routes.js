@@ -35,4 +35,18 @@ volumes_routes.get("/Agent_folio/:ID_VOLUME",volume_routes_controller.getHistori
 */
 volumes_routes.get("/Folio_Volume/:ID_VOLUME",volume_routes_controller.getAgentByVolume);
 
+ /**
+* Une route pour le detail le rapport
+*@method GET
+* @url /admin/volume/rapport_by_vol/
+*/
+volumes_routes.get("/rapport_by_vol/:ID_VOLUME",volume_routes_controller.get_rapport_by_volume);
+
+ /**
+* Une route pour les etapes du volume
+*@method GET
+* @url /admin/volume/etapes_by_vol/
+*/
+volumes_routes.get("/etapes_by_vol/:ID_VOLUME",volume_routes_controller.getEtapesVolume);
+
 module.exports=volumes_routes

@@ -13,6 +13,9 @@ const Etapes_folio_historiques = require("../../models/Etapes_folio_historiques"
 const Folio = require("../../models/Folio")
 const Nature_folio = require("../../models/Nature_folio")
 const Etapes_folio = require("../../models/Etapes_folio")
+const PROFILS = require("../../constants/PROFILS")
+const IDS_ETAPES_FOLIO = require("../../constants/ETAPES_FOLIO")
+const Etapes_volumes = require("../../models/Etapes_volumes")
 
 
 /**
@@ -354,11 +357,322 @@ const getAgentByVolume = async (req, res) => {
 }
 
 
+/**
+* Permet de faire le rapport sur un volume donné
+* @param {express.Request} req 
+* @param {express.Response} res 
+* @author Jospin BA <jospin@mdiabox.bi>
+*/
+const get_rapport_by_volume = async (req, res) => {
+    try {
+        const {ID_VOLUME} = req.params
+      const { startDate, endDate} = req.query
+        // Date filter
+        var dateWhere = {}
+        if (startDate) {
+          const startDateFormat = moment(startDate).format("YYYY-MM-DD 00:00:00")
+          const endDateFormat = endDate ?
+            moment(endDate).format("YYYY-MM-DD 23:59:59") :
+            moment().format("YYYY-MM-DD 23:59:59")
+          dateWhere = {
+            DATE_INSERTION: {
+              [Op.between]: [startDateFormat, endDateFormat]
+            }
+          }
+        }
+
+        //find all folios
+        // const folioss = await Users.findAll({
+        //   attributes:[`ID_FOLIO`, `ID_VOLUME`],
+        //   where:{
+        //     ID_VOLUME:ID_VOLUME    
+        //   }
+        // });
+        
+        //count dossiers indexé
+        // const indexe = await Etapes_folio_historiques.findAndCountAll({
+        //     attributes: ['ID_USER', 'ID_FOLIO', 'ID_ETAPE_FOLIO'],
+        //     where:{
+        //             ...dateWhere
+        //       },
+        //     include: [
+        //         {
+        //             model: Users,
+        //             as: 'traitement',
+        //             attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+        //             required: false,
+        //             include: [
+        //                 {
+        //                     model: Profils,
+        //                     as: 'profil',
+        //                     attributes: ['ID_PROFIL', 'DESCRIPTION'],
+        //                     required: false,
+        //                 }
+        //             ]
+        //         },
+        //         {
+        //             model: Etapes_folio,
+        //             as: 'etapes',
+        //             attributes: ['ID_ETAPE_FOLIO', 'NOM_ETAPE'],
+        //             required: false
+        //         },
+        //         {
+        //             model: Folio,
+        //             as: "folio",
+        //             attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME','FOLIO','NUMERO_FOLIO'],
+        //             where: {
+        //                 ID_VOLUME: ID_VOLUME, IS_INDEXE:1
+        //             },
+        //             include:[{
+        //                 model: Volume,
+        //                 as: 'volume',
+        //                 attributes:['NUMERO_VOLUME'],
+        //                 required: false,
+        //             },
+        //         ]
+        //         }
+        //     ],
+        // })
+        const indexe = await Folio.findAndCountAll({
+            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_INDEXE'],
+            where: {
+                ID_VOLUME: ID_VOLUME,IS_INDEXE: 1,...dateWhere
+            },
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NUMERO_VOLUME'],
+                            required: false
+                        },
+                        {
+                            model : Nature_folio,
+                            as :'nature',
+                            attributes:['DESCRIPTION']
+                        },
+                        {
+                            model : Etapes_folio,
+                            as :'etapes',
+                            attributes:['NOM_ETAPE'] 
+                        }]
+
+        })
+
+         //count all dossiers
+         const all_dossier = await Folio.findAndCountAll({
+            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION'],
+            where: {
+                ID_VOLUME: ID_VOLUME
+            },
+            // include: [
+            //     {
+            //         model: Folio,
+            //         as: 'folio',
+            //         required: true, 
+            //         // where: {
+            //         //     [Op.and]: [{
+            //         //       IS_INDEXE: 0,
+            //         //     }]
+            //         // },
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NUMERO_VOLUME'],
+                            required: false
+                        },
+                        {
+                            model : Nature_folio,
+                            as :'nature',
+                            attributes:['DESCRIPTION']
+                        },
+                        {
+                            model : Etapes_folio,
+                            as :'etapes',
+                            attributes:['NOM_ETAPE'] 
+                        }]
+
+        })
+
+          //count dossiers preparé
+        const prepare = await Folio.findAndCountAll({
+            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_PREPARE'],
+            where: {
+                ID_VOLUME: ID_VOLUME,IS_PREPARE:1,
+            },
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NUMERO_VOLUME'],
+                            required: false
+                        },
+                        {
+                            model : Nature_folio,
+                            as :'nature',
+                            attributes:['DESCRIPTION']
+                        },
+                        {
+                            model : Etapes_folio,
+                            as :'etapes',
+                            attributes:['NOM_ETAPE'] 
+                        }]
+
+        })
+          //count dossiers uploadé
+        const uploade = await Folio.findAndCountAll({
+            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_UPLOADED_EDRMS'],
+            where: {
+                ID_VOLUME: ID_VOLUME,IS_UPLOADED_EDRMS:1,
+            },
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NUMERO_VOLUME'],
+                            required: false
+                        },
+                        {
+                            model : Nature_folio,
+                            as :'nature',
+                            attributes:['DESCRIPTION']
+                        },
+                        {
+                            model : Etapes_folio,
+                            as :'etapes',
+                            attributes:['NOM_ETAPE'] 
+                        }]
+
+        })
+          //count dossiers scanné
+        const scanne = await Folio.findAndCountAll({
+            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_RECONCILIE'],
+            where: {
+                ID_VOLUME: ID_VOLUME,IS_RECONCILIE:1,
+            },
+                    include: [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NUMERO_VOLUME'],
+                            required: false
+                        },
+                        {
+                            model : Nature_folio,
+                            as :'nature',
+                            attributes:['DESCRIPTION']
+                        },
+                        {
+                            model : Etapes_folio,
+                            as :'etapes',
+                            attributes:['NOM_ETAPE'] 
+                        }]
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+          statusCode: RESPONSE_CODES.OK,
+          httpStatus: RESPONSE_STATUS.OK,
+          message: "les dossiers phase d'indexation",
+          result: {
+            indexe,
+            uploade,
+            prepare,
+            scanne,
+            all_dossier
+          }
+        });
+      } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+          statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+          httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+          message: "Erreur interne du serveur, réessayer plus tard",
+        })
+      }
+    }
+
+/**
+ * Permet d'afficher les etapes du volume
+ * @date  31/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author Jospin Va <jospin@mdiabox.bi>
+ */
+
+const getEtapesVolume = async (req, res) => {
+    const { ID_VOLUME } = req.params
+    try {
+          //find all etapes volume
+          const allEtapesV = await Etapes_volumes.findAll({
+            attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
+          });
+
+        const byEtapeV= await Promise.all(allEtapesV.map(async countObject => {
+            const etapeV = countObject.toJSON()
+        const etapesVol = await Etapes_volume_historiques.findOne({
+            where: {
+                ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
+            },
+            include: [
+                {
+                    model: Users,
+                    as: 'traitant',
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                    required: false,
+                    include: [
+                        {
+                            model: Profils,
+                            as: 'profil',
+                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                            required: false,
+                        }
+                    ],
+                },
+                {
+                    model: Volume,
+                    as: 'volumes',
+                    attributes: ['NUMERO_VOLUME','DATE_INSERTION','ID_ETAPE_VOLUME'],
+                    required:false
+                },
+                 {
+                    model: Etape_Volume,
+                    as: 'etapes_volumes',
+                    attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+                    required: false
+                },
+            ],
+
+        })
+            return {
+              ...etapeV,
+              etapesVol
+            }
+          }))
+         
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Etapes liste",
+            result: {
+                byEtapeV,
+            }
+          });
+        } catch (error) {
+          console.log(error)
+          res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+          })
+        }
+}
 
 
 module.exports = {
     getDetail,
     getHistoriqueVolume,
     getHistoriqueFolio,
-    getAgentByVolume
+    getAgentByVolume,
+    get_rapport_by_volume,
+    getEtapesVolume
 }
