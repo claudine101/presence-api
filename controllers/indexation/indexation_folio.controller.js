@@ -1048,7 +1048,6 @@ const getFlashByChefPlateauEnAttante = async (req, res) => {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
                     },
-                    
                     {IS_INDEXE: null}
                 ]
                 },
@@ -1088,8 +1087,12 @@ const getFlashByChefPlateauEnAttante = async (req, res) => {
             const flash = flashObject.toJSON()
             const folioCounts = await Folio.count({
                 where: {
-                    ID_FLASH: flash.folio.flash.ID_FLASH
-                }
+                    [Op.and]: [{
+                        ID_FLASH: flash.folio.flash.ID_FLASH
+                    }, {
+                        IS_INDEXE: null
+                    }]
+                },
             })
             return {
                 ...flash,
@@ -1273,7 +1276,7 @@ const getFlashDetail = async (req, res) => {
             }]
         })
         var foliosIndexes = []
-        if (agentIndexationRetour) {
+        if (agentIndexationRetour){
             foliosIndexes = await Folio.findAll({
                 attributes: ['ID_FLASH', 'IS_INDEXE', 'ID_FOLIO', 'NUMERO_FOLIO', 'ID_FLASH_INDEXE'],
                 where: {
