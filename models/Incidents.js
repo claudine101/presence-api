@@ -1,6 +1,7 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
+const Types_incident = require('./Types_incident');
 
 /**
 * fonction model pour la creation de la table incidents
@@ -37,5 +38,6 @@ const Incidents = sequelize.define("incidents", {
         tableName: 'aile',
         timestamps: false,
 })
+Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'incidents'})
 
 module.exports = Incidents
