@@ -2,6 +2,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Types_incident = require('./Types_incident');
+const Users = require('./Users');
 
 /**
 * fonction model pour la creation de la table incidents
@@ -35,9 +36,11 @@ const Incidents = sequelize.define("incidents", {
         }
 }, {
         freezeTableName: true,
-        tableName: 'aile',
+        tableName: 'incidents',
         timestamps: false,
 })
-Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'incidents'})
+Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'types_incidents'})
+Incidents.belongsTo(Users, { foreignKey:"ID_USER",as:'users'})
+
 
 module.exports = Incidents
