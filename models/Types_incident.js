@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../utils/sequelize");
+const Ordres_incident = require('./Ordres_incident');
 
 /**
 * Model des types des incidents
@@ -35,7 +36,7 @@ const Types_incident = sequelize.define(
     },
     DATE_INSERTION: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

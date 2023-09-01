@@ -38,6 +38,6 @@ const Incidents = sequelize.define("incidents", {
         tableName: 'incidents',
         timestamps: false,
 })
-Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'incidents'})
+Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'types_incidents'})
 
 module.exports = Incidents
