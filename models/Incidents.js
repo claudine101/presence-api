@@ -20,6 +20,10 @@ const Incidents = sequelize.define("incidents", {
                 type: DataTypes.INTEGER(),
                 allowNull: false
         },
+        ID_INCIDENT_LOGICIEL: {
+                type: DataTypes.INTEGER(),
+                allowNull: true
+        },
         DESCRIPTION: {
                 type: DataTypes.STRING(50),
                 allowNull: false

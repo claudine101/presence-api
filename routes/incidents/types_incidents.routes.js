@@ -4,11 +4,27 @@ const types_incidents_routes = express.Router()
 
 
  /**
- * Une route pour rettourner tous les types d'incidents existants
+ * Une route pour rettourner tous les ordres incidents existants
  *@method GET
  * @url /types/incident/allTypesIncidents
  */
  types_incidents_routes.get('/allTypesIncidents', types_incidents_controller.findAllTypesIncidents)
+
+
+ 
+ /**
+ * Une route pour retourner tous les types d'incidents par rapport a l'ordre existants
+ *@method GET
+ * @url /types/incident/allTypesIncidents/parOrder
+ */
+ types_incidents_routes.get('/allTypesIncidents/parOrder/:ID_ORDRE_INCIDENT', types_incidents_controller.findAllTypesIncidentsByordres)
+
+  /**
+ * Une route pour retourner tous les types de problemes lors du choix du logiciel
+ *@method GET
+ * @url /types/incident/allTypesIncidents/parLogiciel
+ */
+ types_incidents_routes.get('/allTypesIncidents/parLogiciel', types_incidents_controller.findAllTypesIncidentsChoixLogiciel)
 
   /**
  * Une route aui permet d'enregistrer une incident
