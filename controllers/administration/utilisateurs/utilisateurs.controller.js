@@ -303,11 +303,26 @@ const Updateuser = async (req, res) => {
                 USERS_ID: USERS_ID
             }
         })
+
+         const userInformation = await Users.findOne({
+            where: { USERS_ID: USERS_ID },
+            attributes: ['TELEPHONE', 'EMAIL','PHOTO_USER','NOM', 'PRENOM'],
+            include: [{
+                model: Profils,
+                as: 'profil',
+                required: false,
+                attributes: ['ID_PROFIL', 'DESCRIPTION']
+            }]
+        })
+        const userInformation_json = userInformation.toJSON()
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "L'utilisateur  a bien été modifie avec succes",
-            result: userUpdate
+            result: {
+                userUpdate,
+                userInformation_json
+            }
         })
 
 
@@ -873,7 +888,6 @@ const changePWD = async (req, res) => {
                     required: "Le mot de passe est obligatoire",
                 },
 
-               
             }
         );
         await validation.run();
@@ -889,18 +903,12 @@ const changePWD = async (req, res) => {
         }
         const userObject = await Users.findOne({
             where: {USERS_ID: USERS_ID },
-            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+            attributes: ['USERS_ID', 'PASSEWORD', 'EMAIL'],
         })
-        // if (userObject) {
             const user = userObject.toJSON()
-            console.log(md5(OLDPWD));
-            // console.log(user.PASSEWORD);
             if (md5(OLDPWD) == user.PASSEWORD) {
                 if (md5(NEWPWD)==md5(CONFIRMPWD)) {
-                    console.log("Deux mot de passe identiques");
                     const password = `${CONFIRMPWD}`;
-
-                    console.log(md5(password));
                     await Users.update(
                         { 
                             PASSEWORD: md5(password)
@@ -918,12 +926,10 @@ const changePWD = async (req, res) => {
                         message: "Vous êtes connecté avec succès",
                         result: {
                             user
-                            // token
                         }
                     })
 
                 }else{
-                    // console.log("Deux mot de passe n'est pas identiques");
                     res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
                         statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
                         httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
@@ -931,8 +937,6 @@ const changePWD = async (req, res) => {
                     })
 
                 }
-                // console.log(" Ancien Mot de passe correct");
-                
             }else{
                 console.log("Ancien Mot de passe incorrect");
                 res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
