@@ -17,6 +17,10 @@ const Types_incident = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    ID_ORDRE_INCIDENT:{
+        type:DataTypes.INTEGER,
+        allowNull : false,
+    },
     TYPE_INCIDENT: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -40,5 +44,8 @@ const Types_incident = sequelize.define(
     timestamps: false,
   }
 );
+
+
+Incidents.belongsTo(Ordres_incident, { foreignKey:"ID_ORDRE_INCIDENT",as:'ordre_incident'})
 
 module.exports = Types_incident;
