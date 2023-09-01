@@ -1,27 +1,26 @@
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Types_incident = require('./Types_incident');
 
 /**
-* fonction model pour la creation de la table incidents
+* fonction model pour la creation de la table ordres_incident
 * @author Vanny Boy <vanny@mediabox.bi>
 * @date 1/09/2023
 * @returns 
 */
-const Incidents = sequelize.define("incidents", {
-        ID_INCIDENT: {
+const Ordres_incident = sequelize.define("ordres_incident", {
+        ID_ORDRE_INCIDENT: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
                 autoIncrement: true
         },
-        ID_TYPE_INCIDENT: {
-                type: DataTypes.INTEGER(),
+        ORDRE_INCIDENT: {
+                type: DataTypes.STRING(50),
                 allowNull: false
         },
-        DESCRIPTION: {
-                type: DataTypes.STRING(50),
+        IS_AUTRE: {
+                type: DataTypes.INTEGER(),
                 allowNull: false
         },
         ID_USER: {
@@ -35,9 +34,8 @@ const Incidents = sequelize.define("incidents", {
         }
 }, {
         freezeTableName: true,
-        tableName: 'incidents',
+        tableName: 'ordres_incident',
         timestamps: false,
 })
-Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'types_incidents'})
 
-module.exports = Incidents
+module.exports = Ordres_incident

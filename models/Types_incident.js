@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../utils/sequelize");
+const Ordres_incident = require('./Ordres_incident');
 
 /**
 * Model des types des incidents
@@ -16,6 +17,10 @@ const Types_incident = sequelize.define(
       allowNull: false,
       primaryKey: true,
       autoIncrement: true,
+    },
+    ID_ORDRE_INCIDENT:{
+        type:DataTypes.INTEGER,
+        allowNull : false,
     },
     TYPE_INCIDENT: {
       type: DataTypes.TEXT,
@@ -41,5 +46,8 @@ const Types_incident = sequelize.define(
     timestamps: false,
   }
 );
+
+
+Types_incident.belongsTo(Ordres_incident, { foreignKey:"ID_ORDRE_INCIDENT",as:'ordre_incident'})
 
 module.exports = Types_incident;
