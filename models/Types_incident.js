@@ -1,6 +1,13 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../utils/sequelize");
 
+/**
+* Model des types des incidents
+* @author NIREMA ELOGE<nirema.eloge@mediabox.bi>
+* @date 1/09/2023
+* @returns 
+*/
+
 const Types_incident = sequelize.define(
   "types_incident",
   {
