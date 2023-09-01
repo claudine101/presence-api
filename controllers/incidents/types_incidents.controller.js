@@ -198,9 +198,54 @@ const createIncidents = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuperer tous les types de panne lors du choix du logiciel
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  1/09/2023
+ * 
+ */
+const findAllIncidentsDeclarer = async (req, res) => {
+    try {
+        const result = await Incidents.findAll({
+            where: {
+                [Op.and]:[
+                    {
+                        ID_USER:req.userId
+                    }
+                ]
+            },
+            attributes: ['ID_INCIDENT', 'ID_TYPE_INCIDENT', 'ID_INCIDENT_LOGICIEL', 'DESCRIPTION', 'ID_USER','DATE_INSERTION'],
+            include: [
+                {
+                    model: Types_incident,
+                    as: 'types_incidents',
+                    required: false,
+                    attributes: ['ID_TYPE_INCIDENT', 'ID_ORDRE_INCIDENT', 'TYPE_INCIDENT', 'IS_AUTRE','ID_USER'],
+                },
+            ]
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste de tous les incidents declarer",
+            result: result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     findAllTypesIncidents,
     createIncidents,
     findAllTypesIncidentsByordres,
-    findAllTypesIncidentsChoixLogiciel
+    findAllTypesIncidentsChoixLogiciel,
+    findAllIncidentsDeclarer
 }

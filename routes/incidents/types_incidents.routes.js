@@ -26,6 +26,13 @@ const types_incidents_routes = express.Router()
  */
  types_incidents_routes.get('/allTypesIncidents/parLogiciel', types_incidents_controller.findAllTypesIncidentsChoixLogiciel)
 
+   /**
+ * Une route pour retourner tous les incidents deja declarer par un agents
+ *@method GET
+ * @url /types/incident/allTypesIncidents/allIncidents/declarer
+ */
+ types_incidents_routes.get('/allTypesIncidents/allIncidents/declarer', types_incidents_controller.findAllIncidentsDeclarer)
+
   /**
  * Une route aui permet d'enregistrer une incident
  *@method POST
