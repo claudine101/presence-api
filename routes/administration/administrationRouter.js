@@ -21,6 +21,7 @@ const uploadEDRMS_routes =require('./rapport_phase_uploadEDRMS.routes')
 const rapport_routes= require('./rapport.routes')
 const rapport_phase_scanning_routes=require('./rapport_phase_scanning.routes');
 const typesincident_routes = require('./types_incident.routes');
+const ordreincident_routes = require('./ordre_incident.routes');
 
 const administrationRouter=express.Router();
 
@@ -45,4 +46,5 @@ administrationRouter.use('/rapport_edrms',uploadEDRMS_routes)
 administrationRouter.use('/rapport',rapport_routes)
 administrationRouter.use('/rapport',rapport_phase_scanning_routes)
 administrationRouter.use('/incident',typesincident_routes)
+administrationRouter.use('/ordreincident', ordreincident_routes)
 module.exports = administrationRouter

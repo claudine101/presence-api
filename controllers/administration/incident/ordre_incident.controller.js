@@ -6,64 +6,25 @@ const { Op } = require("sequelize")
 const Types_incident = require("../../../models/Types_incident")
 const Ordres_incident = require("../../../models/Ordres_incident")
 
-const allordre = async ( req, res) => {
-    try {
-        const result = await  Ordres_incident.findAll({
-            attributes: [
-                'ID_ORDRE_INCIDENT',
-                'ORDRE_INCIDENT',
-                'DATE_INSERTION'
-              ],
-              order: [['ID_ORDRE_INCIDENT', 'DESC']]
-        })
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des types incident",
-            result: {
-                data: result,
-            }
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-            message: "Erreur interne du serveur, réessayer plus tard",
-        })
-    }
-}
-
-
-
-
-
 /**
- * Permet d'ajouter le type d'incident
+ * Permet d'ajouter ordre d'incident
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author ELOGE<nirema.eloge@mediabox.bi>
  * @date 1/9/2023
  */
 
-const createtypes_incident = async (req, res) => {
+const createordre_incident = async (req, res) => {
     try {
-        const { ID_ORDRE_INCIDENT,TYPE_INCIDENT,ID_USER } = req.body
+        const { ORDRE_INCIDENT,ID_USER } = req.body
         const data = { ...req.body }
         const validation = new Validation(data, {
           
-            TYPE_INCIDENT: {
-                required: true,
-            },
-            ID_ORDRE_INCIDENT:{
+            ORDRE_INCIDENT: {
                 required: true,
             }
-
         }, {
-            TYPE_INCIDENT: {
-                required: "Champ obligatoire"
-            },
-            ID_ORDRE_INCIDENT:{
+            ORDRE_INCIDENT: {
                 required: "Champ obligatoire"
             }
         })
@@ -81,9 +42,8 @@ const createtypes_incident = async (req, res) => {
         }
 
         const IS_AUTRE = 0
-        const types_incident = await Types_incident.create({
-            ID_ORDRE_INCIDENT,
-            TYPE_INCIDENT,
+        const ordre_incident = await  Ordres_incident.create({
+            ORDRE_INCIDENT,
             IS_AUTRE,
             ID_USER
         })
@@ -91,7 +51,7 @@ const createtypes_incident = async (req, res) => {
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "L'utilisateur est bien enregistré avec succes",
-            result: types_incident
+            result: ordre_incident
         })
     } catch (error) {
         console.log(error)
@@ -104,23 +64,23 @@ const createtypes_incident = async (req, res) => {
 }
 
 /**
- * Permet d'afficher tous  les type d'incident
+ * Permet d'afficher tous les ordre incident
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author ELOGE<nirema.eloge@mediabox.bi>
  * @date 1/9/2023
  */
 
-const findAlltype = async (req, res) => {
+const findAllordre = async (req, res) => {
     try {
-        const {ordreincident,rows = 10, first = 0, sortField, sortOrder, search } = req.query
-        const defaultSortField = "TYPE_INCIDENT"
+        const {rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const defaultSortField = "ORDRE_INCIDENT"
         const defaultSortDirection = "ASC"
         const sortColumns = {
-            types_incident: {
-                as: "types_incident",
+            ordres_incident: {
+                as: "ordres_incident",
                 fields: {
-                    TYPE_INCIDENT: 'TYPE_INCIDENT',
+                    ORDRE_INCIDENT: 'ORDRE_INCIDENT',
                     DATE_INSERTION: 'DATE_INSERTION',
 
                 }
@@ -142,10 +102,10 @@ const findAlltype = async (req, res) => {
             }
         }
         if (!orderColumn || !sortModel) {
-            orderColumn = sortColumns.types_incident.fields.TYPE_INCIDENT
+            orderColumn = sortColumns.ordres_incident.fields.ORDRE_INCIDENT
             sortModel = {
-                model: 'types_incident',
-                as: sortColumns.types_incident.as
+                model: 'ordres_incident',
+                as: sortColumns.ordres_incident.as
             }
         }
 
@@ -160,7 +120,7 @@ const findAlltype = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
-           'TYPE_INCIDENT',
+           'ORDRE_INCIDENT',
             'DATE_INSERTION',
         ]
         var globalSearchWhereLike = {}
@@ -176,37 +136,26 @@ const findAlltype = async (req, res) => {
             }
         }
 
-        var orderincident_data = {}
-        if (ordreincident) {
-            orderincident_data = { ID_ORDRE_INCIDENT: ordreincident }
-        }
 
-        const result = await   Types_incident.findAndCountAll({
+        const result = await  Ordres_incident.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
             attributes: [
-                'ID_TYPE_INCIDENT',
-                'TYPE_INCIDENT',
+                'ID_ORDRE_INCIDENT',
+                'ORDRE_INCIDENT',
                 'DATE_INSERTION'
               ],
-              include :{
-                model: Ordres_incident,
-                as: 'ordre_incident',
-                required: false,
-                attributes: ['ID_ORDRE_INCIDENT','ORDRE_INCIDENT']
-              },
             where: {
                 ...globalSearchWhereLike,
-                ...orderincident_data
             },
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des types incident",
+            message: "Liste des ordres incident",
             result: {
                 data: result.rows,
                 totalRecords: result.count
@@ -223,33 +172,25 @@ const findAlltype = async (req, res) => {
 }
 
 /**
- * Permet de modifier type d'incident
+ * Permet de modifier ordre incident
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author ELOGE<nirema.eloge@mediabox.bi>
  * @date 1/9/2023
  */
-const Updatetypeincident = async (req, res) => {
+const Updateordreincident = async (req, res) => {
     try {
-        const { ID_TYPE_INCIDENT } = req.params
-        const { ID_ORDRE_INCIDENT,TYPE_INCIDENT } = req.body
-
+        const { ID_ORDRE_INCIDENT  } = req.params
+        const { ORDRE_INCIDENT } = req.body
         const data = { ...req.body }
 
         const validation = new Validation(data, {
           
-            TYPE_INCIDENT: {
-                required: true,
-            },
-            ID_ORDRE_INCIDENT:{
+            ORDRE_INCIDENT: {
                 required: true,
             }
-
         }, {
-            TYPE_INCIDENT: {
-                required: "Champ obligatoire"
-            },
-            ID_ORDRE_INCIDENT:{
+            ORDRE_INCIDENT: {
                 required: "Champ obligatoire"
             }
         })
@@ -267,12 +208,11 @@ const Updatetypeincident = async (req, res) => {
         }
        
 
-        const typeincidentUpdate = await Types_incident.update({
-            ID_ORDRE_INCIDENT,
-            TYPE_INCIDENT
+        const ordreincidentUpdate = await Ordres_incident.update({
+            ORDRE_INCIDENT,
         }, {
             where: {
-                ID_TYPE_INCIDENT : ID_TYPE_INCIDENT 
+                ID_ORDRE_INCIDENT  : ID_ORDRE_INCIDENT  
             }
         })
 
@@ -281,7 +221,7 @@ const Updatetypeincident = async (req, res) => {
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "L'utilisateur  a bien été modifie avec succes",
             result: {
-                typeincidentUpdate,
+                ordreincidentUpdate,
             }
         })
 
@@ -297,9 +237,8 @@ const Updatetypeincident = async (req, res) => {
     }
 }
 
-
 /**
- * Permet de recuperer  un type d'incident
+ * Permet de recuperer ordre incident
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author ELOGE<nirema.eloge@mediabox.bi>
@@ -307,39 +246,33 @@ const Updatetypeincident = async (req, res) => {
  */
 
 
-const findOnetype = async (req, res) => {
+const findOneOrdre = async (req, res) => {
     try {
-        const { ID_TYPE_INCIDENT } = req.params
-        const typeincident = await Types_incident.findOne({
+        const { ID_ORDRE_INCIDENT  } = req.params
+        const ordreincident = await Ordres_incident.findOne({
             attributes: [
-                'ID_TYPE_INCIDENT',
-                'TYPE_INCIDENT',
+                'ID_ORDRE_INCIDENT',
+                'ORDRE_INCIDENT',
                 'IS_AUTRE',
                 'ID_USER',
                 'DATE_INSERTION'
               ],
-              include :{
-                model: Ordres_incident,
-                as: 'ordre_incident',
-                required: false,
-                attributes: ['ID_ORDRE_INCIDENT','ORDRE_INCIDENT']
-              },
             where: {
-                ID_TYPE_INCIDENT
+                ID_ORDRE_INCIDENT
             },
         })
-        if (typeincident) {
+        if (ordreincident) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
                 httpStatus: RESPONSE_STATUS.OK,
-                message: "Type incident trouvee",
-                result: typeincident
+                message: "Ordre incident trouvee",
+                result: ordreincident
             })
         } else {
             res.status(RESPONSE_CODES.NOT_FOUND).json({
                 statusCode: RESPONSE_CODES.NOT_FOUND,
                 httpStatus: RESPONSE_STATUS.NOT_FOUND,
-                message: "L'utilisateur non trouve",
+                message: "L'ordre non trouve",
             })
         }
     } catch (error) {
@@ -352,7 +285,6 @@ const findOnetype = async (req, res) => {
     }
 }
 
-
 /**
  * Permet de supprimer  type d'incident
  * @param {express.Request} req 
@@ -361,14 +293,13 @@ const findOnetype = async (req, res) => {
  * @date  1/9/2023
  */
 
-
-const deleteypeincident = async (req, res) => {
+const deleteOrdreincident = async (req, res) => {
     try {
         const { ids} = req.body
         const itemsIds = JSON.parse(ids)
-        await   Types_incident.destroy({
+        await   Ordres_incident.destroy({
             where: {
-                ID_TYPE_INCIDENT: {
+                ID_ORDRE_INCIDENT: {
                     [Op.in]: itemsIds
                 }
             }
@@ -387,9 +318,6 @@ const deleteypeincident = async (req, res) => {
         })
     }
 }
-
-
-
 
 /**
  * Permet d'afficher tous  les incident
@@ -410,7 +338,6 @@ const findAllincident = async (req, res) => {
                 fields: {
                     DESCRIPTION: 'DESCRIPTION',
                     DATE_INSERTION: 'DATE_INSERTION'
-
                 }
             },
             types_incident: {
@@ -532,11 +459,10 @@ const findAllincident = async (req, res) => {
 }
 
 module.exports = {
-    createtypes_incident,
-    allordre,
-    Updatetypeincident,
-    findOnetype,
-    findAlltype,
-    deleteypeincident,
+    createordre_incident,
+    Updateordreincident,
+    findOneOrdre,
+    findAllordre,
+    deleteOrdreincident,
     findAllincident
 }
