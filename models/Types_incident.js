@@ -32,6 +32,7 @@ const Types_incident = sequelize.define(
     DATE_INSERTION: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: DataTypes.NOW
     },
   },
   {

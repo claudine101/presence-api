@@ -35,7 +35,7 @@ const Incidents = sequelize.define("incidents", {
         }
 }, {
         freezeTableName: true,
-        tableName: 'aile',
+        tableName: 'incidents',
         timestamps: false,
 })
 Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'incidents'})
