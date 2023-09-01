@@ -565,7 +565,7 @@ const getEtapesVolume = async (req, res) => {
             attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
           });
 
-        const byEtapeV= await Promise.all(allEtapesV.map(async countObject => {
+        const allEtapes= await Promise.all(allEtapesV.map(async countObject => {
             const etapeV = countObject.toJSON()
         const etapesVol = await Etapes_volume_historiques.findOne({
             where: {
@@ -606,6 +606,13 @@ const getEtapesVolume = async (req, res) => {
               etapesVol
             }
           }))
+
+          const byEtapeV = allEtapes.sort((a, b) => {
+                    if (!a.etapesVol && !b.etapesVol) return 0;
+                    if (!a.etapesVol) return 1;
+                    if (!b.etapesVol) return -1;
+                    return new Date(a.etapesVol.DATE_INSERTION) - new Date(b.etapesVol.DATE_INSERTION)
+          })
          
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
