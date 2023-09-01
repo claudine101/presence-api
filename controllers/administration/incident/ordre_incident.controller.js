@@ -16,10 +16,10 @@ const Ordres_incident = require("../../../models/Ordres_incident")
 
 const createordre_incident = async (req, res) => {
     try {
-        const { ORDRE_INCIDENT,ID_USER } = req.body
+        const { ORDRE_INCIDENT, ID_USER } = req.body
         const data = { ...req.body }
         const validation = new Validation(data, {
-          
+
             ORDRE_INCIDENT: {
                 required: true,
             }
@@ -42,7 +42,7 @@ const createordre_incident = async (req, res) => {
         }
 
         const IS_AUTRE = 0
-        const ordre_incident = await  Ordres_incident.create({
+        const ordre_incident = await Ordres_incident.create({
             ORDRE_INCIDENT,
             IS_AUTRE,
             ID_USER
@@ -73,7 +73,7 @@ const createordre_incident = async (req, res) => {
 
 const findAllordre = async (req, res) => {
     try {
-        const {rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const defaultSortField = "ORDRE_INCIDENT"
         const defaultSortDirection = "ASC"
         const sortColumns = {
@@ -120,7 +120,7 @@ const findAllordre = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
-           'ORDRE_INCIDENT',
+            'ORDRE_INCIDENT',
             'DATE_INSERTION',
         ]
         var globalSearchWhereLike = {}
@@ -137,7 +137,7 @@ const findAllordre = async (req, res) => {
         }
 
 
-        const result = await  Ordres_incident.findAndCountAll({
+        const result = await Ordres_incident.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
             order: [
@@ -147,19 +147,40 @@ const findAllordre = async (req, res) => {
                 'ID_ORDRE_INCIDENT',
                 'ORDRE_INCIDENT',
                 'DATE_INSERTION'
-              ],
+            ],
             where: {
                 ...globalSearchWhereLike,
             },
         })
+        const gettype = await Promise.all(result.rows.map(async countObject => {
+            const ordre_incident = countObject.toJSON()
+            const gettypeincident = await Types_incident.findAndCountAll({
+                attributes:[
+                    'ID_TYPE_INCIDENT','TYPE_INCIDENT','DATE_INSERTION'
+                ],
+                where: {
+                    ID_ORDRE_INCIDENT: ordre_incident.ID_ORDRE_INCIDENT
+                }
+            })
+            return {
+                ...ordre_incident,
+                data: gettypeincident.rows,
+                count: gettypeincident.count
+            }
+        }))
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des ordres incident",
-            result: {
-                data: result.rows,
-                totalRecords: result.count
-            }
+            result:
+            {
+                gettype,
+                totalRecords: gettype.length
+
+            },
+
+
         })
     } catch (error) {
         console.log(error)
@@ -180,12 +201,12 @@ const findAllordre = async (req, res) => {
  */
 const Updateordreincident = async (req, res) => {
     try {
-        const { ID_ORDRE_INCIDENT  } = req.params
+        const { ID_ORDRE_INCIDENT } = req.params
         const { ORDRE_INCIDENT } = req.body
         const data = { ...req.body }
 
         const validation = new Validation(data, {
-          
+
             ORDRE_INCIDENT: {
                 required: true,
             }
@@ -206,13 +227,13 @@ const Updateordreincident = async (req, res) => {
                 result: errors
             })
         }
-       
+
 
         const ordreincidentUpdate = await Ordres_incident.update({
             ORDRE_INCIDENT,
         }, {
             where: {
-                ID_ORDRE_INCIDENT  : ID_ORDRE_INCIDENT  
+                ID_ORDRE_INCIDENT: ID_ORDRE_INCIDENT
             }
         })
 
@@ -248,7 +269,7 @@ const Updateordreincident = async (req, res) => {
 
 const findOneOrdre = async (req, res) => {
     try {
-        const { ID_ORDRE_INCIDENT  } = req.params
+        const { ID_ORDRE_INCIDENT } = req.params
         const ordreincident = await Ordres_incident.findOne({
             attributes: [
                 'ID_ORDRE_INCIDENT',
@@ -256,7 +277,7 @@ const findOneOrdre = async (req, res) => {
                 'IS_AUTRE',
                 'ID_USER',
                 'DATE_INSERTION'
-              ],
+            ],
             where: {
                 ID_ORDRE_INCIDENT
             },
@@ -295,9 +316,9 @@ const findOneOrdre = async (req, res) => {
 
 const deleteOrdreincident = async (req, res) => {
     try {
-        const { ids} = req.body
+        const { ids } = req.body
         const itemsIds = JSON.parse(ids)
-        await   Ordres_incident.destroy({
+        await Ordres_incident.destroy({
             where: {
                 ID_ORDRE_INCIDENT: {
                     [Op.in]: itemsIds
@@ -329,7 +350,7 @@ const deleteOrdreincident = async (req, res) => {
 
 const findAllincident = async (req, res) => {
     try {
-        const {  rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
         const defaultSortField = "DESCRIPTION"
         const defaultSortDirection = "ASC"
         const sortColumns = {
@@ -351,8 +372,8 @@ const findAllincident = async (req, res) => {
                 fields: {
                     NOM: 'NOM',
                     PRENOM: 'PRENOM',
-                    EMAIL:'EMAIL',
-                    PHOTO_USER:'PHOTO_USER'
+                    EMAIL: 'EMAIL',
+                    PHOTO_USER: 'PHOTO_USER'
 
                 }
             }
@@ -412,7 +433,7 @@ const findAllincident = async (req, res) => {
                 [Op.or]: searchWildCard
             }
         }
-       
+
         const result = await Incidents.findAndCountAll({
             limit: parseInt(rows),
             offset: parseInt(first),
@@ -423,7 +444,7 @@ const findAllincident = async (req, res) => {
                 'ID_INCIDENT',
                 'DESCRIPTION',
                 'DATE_INSERTION',
-              ],
+            ],
             where: {
                 ...globalSearchWhereLike,
             },
@@ -432,11 +453,11 @@ const findAllincident = async (req, res) => {
                 as: 'types_incident',
                 required: false,
                 attributes: ['TYPE_INCIDENT']
-            },{
+            }, {
                 model: Users,
                 as: 'users',
                 required: false,
-                attributes: ['NOM', 'PRENOM','EMAIL','PHOTO_USER']
+                attributes: ['NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER']
             }]
         })
         res.status(RESPONSE_CODES.OK).json({
