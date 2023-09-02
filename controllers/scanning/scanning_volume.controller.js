@@ -35,7 +35,8 @@ const { Op } = require('sequelize');
 const volumeScanning = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { USER_TRAITEMENT } = req.body
+        const { USER_TRAITEMENT, MAILLE, AGENT_SUP_AILE } = req.body
+        
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -68,6 +69,52 @@ const volumeScanning = async (req, res) => {
                 result: errors
             })
         }
+        //RETOUR  DANS LA PHASE PREPARATION
+        if (AGENT_SUP_AILE) {
+            const result = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                where: {
+                    ID_VOLUME: ID_VOLUME,
+                    IS_PREPARE: 0
+                },
+            })
+        const folio_ids = result?.map(folio => folio.ID_FOLIO)
+        await Maille.update({
+            IS_DISPO: 0
+        }, {
+            where: {
+                ID_MAILLE: MAILLE
+            }
+        })
+         // update des folios non  preparaes
+         await Folio.update({
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
+            ID_MALLE_NO_TRAITE:MAILLE
+        }, {
+            where: {
+                ID_FOLIO: {
+                    [Op.in]:folio_ids
+                }
+            },
+        })
+        const PV_PREPARATION = req.files?.PV_PREPARATION
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV_PREPARATION) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV_PREPARATION, false)
+            filename_pv = fileInfo_2
+        }
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: AGENT_SUP_AILE,
+            ID_VOLUME: ID_VOLUME,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_PREPARATION
+        })
+
+        }
+
+        //PHASE SCANNING
         const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
         var filename_pv
@@ -75,7 +122,6 @@ const volumeScanning = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-
         const results = await Volume.update({
             ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
         }, {
@@ -90,6 +136,7 @@ const volumeScanning = async (req, res) => {
             ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
             PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
         })
+       
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,

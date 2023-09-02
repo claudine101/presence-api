@@ -160,6 +160,70 @@ const findAll = async (req, res) => {
     }
 }
 /**
+ * Permet de afficher tous volume pour  chef equipe preparation
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 2/09/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAllFolioEquipe = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const result = await Folio.findAll({
+            attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO','IS_PREPARE', 'NUMERO_FOLIO'],
+            where: {
+                ID_VOLUME: ID_VOLUME
+            },
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folios",
+            result: result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de afficher tous volume pour  chef equipe preparation
+ *@author NDAYISABA Claudine<claudine@mediabox.bi>
+ *@date 2/09/2023
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ */
+ const findAllFolioEquipeNoPrepare = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const result = await Folio.findAll({
+            attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO','IS_PREPARE', 'NUMERO_FOLIO'],
+            where: {
+                ID_VOLUME: ID_VOLUME,
+                IS_PREPARE:0
+            },
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folios no prepare",
+            result: result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet permet  de nommer  agent superviseur  Preparation
  * @param {express.Request} req 
  * @param {express.Response} res 
@@ -1837,5 +1901,7 @@ module.exports = {
     getPvsAgentPREPARATION,
     findAllSuperviseursValides,
     getPvsAgentSuperviseur,
-    findAllFolioChefPlateau
+    findAllFolioChefPlateau,
+    findAllFolioEquipe,
+    findAllFolioEquipeNoPrepare
 }

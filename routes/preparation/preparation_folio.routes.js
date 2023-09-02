@@ -121,8 +121,19 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.get('/:ID_VOLUME', preparation_folio_controller.findAll)
 
- 
- 
+  /**
+ * Une route  permet  un chef  equipe de voir  tous  les folios 
+ *@method GET
+ * @url /preparation/folio/folioChefEquipe
+ */
+ preparation_folio_routes.get('/folioChefEquipe/:ID_VOLUME', preparation_folio_controller.findAllFolioEquipe)
+
+/**
+ * Une route  permet    un chef  equipe de voir  tous  les folios non prepares
+ *@method GET
+ * @url /preparation/folio/folioChefEquipeNonPrepare
+ */
+ preparation_folio_routes.get('/folioChefEquipeNonPrepare/:ID_VOLUME', preparation_folio_controller.findAllFolioEquipeNoPrepare)
   /**
  * Une route  permet  de nommer  agent superviseur phase preparation
  *@method PUT

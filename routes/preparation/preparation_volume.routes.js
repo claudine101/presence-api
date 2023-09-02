@@ -159,6 +159,14 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.get('/agentSuperviseurAile', preparation_volume_controller.findAllAgentSupAile)
 
+  /**
+ * Une route  permet  visualiser  les agent superviseur aile et les nombre de volume recu
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/agentSupRetourPhase
+ */
+ preparation_volume_routes.get('/agentSupRetourPhase', preparation_volume_controller.findAllAgentSupAileRetour)
+
  /**
  * Une route  permet  de retour  agent superviseur aile
  *@method PUT
