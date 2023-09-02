@@ -23,7 +23,11 @@ const Maille = sequelize.define("maille", {
         NUMERO_MAILLE: {
                 type: Sequelize.STRING(255),
                 allowNull: true
-        }
+        },
+        IS_DISPO: {
+                type: Sequelize.INTEGER(11),
+                allowNull: true
+        },
 }, {
         freezeTableName: true,
         tableName: 'maille',

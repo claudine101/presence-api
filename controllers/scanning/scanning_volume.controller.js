@@ -415,10 +415,13 @@ const findAll = async (req, res) => {
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                ...condition
+                [Op.or]: [
+                    condition,
+                    { ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUI_SCANNINF_AGENT_SUP_AILE_SCANNING }
+                ]
             },
-            order:[
-                ["DATE_INSERTION","DESC"]
+            order: [
+                ["DATE_INSERTION", "DESC"]
             ],
             include: [
                 {
@@ -426,6 +429,13 @@ const findAll = async (req, res) => {
                     as: 'volume',
                     required: false,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include: [
+                        {
+                            model: Maille,
+                            as: 'maille',
+                            required: false,
+                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
                 }]
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -931,7 +941,7 @@ const updateRetourEquipe = async (req, res) => {
         }
         folioObjet = JSON.parse(folio)
         const folio_reconcilier = folioObjet.map(folio => folio.folio.ID_FOLIO)
-      
+
         await Folio.update({
             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
             IS_RECONCILIE: 1,
@@ -958,10 +968,10 @@ const updateRetourEquipe = async (req, res) => {
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
-                ID_FOLIO:{
+                ID_FOLIO: {
                     [Op.in]: folioAllObjet,
                 },
-                IS_RECONCILIE: null 
+                IS_RECONCILIE: null
             }
 
         })
@@ -1019,8 +1029,12 @@ const findAllFolioScannimg = async (req, res) => {
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 ID_USER: req.userId,
-                // '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+                ID_ETAPE_FOLIO: {
+                    [Op.in]: [
+                        ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                        ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+                    ]
+                }
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             order: [
@@ -1458,9 +1472,9 @@ const findAllFolioScannimgNonReconcilier = async (req, res) => {
                     as: 'folio',
                     required: false,
                     attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
-                    where:{
-                        [Op.and]:[{
-                            ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
                         }]
                     },
                     include: [

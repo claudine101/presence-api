@@ -263,4 +263,63 @@ scanning_volumeRetour_routes.get('/agent/allVolume/supAillescanning', scanning_v
  */
  scanning_volumeRetour_routes.get('/agent/foliosRecus/retours/notValid', scanning_volumeRetour_controller.getFoliosAllRetournernotValid)
 
+
+     /**
+ * Une route  permet de recuperer les details de volumes
+ *@method GET
+ * @url /scanning/retour/agent/details/volume
+ */
+ scanning_volumeRetour_routes.get('/agent/details/volume/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolume)
+
+      /**
+ * Une route  permet de recuperer les details de volumes traite par un agents sup ailles scanning
+ *@method GET
+ * @url /scanning/retour/agent/details/traites
+ */
+ scanning_volumeRetour_routes.get('/agent/details/traites/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesSup)
+
+       /**
+ * Une route  permet de recuperer les details de volumes chez le chef equipe
+ *@method GET
+ * @url /scanning/retour/agent/details/chefEquiScan
+ */
+ scanning_volumeRetour_routes.get('/agent/details/chefEquiScan/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesChefEquiScan)
+
+        /**
+ * Une route  permet de recuperer les details de volumes pret a etre archiver
+ *@method GET
+ * @url /scanning/retour/agent/details/pretArchives
+ */
+ scanning_volumeRetour_routes.get('/agent/details/pretArchives/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesPretArchives)
+
+        /**
+ * Une route  permet de recuperer les details de volumes non scanner et non valid
+ *@method GET
+ * @url /scanning/retour/agent/details/nonScan/nonValid
+ */
+ scanning_volumeRetour_routes.get('/agent/details/nonScan/nonValid/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeNonScanNonValid)
+
+         /**
+ * Une route  permet de recuperer les malles disponible 
+ *@method GET
+ * @url /scanning/retour/agent/details/males
+ */
+ scanning_volumeRetour_routes.get('/agent/details/males', scanning_volumeRetour_controller.getMalesDisponible)
+
+  /**
+* Une route pour recuperer la liste des agents superviseurs scanning
+*@method GET
+* @url /scanning/retour/agent/supeAille/scanning
+*/
+scanning_volumeRetour_routes.get('/agent/supeAille/scanning', scanning_volumeRetour_controller.findAgentAllSupAgentScanning)
+
+
+ /**
+ * Une route pour reenvoyez le volumes dans la phase scanning
+ *@method PUT
+ * @url /scanning/retour/agent/scanningPhase/updtae
+ */
+ scanning_volumeRetour_routes.put('/agent/scanningPhase/updtae', scanning_volumeRetour_controller.retourAgentSupAileReenvoyezScan)
+
+
 module.exports = scanning_volumeRetour_routes
