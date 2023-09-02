@@ -2,6 +2,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../utils/sequelize');
 const Types_incident = require('./Types_incident');
+const Users = require('./Users');
 
 /**
 * fonction model pour la creation de la table incidents
@@ -32,6 +33,14 @@ const Incidents = sequelize.define("incidents", {
                 type: DataTypes.INTEGER(),
                 allowNull: false
         },
+        STATUT: {
+                type: DataTypes.TINYINT,
+                defaultValue: 0
+        },
+        COMMENTAIRE: {
+                type: DataTypes.TEXT,
+                allowNull: true
+        },
         DATE_INSERTION: {
                 type: DataTypes.DATE,
                 allowNull: false,
@@ -43,5 +52,7 @@ const Incidents = sequelize.define("incidents", {
         timestamps: false,
 })
 Incidents.belongsTo(Types_incident, { foreignKey:"ID_TYPE_INCIDENT",as:'types_incidents'})
+Incidents.belongsTo(Users, { foreignKey:"ID_USER",as:'users'})
+
 
 module.exports = Incidents
