@@ -309,7 +309,7 @@ const getFlashByChefEquipeENattante = async (req, res) => {
             }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
-                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'DATE_INSERTION']
+                include: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'ID_FOLIO', 'DATE_INSERTION']
             },
             where: {
                 [Op.and]: [{
@@ -336,36 +336,6 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                 attributes: ['USERS_ID', 'NOM', 'PRENOM']
             }],
             order: [['DATE_INSERTION', 'DESC']]
-        })
-        var FlashFolios = []
-        flashs.forEach(flash => {
-            const ID_FLASH = flash.folio?.ID_FLASH
-            const flashs = flash.folio.flash
-            const users = flash.traitement
-            const  date= flash.DATE_INSERTION
-            const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
-            if (isExists) {
-                const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
-                const newFolios = { ...folio, folios: [...folio.folios, flash] }
-
-                FlashFolios = FlashFolios.map(flash => {
-                    if (flash.ID_FLASH == ID_FLASH) {
-                        return newFolios
-                    } else {
-                        return flash
-                    }
-                })
-            } else {
-                FlashFolios.push({
-                    ID_FLASH,
-                    flashs,
-                    users,
-                    date,
-                    folios: [flash]
-                })
-
-            }
-
         })
 
         var PvFolios = []
@@ -1034,6 +1004,7 @@ const enregistreFolio = async (req, res) => {
             }
         })
         await Etapes_folio_historiques.bulkCreate(folio_historiques_enregi)
+        
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
