@@ -36,7 +36,8 @@ const Types_incident = sequelize.define(
     },
     DATE_INSERTION: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     },
   },
   {
@@ -47,6 +48,6 @@ const Types_incident = sequelize.define(
 );
 
 
-Incidents.belongsTo(Ordres_incident, { foreignKey:"ID_ORDRE_INCIDENT",as:'ordre_incident'})
+Types_incident.belongsTo(Ordres_incident, { foreignKey:"ID_ORDRE_INCIDENT",as:'ordre_incident'})
 
 module.exports = Types_incident;

@@ -22,6 +22,7 @@ const { Server } = require("socket.io");
 const authRouter = require("./routes/auth/auth_usersRoutes");
 const preparationRouter = require("./routes/preparation/preparationRoutes");
 const scanning_volumeRouter = require("./routes/scanning/scanning_volumeRouter");
+const types_incidentsRouter = require("./routes/incidents/types_incidentsRouter");
 const uploadRouter = require("./routes/uplaodEDRMS/upload_folioRouter");
 
 
@@ -42,6 +43,7 @@ app.use('/indexation', indexationRouter)
 app.use('/admin', administrationRouter)
 app.use('/preparation', preparationRouter)
 app.use('/scanning', scanning_volumeRouter)
+app.use('/types', types_incidentsRouter)
 app.use('/uploadEDMRS', uploadRouter)
 
 app.all("*", (req, res) => {
