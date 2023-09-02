@@ -220,8 +220,10 @@ const findAllincident = async (req, res) => {
                 [sortModel, orderColumn, orderDirection]
             ],
             attributes: [
+                'ID_INCIDENT',
                 'DESCRIPTION',
-                'DATE_INSERTION'
+                'DATE_INSERTION',
+                'STATUT'
               ],
               include : [{
                 model: Types_incident,
@@ -266,6 +268,68 @@ const findAllincident = async (req, res) => {
 }
 
 
+
+const reception = async (req, res) => {
+
+    try {
+        const { ID_INCIDENT } = req.params;
+        const incidentObject = await   Incidents.findByPk(ID_INCIDENT, { attributes: ['ID_INCIDENT', 'STATUT'] })
+        const incident = incidentObject.toJSON()
+        let STATUT
+        if (incident.STATUT) {
+            STATUT = 0
+        } else {
+            STATUT = 1
+        }
+
+        await Incidents.update({ STATUT: STATUT }, {
+            where: { ID_INCIDENT: ID_INCIDENT }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "succès"
+        });
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+
+}
+
+
+
+const traitement = async (req, res) => {
+
+    try {
+        const { ID_INCIDENT,COMMENTAIRE } = req.body;
+        
+        let STATUT = 2
+        await Incidents.update({ COMMENTAIRE: COMMENTAIRE,STATUT: STATUT }, {
+            where: { ID_INCIDENT: ID_INCIDENT }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "succès"
+        });
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+
+}
+
 module.exports = {
     findAllincident,
+    reception,
+    traitement
 }

@@ -29,6 +29,14 @@ const Incidents = sequelize.define("incidents", {
                 type: DataTypes.INTEGER(),
                 allowNull: false
         },
+        STATUT: {
+                type: DataTypes.TINYINT,
+                defaultValue: 0
+        },
+        COMMENTAIRE: {
+                type: DataTypes.TEXT,
+                allowNull: true
+        },
         DATE_INSERTION: {
                 type: DataTypes.DATE,
                 allowNull: false,
