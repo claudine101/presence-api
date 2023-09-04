@@ -850,7 +850,7 @@ const rapportByphase = async (req, res) => {
 const rapportparsemaine = async (req, res) => {
           try {
 
-                    const currentDate = moment();
+                    const currentDate = moment("2023-08-14 14:00:47");
 
                     // Get the start and end of the current ISO week
                     const startOfWeek = currentDate.clone().startOf('isoWeek');
@@ -861,22 +861,80 @@ const rapportparsemaine = async (req, res) => {
                     const datesOfWeek = [];
 
                     for (let date = startOfWeek.clone(); date.isSameOrBefore(endOfWeek, 'day'); date.add(1, 'day')) {
-                              const dayIndex = date.day(); // Get the day of the week index (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+                              const dayIndex = date.day() - 1; // Get the day of the week index (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
                               datesOfWeek.push({
                                         label: daysOfWeek[dayIndex],
                                         date: date.format('YYYY-MM-DD'), // You can format the date as needed
                               });
-
                     }
-                    console.log(datesOfWeek);
+
+                    const startDateFormat = moment(datesOfWeek[0].date).format("YYYY-MM-DD 00:00:00");
+                    const endDateFormat = moment(datesOfWeek[datesOfWeek.length - 1].date).format("YYYY-MM-DD 23:59:59")
+                    const allWeekly = await Etapes_folio_historiques.findAll({
+                              attributes: ['DATE_INSERTION', 'ID_ETAPE_FOLIO', 'ID_FOLIO', 'ID_FOLIO_HISTORIQUE'],
+                              where: {
+                                        [Op.and]: [{
+                                                  DATE_INSERTION: {
+                                                            [Op.between]: [startDateFormat, endDateFormat]
+                                                  },
+                                                  ID_ETAPE_FOLIO: {
+                                                            [Op.in]: [
+                                                                      IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                                                                      // IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                                                                      // IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                                                                      // IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                                                                      // IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS
+                                                            ]
+                                                  }
+                                        }]
+                              },
+                              include: [{
+                                        model: Folio,
+                                        as: 'folio',
+                                        attributes: ['ID_FOLIO', 'ID_VOLUME', 'IS_PREPARE', 'IS_RECONCILIE', 'IS_INDEXE', 'IS_UPLOADED_EDRMS'],
+                                        include: {
+                                                  model: Volume,
+                                                  as: 'volume',
+                                                  attributes: ['ID_VOLUME', 'DATE_INSERTION']
+                                        }
+                              }]
+                    })
+                    const reports = datesOfWeek.map(dayofWeek => {
+                              const planifies = allWeekly.filter(historique => {
+                                        const isSameDay = moment(dayofWeek.date).isSame(moment(historique.DATE_INSERTION), 'day')
+                                        return isSameDay
+                              })
+                              const prepares = allWeekly.filter(historique => {
+                                        const isSameDay = moment(dayofWeek.date).isSame(moment(historique.DATE_INSERTION), 'day')
+                                        return isSameDay && historique.folio.IS_PREPARE
+                              })
+                              const scannes = allWeekly.filter(historique => {
+                                        const isSameDay = moment(dayofWeek.date).isSame(moment(historique.DATE_INSERTION), 'day')
+                                        return isSameDay && historique.folio.IS_RECONCILIE
+                              })
+                              const indexes = allWeekly.filter(historique => {
+                                        const isSameDay = moment(dayofWeek.date).isSame(moment(historique.DATE_INSERTION), 'day')
+                                        return isSameDay && historique.folio.IS_INDEXE
+                              })
+                              const uploades = allWeekly.filter(historique => {
+                                        const isSameDay = moment(dayofWeek.date).isSame(moment(historique.DATE_INSERTION), 'day')
+                                        return isSameDay && historique.folio.IS_UPLOADED_EDRMS
+                              })
+                              return {
+                                        ...dayofWeek,
+                                        planifies,
+                                        prepares,
+                                        scannes,
+                                        indexes,
+                                        uploades
+                              }
+                    })
 
                     res.status(RESPONSE_CODES.OK).json({
                               statusCode: RESPONSE_CODES.OK,
                               httpStatus: RESPONSE_STATUS.OK,
                               message: "Le nombre  est egal à",
-                              result: {
-                                        datesOfWeek
-                              }
+                              result: reports
                     });
 
 
