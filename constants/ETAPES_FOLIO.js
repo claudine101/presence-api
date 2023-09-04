@@ -143,6 +143,18 @@ const IDS_ETAPES_FOLIO = {
 * 35 - Reenvoyer: le volume avec les folios non valide (chef plateau scanning vers agent superviseur)
 */
 REENVOYER_CHEF_PLATEAU_SCANNING_VERS_AGENT_SUPERVISEUR_SCANNING: 35,
+    /**
+* 36 - Reenvoyer: le volume avec les folios non valide (agent superviseur scanning vers equipe scanning)
+*/
+REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING: 36,
+    /**
+* 37 - Reenvoyer: le retour de folios reenvoyez scan et reconcilier (agent superviseur scanning vers equipe scanning)
+*/
+REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER: 37,
+    /**
+* 38 - Reenvoyer: le retour de folios reenvoyez est valid (agent superviseur scanning entre chef plateau)
+*/
+REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID: 38,
 
 }
 

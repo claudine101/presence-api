@@ -348,6 +348,91 @@ scanning_volumeRetour_routes.get('/agent/supeAille/scanning', scanning_volumeRet
  */
  scanning_volumeRetour_routes.put('/agent/reenvoyez/folios/superviseur', scanning_volumeRetour_controller.folioChefScanningReenvoyez)
 
+  /**
+ * Une route pour retourner les volumes reenvoyez chez un chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/plateau
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/supailleScanning/plateau', scanning_volumeRetour_controller.folioEquipeScanningReenvoyer)
+
+   /**
+ * Une route pour retourner les folios reenvoyez deja traites par equipe
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/equipe/retour
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/equipe/retour', scanning_volumeRetour_controller.findAllAgentsFolioRetour)
+
+   /**
+* Une route pour recuperer les pvs d'agent superviseur signe avec equipe reenvoyer
+*@method POST
+* @url /scanning/retour/agent/equipe/pvs/reenvoyez
+*/
+scanning_volumeRetour_routes.post('/agent/equipe/pvs/reenvoyez', scanning_volumeRetour_controller.findGetsPvsAgentSupervieurReenvoyer)
+
+ /**
+ * Une route pour faire le retour entre un agent superviseur et equipe folios reenvoyez
+ *@method PUT
+ * @url /scanning/retour/agent/retour/equipe/superviseur
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/equipe/superviseur', scanning_volumeRetour_controller.updateRetourEquipeFolioReenvoyez)
+
+    /**
+ * Une route pour retourner les folios reenvoyez deja reconcilier
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/equipe/retour/bien/reconcilier
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/equipe/retour/bien/reconcilier', scanning_volumeRetour_controller.findAllFolioScannimgReconciliers)
+
+   /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/chefPlateau/bien
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/chefPlateau/bien', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierPret)
+
+   /**
+* Une route pour recuperer les pvs qu'on a signe lors de chef plateau en allant
+*@method POST
+* @url /scanning/retour/agent/pvs/reenvoyer/retour
+*/
+scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/retour', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyez)
+
+  /**
+ * Une route  permet  si le chef plateau est pret a signer le pv de retours un agent superviseur  
+ *@method GET
+ * @url /scanning/retour/agent/retour/check/action
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/check/action/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefPlateauCkeckReenvoyez)
+
+ /**
+ * Une route pour faire le retour entre un agent superviseur et le chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/renvoyer/isvalid
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/isvalid', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValid)
+
+   /**
+ * Une route  recuperer  les volumes deja traitees d'un chef plateau
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/ok
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/ok', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyer)
+
+    /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/original/retour
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/original/retour', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourOriginal)
+
+  /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/aileSupe/retour
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/aileSupe/retour', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierIsValid)
+ 
+
  
 
 
