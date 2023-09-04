@@ -35,8 +35,8 @@ const findAll = async (req, res) => {
     try {
         const { volume_filters, startDate, endDate, rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
-        const defaultSortField = 'NUMERO_VOLUME'
-        const defaultSortDirection = "DESC"
+        const defaultSortField = 'DATE_INSERTION'
+        const defaultSortDirection = "desc"
         const sortColumns = {
             volume: {
                 as: "volume",
@@ -85,7 +85,7 @@ const findAll = async (req, res) => {
             }
         }
         if (!orderColumn || !sortModel) {
-            orderColumn = sortColumns.volume.fields.NUMERO_VOLUME
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
             sortModel = {
                 model: 'volume',
                 as: sortColumns.volume.as

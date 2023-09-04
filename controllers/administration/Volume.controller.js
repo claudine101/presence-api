@@ -17,6 +17,8 @@ const PROFILS = require("../../constants/PROFILS")
 const IDS_ETAPES_FOLIO = require("../../constants/ETAPES_FOLIO")
 const Etapes_volumes = require("../../models/Etapes_volumes")
 const moment = require('moment')
+const Aile = require("../../models/Aile")
+const Batiment = require("../../models/Batiment")
 
 
 /**
@@ -38,13 +40,26 @@ const getDetail = async (req, res) => {
                     model: Maille,
                     as: 'maille',
                     attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-                    required: false
+                    required: true,
+                   include: {
+                        model: Aile,
+                        as: 'aille',
+                        required: true,
+                        attributes: ['ID_AILE','ID_BATIMENT','NUMERO_AILE'],
+                        include:{
+                            model: Batiment,
+                            as:'batiment',
+                            required:true,
+                            attributes:['ID_BATIMENT','NUMERO_BATIMENT']
+                        }
+                    }
                 }, {
                     model: Etape_Volume,
                     as: 'etapes_volumes',
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },
+                
 
             ]
         })
