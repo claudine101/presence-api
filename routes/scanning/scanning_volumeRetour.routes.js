@@ -320,6 +320,35 @@ scanning_volumeRetour_routes.get('/agent/supeAille/scanning', scanning_volumeRet
  * @url /scanning/retour/agent/scanningPhase/updtae
  */
  scanning_volumeRetour_routes.put('/agent/scanningPhase/updtae', scanning_volumeRetour_controller.retourAgentSupAileReenvoyezScan)
+ /**
+ * Une route pour retourner les volumes reenvoyez chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning', scanning_volumeRetour_controller.renvoyezVoluSupAilleScanning)
+
+ /**
+ * Une route reenvoyer le volume et le malle d'un agent superviseur aille et chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/chefPlateau
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/chefPlateau/:ID_VOLUME', scanning_volumeRetour_controller.volumeChefPlateauReenvoyez)
+
+  /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour', scanning_volumeRetour_controller.renvoyezVoluSupAilleScanningRetour)
+
+  /**
+ * Une route reenvoyer le folios du chef plateau vers un agents superviseurs
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/folios/superviseur
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/folios/superviseur', scanning_volumeRetour_controller.folioChefScanningReenvoyez)
+
+ 
 
 
 module.exports = scanning_volumeRetour_routes

@@ -86,11 +86,6 @@ const ETAPES_VOLUME = {
 * 19-Retour : Archivages des volumes retourner chez un agent de desarchivages
 */
   RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES: 19,
-
-    /**
-* 21-Retour : Retour de volumes chef equipe scanning et agent superviseur aile scanning
-*/
-RETOUR_CHEF_EQUI_SCANNINF_AGENT_SUP_AILE_SCANNING: 21
 }
 
 
