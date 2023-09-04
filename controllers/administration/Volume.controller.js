@@ -550,11 +550,11 @@ const get_rapport_by_volume = async (req, res) => {
     }
 
 /**
- * Permet d'afficher les etapes du volume
+ * Permet d'afficher les etapes du volume dans le timeline
  * @date  31/08/2023
  * @param {express.Request} req 
  * @param {express.Response} res 
- * @author Jospin Va <jospin@mdiabox.bi>
+ * @author Jospin BA <jospin@mdiabox.bi>
  */
 
 const getEtapesVolume = async (req, res) => {
@@ -574,7 +574,7 @@ const getEtapesVolume = async (req, res) => {
             include: [
                 {
                     model: Users,
-                    as: 'traitant',
+                    as: 'users',
                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
                     required: false,
                     include: [
