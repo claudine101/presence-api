@@ -118,10 +118,12 @@ const planification = async (req, res) => {
           attributes: [
             "NUMERO_FOLIO",
             "CODE_FOLIO",
+            "FOLIO",
             "ID_FOLIO",
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
+            "DATE_INSERTION",
           ],
           include: [
             {
@@ -135,7 +137,7 @@ const planification = async (req, res) => {
               as: "natures",
               attributes: ["DESCRIPTION"],
               required: false,
-            },{
+            }, {
               model: Volume,
               as: "volume",
               attributes: ["NUMERO_VOLUME"]
@@ -296,6 +298,7 @@ const desarchivage = async (req, res) => {
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
+            "DATE_INSERTION"
           ],
           include: [
             {
@@ -309,7 +312,7 @@ const desarchivage = async (req, res) => {
               as: "natures",
               attributes: ["DESCRIPTION"],
               required: false,
-            },{
+            }, {
               model: Volume,
               as: "volume",
               attributes: ["NUMERO_VOLUME"]
@@ -470,6 +473,7 @@ const transmission = async (req, res) => {
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
+            "DATE_INSERTION"
           ],
           include: [
             {
@@ -578,6 +582,7 @@ const etiquetage = async (req, res) => {
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
+            "DATE_INSERTION"
           ],
           include: [
             {
@@ -606,12 +611,18 @@ const etiquetage = async (req, res) => {
           },
           include: [
             {
+              model: Etapes_folio,
+              as: "etapes",
+              attributes: ["NOM_ETAPE"],
+              required: false,
+            },
+            {
               model: natures,
               as: "natures",
               attributes: ["DESCRIPTION"],
               required: false,
             },
-             {
+            {
               model: Volume,
               as: "volume",
               attributes: ["NUMERO_VOLUME"]
@@ -624,6 +635,12 @@ const etiquetage = async (req, res) => {
             IS_PREPARE: 0,
           },
           include: [
+            {
+              model: Etapes_folio,
+              as: "etapes",
+              attributes: ["NOM_ETAPE"],
+              required: false,
+            },
             {
               model: natures,
               as: "natures",
@@ -748,6 +765,7 @@ const indexation = async (req, res) => {
         "ID_VOLUME",
         "ID_NATURE",
         "IS_INDEXE",
+        "DATE_INSERTION"
       ],
       where: {
         ...globalSearchWhereLike,
@@ -789,13 +807,18 @@ const indexation = async (req, res) => {
             required: false,
           },
         ],
-      },{
+      }, {
         model: natures,
         as: "natures",
         attributes: ["DESCRIPTION"],
         required: false,
+      },
+      {
+        model: Etapes_folio,
+        as: "etapes",
+        attributes: ["NOM_ETAPE"],
       }
-    ],
+      ],
     });
     const uniqueIds = [];
     const volumesPure = folios.filter((element) => {
