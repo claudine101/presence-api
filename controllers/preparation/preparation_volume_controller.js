@@ -15,6 +15,7 @@ const Folio = require('../../models/Folio');
 const { Op } = require("sequelize");
 const Maille = require('../../models/Maille');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
+const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques');
 
 /**
  * Permet de vérifier la connexion dun utilisateur
@@ -218,12 +219,12 @@ const findAll = async (req, res) => {
                     },
                 })
                 foliosNoPrepare.push(foliosNoPrepare)
-                
+
             }
-                allVolume.push({
-                    ...util,
-                    foliosNoPrepare,
-                });
+            allVolume.push({
+                ...util,
+                foliosNoPrepare,
+            });
         })
         )
         res.status(RESPONSE_CODES.OK).json({
@@ -231,7 +232,7 @@ const findAll = async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes total",
             result: {
-                data:allVolume,
+                data: allVolume,
                 totalRecords: result.count
             }
         })
@@ -425,34 +426,34 @@ const findAllVolume = async (req, res) => {
                 }]
 
         })
-        const foliosPrepares = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
-            where: {
-                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                ID_VOLUME: ID_VOLUME,
-                IS_PREPARE: 1,
-            },
+        // const foliosPrepares = await Folio.findAll({
+        //     attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+        //     where: {
+        //         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+        //         ID_VOLUME: ID_VOLUME,
+        //         IS_PREPARE: 1,
+        //     },
 
-        })
-        const foliosPreparesNov = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
-            where: {
-                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                ID_VOLUME: ID_VOLUME,
-                IS_PREPARE: 1,
-                PRENOM_PROPRIETAIRE: null
-            },
+        // })
+        // const foliosPreparesNov = await Folio.findAll({
+        //     attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+        //     where: {
+        //         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+        //         ID_VOLUME: ID_VOLUME,
+        //         IS_PREPARE: 1,
+        //         PRENOM_PROPRIETAIRE: null
+        //     },
 
-        })
-        const foliosNoPrepare = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
-            where: {
-                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                ID_VOLUME: ID_VOLUME,
-                IS_PREPARE: 0,
-            },
+        // })
+        // const foliosNoPrepare = await Folio.findAll({
+        //     attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+        //     where: {
+        //         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+        //         ID_VOLUME: ID_VOLUME,
+        //         IS_PREPARE: 0,
+        //     },
 
-        })
+        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -962,7 +963,7 @@ const nommerSuperviseurAile = async (req, res) => {
 const nommerChefPlateau = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { CHEF_PLATEAU ,histo_IDETAPE} = req.body
+        const { CHEF_PLATEAU, histo_IDETAPE } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -1017,6 +1018,109 @@ const nommerChefPlateau = async (req, res) => {
             PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             ID_ETAPE_VOLUME: ETAPES_VOLUME.CHOIX_CHEF_PLATAEU
         })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet permet  de nommer  chef plateau
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author NDAYISABA Claudine <claudine@mdiabox.bi>
+ * @date 4/09/2023
+ */
+const addChefPlateau = async (req, res) => {
+    try {
+        const { CHEF_PLATEAU, ID_MAILLE } = req.body
+        const validation = new Validation(
+            { ...req.body, ...req.files },
+            {
+                CHEF_PLATEAU: {
+                    required: true,
+                },
+                ID_MAILLE: {
+                    required: true,
+                },
+                PV: {
+                    required: true,
+                    image: 21000000
+                }
+
+            },
+            {
+                CHEF_PLATEAU: {
+                    required: "CHEF_PLATEAU est obligatoire"
+                },
+                MAILLE: {
+                    required: "MAILLE est obligatoire"
+                },
+                PV: {
+                    image: "La taille invalide",
+                    required: "PV est obligatoire"
+                }
+            }
+        );
+        await validation.run()
+        const isValid = await validation.isValidate()
+        if (!isValid) {
+            const errors = await validation.getErrors()
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const result = await Folio.findAll({
+            attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+            where: {
+                ID_MALLE_NO_TRAITE: ID_MAILLE,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.CHEF_EQUIPE_SELECT_AGENT_SUP_AILE,
+            },
+        })
+
+        const PV = req.files?.PV
+        const volumeUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+            filename_pv = fileInfo_2
+        }
+        const folio_ids = result?.map(folio => folio.ID_FOLIO)
+        // update des folios non  preparaes
+        await Folio.update({
+            ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU
+        }, {
+            where: {
+                ID_FOLIO: {
+                    [Op.in]: folio_ids
+                }
+            },
+        })
+        const folio_historiques = result?.map(folio => {
+            return {
+                ID_USER: req.userId,
+                USER_TRAITEMENT: CHEF_PLATEAU,
+                ID_FOLIO: folio.ID_FOLIO,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(folio_historiques)
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1252,93 +1356,242 @@ const findAllAgentSupAile = async (req, res) => {
  * 
  */
 const findAllAgentSupAileRetour = async (req, res) => {
+
     try {
-        const result = await Etapes_volume_historiques.findAll({
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const user = userObject.toJSON()
+        var condition = {}
+        if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
+            condition = [
+                IDS_ETAPES_FOLIO.CHEF_EQUIPE_SELECT_AGENT_SUP_AILE,
+                IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
+                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                IDS_ETAPES_FOLIO.AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
+                IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
+                IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+            ]
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
+            condition = [
+                IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
+                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                IDS_ETAPES_FOLIO.AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
+                IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
+                IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+
+            ]
+        }
+
+        const result = await Etapes_folio_historiques.findAll({
             where: {
-                // '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
-                USERS_ID: req.userId,
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_PREPARATION
+                ID_USER: req.userId,
             },
-            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH'],
+            where: {
+                [Op.and]: [{
+                    ID_USER: req.userId,
+                    ID_ETAPE_FOLIO: { [Op.in]: condition }
+                }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
             include: [
                 {
-                    model: Users,
-                    as: 'traitant',
-                    required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO: { [Op.in]: condition }
+                        }]
+                    },
+                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: [{
+                        model: Volume,
+                        as: 'volume',
+                        required: false,
+                        attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+                    },
+                    {
+                        model: Maille,
+                        as: 'malleNonTraite',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                    }]
                 },
                 {
-                    model: Volume,
-                    as: 'volume',
+                    model: Users,
+                    as: 'traitement',
                     required: false,
-                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME'],
-
-                }
-            ]
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
+                }]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.users?.USERS_ID
-            const users = user.users
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        var volumeFolios = []
+        result.forEach(folio => {
+            const ID_VOLUME = folio.folio.ID_VOLUME
+            const volume = folio.folio.volume
+            const date = folio.DATE_INSERTION
+            const users = folio.traitement
+            const malleNonTraite = folio.folio.malleNonTraite
+            const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, volumes: [...volume.volumes, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
+                const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
+
+                const newVolumes = { ...volume, folios: [...volume.folios, folio] }
+                volumeFolios = volumeFolios.map(vol => {
+                    if (vol.ID_VOLUME == ID_VOLUME) {
                         return newVolumes
                     } else {
                         return vol
                     }
                 })
             } else {
-                UserFolios.push({
-                    USERS_ID,
+                volumeFolios.push({
+                    ID_VOLUME,
+                    volume,
+                    date,
                     users,
-                    volumes: [user]
+                    malleNonTraite,
+                    folios: [folio]
                 })
-
-            }
-
-        })
-        var allVolume = []
-        const volume = await Promise.all(result?.map(async resObject => {
-            const util = resObject.toJSON()
-            const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
-                include:
-                {
-                    model: Maille,
-                    as: 'malleNonTraite',
-                    required: false,
-                    attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-
-                },
-                where: {
-                    [Op.and]: [{
-                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.ADD_DETAILLER_FOLIO
-                    }, {
-                        ID_VOLUME: util.volume.ID_VOLUME
-                    }]
-                },
-            })
-            // return console.log(folios)
-            if (folios?.length > 0) {
-                allVolume.push({
-                    ...util,
-                    folios,
-                });
             }
         })
-        )
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes non traités",
-            result: allVolume
+            message: "Liste des volumes",
+            result: volumeFolios
             // result:result
         })
-    } catch (error) {
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}/**
+ * Une route  permet  a un chef equipe de voir les agent superviseur  
+ * et  leur volume en retour  de la phase preparation
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  03/09/2023
+ * 
+ */
+const findAllVolumeRetour = async (req, res) => {
+    try {
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+        const user = userObject.toJSON()
+        var condition = {}
+        if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
+            condition = {
+                USER_TRAITEMENT: req.userId,
+                '$folio.ID_ETAPE_FOLIO$': IDS_ETAPES_FOLIO.CHEF_EQUIPE_SELECT_AGENT_SUP_AILE,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.CHEF_EQUIPE_SELECT_AGENT_SUP_AILE,
+            }
+        }
+        else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU) {
+            condition = {
+                USER_TRAITEMENT: req.userId,
+                '$folio.ID_ETAPE_FOLIO$': IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
+            }
+
+        }
+        else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR) {
+            condition = {
+                USER_TRAITEMENT: req.userId,
+                '$folio.ID_ETAPE_FOLIO$': IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+            }
+
+        }
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ...condition
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: [{
+                        model: Volume,
+                        as: 'volume',
+                        required: false,
+                        attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+                    },
+                    {
+                        model: Maille,
+                        as: 'malleNonTraite',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                    }]
+                },
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
+                }]
+        })
+        var volumeFolios = []
+        result.forEach(folio => {
+            const ID_VOLUME = folio.folio.ID_VOLUME
+            const volume = folio.folio.volume
+            const date = folio.DATE_INSERTION
+            const users = folio.traitement
+            const mailleNoTraite = folio.folio.malleNonTraite
+            const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
+            if (isExists) {
+                const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
+
+                const newVolumes = { ...volume, folios: [...volume.folios, folio] }
+                volumeFolios = volumeFolios.map(vol => {
+                    if (vol.ID_VOLUME == ID_VOLUME) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                volumeFolios.push({
+                    ID_VOLUME,
+                    volume,
+                    date,
+                    users,
+                    mailleNoTraite,
+                    folios: [folio]
+                })
+            }
+        })
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: volumeFolios
+            // result:result
+        })
+    }
+    catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
@@ -1347,6 +1600,9 @@ const findAllAgentSupAileRetour = async (req, res) => {
         })
     }
 }
+
+
+
 /**
  * retour d'un chef plateau
  * @param {express.Request} req 
@@ -1440,7 +1696,7 @@ const retourChefPlateau = async (req, res) => {
  */
 const retourAgentSupAile = async (req, res) => {
     try {
-        const { AGENT_SUPERVISEUR_AILE, volume } = req.body
+        const { AGENT_SUPERVISEUR_AILE, volume, ID_MAILE_NO_TRAITE } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -1482,25 +1738,56 @@ const retourAgentSupAile = async (req, res) => {
             filename_pv = fileInfo_2
         }
         var volumeObjet = {}
-        volumeObjet = JSON.parse(volume)
-        await Promise.all(volumeObjet.map(async (volume) => {
-            const results = await Volume.update({
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+        if (ID_MAILE_NO_TRAITE) {
+            const result = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+                where: {
+                    ID_MALLE_NO_TRAITE: ID_MAILE_NO_TRAITE
+                },
+            })
+            const folio_ids = result?.map(folio => folio.ID_FOLIO)
+            await Folio.update({
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_SELECT_CHEF_PLATEAU
             }, {
                 where: {
-                    ID_VOLUME: volume.volume.ID_VOLUME,
+                    ID_FOLIO: {
+                        [Op.in]: folio_ids
+                    }
+                },
+            })
+            const folio_historiques = result?.map(folio => {
+                return {
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILE,
+                    ID_FOLIO: folio.ID_FOLIO,
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
                 }
             })
-            await Etapes_volume_historiques.create(
-                {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    USERS_ID: req.userId,
-                    ID_VOLUME: volume.volume.ID_VOLUME,
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR_AILE,
+            await Etapes_folio_historiques.bulkCreate(folio_historiques)
+
+        }
+        else {
+        volumeObjet = JSON.parse(volume)
+            await Promise.all(volumeObjet.map(async (volume) => {
+                const results = await Volume.update({
                     ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
-                }
-            )
-        }))
+                }, {
+                    where: {
+                        ID_VOLUME: volume.volume.ID_VOLUME,
+                    }
+                })
+                await Etapes_volume_historiques.create(
+                    {
+                        PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                        USERS_ID: req.userId,
+                        ID_VOLUME: volume.volume.ID_VOLUME,
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR_AILE,
+                        ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+                    }
+                )
+            }))
+        }
 
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -1734,7 +2021,7 @@ module.exports = {
     findAllDesarchive,
     findAllDistribue,
     findAllVolumeSuperviser,
-    findAllAgentSupAileRetour
-
-
+    findAllAgentSupAileRetour,
+    findAllVolumeRetour,
+    addChefPlateau
 }
