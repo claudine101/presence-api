@@ -429,15 +429,9 @@ const agent_chefequipe_preparation = async (req, res) => {
     const count_chefequipe = await Promise.all(
       chefequipe.map(async (countObject) => {
         const util = countObject.toJSON();
-
-        // const volumes = await .findAndCountAll({
-        //   attributes: ["ID_VOLUME_HISTORIQUE", "USERS_ID", "ID_VOLUME","DATE_INSERTION"],
-
         const etapes_folio_histo_chefequipe = await Etapes_volume_historiques.findAndCountAll(
           {
-            attributes: ["ID_VOLUME_HISTORIQUE", "USERS_ID", "ID_VOLUME","DATE_INSERTION","ID_ETAPE_VOLUME"],
             where: {
-              // ID_ETAPE_VOLUME: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
               ID_ETAPE_VOLUME: IDS_ETAPE_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE,
               USERS_ID: util.USERS_ID,
               ...dateWhere,

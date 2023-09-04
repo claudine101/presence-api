@@ -107,10 +107,10 @@ const getHistoriqueVolume = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volumes',
-                    attributes: ['NUMERO_VOLUME','DATE_INSERTION'],
-                    required:false
+                    attributes: ['NUMERO_VOLUME', 'DATE_INSERTION'],
+                    required: false
                 },
-                 {
+                {
                     model: Etape_Volume,
                     as: 'etapes_volumes',
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
@@ -119,15 +119,15 @@ const getHistoriqueVolume = async (req, res) => {
             ],
 
         })
-              const uniqueIds = [];
-              const volumesHistorique = volumesHistoriqueAll.filter(element => {
-                        const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
-                        if (!isDuplicate) {
-                                  uniqueIds.push(element.USER_TRAITEMENT);
-                                  return true;
-                        }
-                        return false;
-              });
+        const uniqueIds = [];
+        const volumesHistorique = volumesHistoriqueAll.filter(element => {
+            const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
+            if (!isDuplicate) {
+                uniqueIds.push(element.USER_TRAITEMENT);
+                return true;
+            }
+            return false;
+        });
         if (volumesHistorique) {
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -186,38 +186,44 @@ const getHistoriqueFolio = async (req, res) => {
                 {
                     model: Folio,
                     as: "folio",
-                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME','FOLIO','NUMERO_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'CODE_FOLIO', 'ID_VOLUME', 'FOLIO', 'NUMERO_FOLIO', 'DATE_INSERTION'],
                     where: {
                         ID_VOLUME: ID_VOLUME
                     },
-                    include:[{
+                    include: [{
                         model: Volume,
                         as: 'volume',
-                        attributes:['NUMERO_VOLUME'],
-                        required: false,
+                        attributes: ['NUMERO_VOLUME'],
+                        required: true,
                     },
                     {
                         model: Nature_folio,
                         as: 'natures',
-                        attributes:['DESCRIPTION'],
+                        attributes: ['DESCRIPTION'],
                         required: false
-                    }
-                ]
+                    },
+                    {
+                        model: Etapes_folio,
+                        as: "etapes",
+                        attributes: ["NOM_ETAPE"],
+                        required: true,
+                    },
+                    ]
                 }
             ],
         })
         const uniqueIds = [];
         const folioHistoriqueRows = folioHistoriqueAll.rows.filter(element => {
-                  const isDuplicate = uniqueIds.includes(element.ID_USER);
-                  if (!isDuplicate) {
-                            uniqueIds.push(element.ID_USER);
-                            return true;
-                  }
-                  return false;
+            const isDuplicate = uniqueIds.includes(element.ID_USER);
+            if (!isDuplicate) {
+                uniqueIds.push(element.ID_USER);
+                return true;
+            }
+            return false;
         });
         const folioHistorique = {
-          count: folioHistoriqueAll.count,
-          rows: folioHistoriqueRows
+            count: folioHistoriqueAll.count,
+            rows: folioHistoriqueRows
         }
 
         const result = await Promise.all(folioHistorique.rows.map(async countObject => {
@@ -230,16 +236,27 @@ const getHistoriqueFolio = async (req, res) => {
                     {
                         model: Folio,
                         as: "folio",
-                        attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER'],
+                        attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'CODE_FOLIO', 'NUMERO_PARCELLE', 'PHOTO_DOSSIER', 'DATE_INSERTION'],
                         required: true,
-                        where: {ID_VOLUME},
-                        include:[
-                            {
-                                model: Nature_folio,
-                                as: 'natures',
-                                attributes:['DESCRIPTION'],
-                                required: false
-                            }
+                        where: { ID_VOLUME },
+                        include: [{
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NUMERO_VOLUME'],
+                            required: true,
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['DESCRIPTION'],
+                            required: false
+                        },
+                        {
+                            model: Etapes_folio,
+                            as: "etapes",
+                            attributes: ["NOM_ETAPE"],
+                            required: true,
+                        },
                         ]
                     }
                 ],
@@ -252,12 +269,12 @@ const getHistoriqueFolio = async (req, res) => {
 
             const uniqueIds = [];
             const folioRows = getFolio.rows.filter(element => {
-                      const isDuplicate = uniqueIds.includes(element.ID_FOLIO);
-                      if (!isDuplicate) {
-                                uniqueIds.push(element.ID_FOLIO);
-                                return true;
-                      }
-                      return false;
+                const isDuplicate = uniqueIds.includes(element.ID_FOLIO);
+                if (!isDuplicate) {
+                    uniqueIds.push(element.ID_FOLIO);
+                    return true;
+                }
+                return false;
             });
             // const folioHistorique = {
             //   count: folioHistoriqueAll.count,
@@ -312,7 +329,7 @@ const getAgentByVolume = async (req, res) => {
     try {
 
         const dossier = await Folio.findAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION','CODE_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
@@ -329,6 +346,11 @@ const getAgentByVolume = async (req, res) => {
                     attributes: ['ID_ETAPE_FOLIO', 'NOM_ETAPE'],
                     required: false
                 },
+                {
+                    model: Volume,
+                    as: "volume",
+                    attributes: ["NUMERO_VOLUME"]
+                }
             ],
 
         })
@@ -366,20 +388,20 @@ const getAgentByVolume = async (req, res) => {
 */
 const get_rapport_by_volume = async (req, res) => {
     try {
-        const {ID_VOLUME} = req.params
-      const { startDate, endDate} = req.query
+        const { ID_VOLUME } = req.params
+        const { startDate, endDate } = req.query
         // Date filter
         var dateWhere = {}
         if (startDate) {
-          const startDateFormat = moment(startDate).format("YYYY-MM-DD 00:00:00")
-          const endDateFormat = endDate ?
-            moment(endDate).format("YYYY-MM-DD 23:59:59") :
-            moment().format("YYYY-MM-DD 23:59:59")
-          dateWhere = {
-            DATE_INSERTION: {
-              [Op.between]: [startDateFormat, endDateFormat]
+            const startDateFormat = moment(startDate).format("YYYY-MM-DD 00:00:00")
+            const endDateFormat = endDate ?
+                moment(endDate).format("YYYY-MM-DD 23:59:59") :
+                moment().format("YYYY-MM-DD 23:59:59")
+            dateWhere = {
+                DATE_INSERTION: {
+                    [Op.between]: [startDateFormat, endDateFormat]
+                }
             }
-          }
         }
 
         //find all folios
@@ -389,38 +411,38 @@ const get_rapport_by_volume = async (req, res) => {
         //     ID_VOLUME:ID_VOLUME    
         //   }
         // });
-        
+
         //count dossiers indexé
         const indexe = await Folio.findAndCountAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_INDEXE'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_INDEXE'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_INDEXE: 1,...dateWhere
+                ID_VOLUME: ID_VOLUME, IS_INDEXE: 1, ...dateWhere
             },
-                    include: [
-                        {
-                            model: Volume,
-                            as: 'volume',
-                            attributes: ['NUMERO_VOLUME'],
-                            required: false
-                        },
-                        {
-                            model : Nature_folio,
-                            as :'nature',
-                            attributes:['DESCRIPTION']
-                        },
-                        {
-                            model : Etapes_folio,
-                            as :'etapes',
-                            attributes:['NOM_ETAPE'] 
-                        }]
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    attributes: ['NUMERO_VOLUME'],
+                    required: false
+                },
+                {
+                    model: Nature_folio,
+                    as: 'nature',
+                    attributes: ['DESCRIPTION']
+                },
+                {
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['NOM_ETAPE']
+                }]
 
         })
 
-         //count all dossiers
-         const all_dossier = await Folio.findAndCountAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION'],
+        //count all dossiers
+        const all_dossier = await Folio.findAndCountAll({
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION'],
             where: {
-                ID_VOLUME: ID_VOLUME,...dateWhere
+                ID_VOLUME: ID_VOLUME, ...dateWhere
             },
             // include: [
             //     {
@@ -432,122 +454,122 @@ const get_rapport_by_volume = async (req, res) => {
             //         //       IS_INDEXE: 0,
             //         //     }]
             //         // },
-                    include: [
-                        {
-                            model: Volume,
-                            as: 'volume',
-                            attributes: ['NUMERO_VOLUME'],
-                            required: false
-                        },
-                        {
-                            model : Nature_folio,
-                            as :'nature',
-                            attributes:['DESCRIPTION']
-                        },
-                        {
-                            model : Etapes_folio,
-                            as :'etapes',
-                            attributes:['NOM_ETAPE'] 
-                        }]
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    attributes: ['NUMERO_VOLUME'],
+                    required: false
+                },
+                {
+                    model: Nature_folio,
+                    as: 'nature',
+                    attributes: ['DESCRIPTION']
+                },
+                {
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['NOM_ETAPE']
+                }]
 
         })
 
-          //count dossiers preparé
+        //count dossiers preparé
         const prepare = await Folio.findAndCountAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_PREPARE'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_PREPARE'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_PREPARE:1,...dateWhere,
+                ID_VOLUME: ID_VOLUME, IS_PREPARE: 1, ...dateWhere,
             },
-                    include: [
-                        {
-                            model: Volume,
-                            as: 'volume',
-                            attributes: ['NUMERO_VOLUME'],
-                            required: false
-                        },
-                        {
-                            model : Nature_folio,
-                            as :'nature',
-                            attributes:['DESCRIPTION']
-                        },
-                        {
-                            model : Etapes_folio,
-                            as :'etapes',
-                            attributes:['NOM_ETAPE'] 
-                        }]
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    attributes: ['NUMERO_VOLUME'],
+                    required: false
+                },
+                {
+                    model: Nature_folio,
+                    as: 'nature',
+                    attributes: ['DESCRIPTION']
+                },
+                {
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['NOM_ETAPE']
+                }]
 
         })
-          //count dossiers uploadé
+        //count dossiers uploadé
         const uploade = await Folio.findAndCountAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_UPLOADED_EDRMS'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_UPLOADED_EDRMS'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_UPLOADED_EDRMS:1,...dateWhere,
+                ID_VOLUME: ID_VOLUME, IS_UPLOADED_EDRMS: 1, ...dateWhere,
             },
-                    include: [
-                        {
-                            model: Volume,
-                            as: 'volume',
-                            attributes: ['NUMERO_VOLUME'],
-                            required: false
-                        },
-                        {
-                            model : Nature_folio,
-                            as :'nature',
-                            attributes:['DESCRIPTION']
-                        },
-                        {
-                            model : Etapes_folio,
-                            as :'etapes',
-                            attributes:['NOM_ETAPE'] 
-                        }]
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    attributes: ['NUMERO_VOLUME'],
+                    required: false
+                },
+                {
+                    model: Nature_folio,
+                    as: 'nature',
+                    attributes: ['DESCRIPTION']
+                },
+                {
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['NOM_ETAPE']
+                }]
 
         })
-          //count dossiers scanné
+        //count dossiers scanné
         const scanne = await Folio.findAndCountAll({
-            attributes : ['ID_FOLIO','NUMERO_FOLIO','FOLIO','DATE_INSERTION','IS_RECONCILIE'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_RECONCILIE'],
             where: {
-                ID_VOLUME: ID_VOLUME,IS_RECONCILIE:1,...dateWhere,
+                ID_VOLUME: ID_VOLUME, IS_RECONCILIE: 1, ...dateWhere,
             },
-                    include: [
-                        {
-                            model: Volume,
-                            as: 'volume',
-                            attributes: ['NUMERO_VOLUME'],
-                            required: false
-                        },
-                        {
-                            model : Nature_folio,
-                            as :'nature',
-                            attributes:['DESCRIPTION']
-                        },
-                        {
-                            model : Etapes_folio,
-                            as :'etapes',
-                            attributes:['NOM_ETAPE'] 
-                        }]
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    attributes: ['NUMERO_VOLUME'],
+                    required: false
+                },
+                {
+                    model: Nature_folio,
+                    as: 'nature',
+                    attributes: ['DESCRIPTION']
+                },
+                {
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['NOM_ETAPE']
+                }]
 
         })
         res.status(RESPONSE_CODES.OK).json({
-          statusCode: RESPONSE_CODES.OK,
-          httpStatus: RESPONSE_STATUS.OK,
-          message: "les dossiers phase d'indexation",
-          result: {
-            indexe,
-            uploade,
-            prepare,
-            scanne,
-            all_dossier
-          }
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "les dossiers phase d'indexation",
+            result: {
+                indexe,
+                uploade,
+                prepare,
+                scanne,
+                all_dossier
+            }
         });
-      } catch (error) {
+    } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-          statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-          httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-          message: "Erreur interne du serveur, réessayer plus tard",
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
         })
-      }
     }
+}
 
 /**
  * Permet d'afficher les etapes du volume
@@ -560,60 +582,60 @@ const get_rapport_by_volume = async (req, res) => {
 const getEtapesVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-          //find all etapes volume
-          const allEtapesV = await Etapes_volumes.findAll({
-            attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
-          });
+        //find all etapes volume
+        const allEtapesV = await Etapes_volumes.findAll({
+            attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+        });
 
-        const allEtapes= await Promise.all(allEtapesV.map(async countObject => {
+        const allEtapes = await Promise.all(allEtapesV.map(async countObject => {
             const etapeV = countObject.toJSON()
-        const etapesVol = await Etapes_volume_historiques.findOne({
-            where: {
-                ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
-            },
-            include: [
-                {
-                    model: Users,
-                    as: 'traitant',
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
-                    required: false,
-                    include: [
-                        {
-                            model: Profils,
-                            as: 'profil',
-                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
-                            required: false,
-                        }
-                    ],
+            const etapesVol = await Etapes_volume_historiques.findOne({
+                where: {
+                    ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
                 },
-                {
-                    model: Volume,
-                    as: 'volumes',
-                    attributes: ['NUMERO_VOLUME','DATE_INSERTION','ID_ETAPE_VOLUME'],
-                    required:false
-                },
-                 {
-                    model: Etape_Volume,
-                    as: 'etapes_volumes',
-                    attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
-                    required: false
-                },
-            ],
+                include: [
+                    {
+                        model: Users,
+                        as: 'traitant',
+                        attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                        required: false,
+                        include: [
+                            {
+                                model: Profils,
+                                as: 'profil',
+                                attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                                required: false,
+                            }
+                        ],
+                    },
+                    {
+                        model: Volume,
+                        as: 'volumes',
+                        attributes: ['NUMERO_VOLUME', 'DATE_INSERTION', 'ID_ETAPE_VOLUME'],
+                        required: false
+                    },
+                    {
+                        model: Etape_Volume,
+                        as: 'etapes_volumes',
+                        attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+                        required: false
+                    },
+                ],
 
-        })
+            })
             return {
-              ...etapeV,
-              etapesVol
+                ...etapeV,
+                etapesVol
             }
-          }))
+        }))
 
-          const byEtapeV = allEtapes.sort((a, b) => {
-                    if (!a.etapesVol && !b.etapesVol) return 0;
-                    if (!a.etapesVol) return 1;
-                    if (!b.etapesVol) return -1;
-                    return new Date(a.etapesVol.DATE_INSERTION) - new Date(b.etapesVol.DATE_INSERTION)
-          })
-         
+        const byEtapeV = allEtapes.sort((a, b) => {
+            if (!a.etapesVol && !b.etapesVol) return 0;
+            if (!a.etapesVol) return 1;
+            if (!b.etapesVol) return -1;
+            return new Date(a.etapesVol.DATE_INSERTION) - new Date(b.etapesVol.DATE_INSERTION)
+        })
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -621,15 +643,15 @@ const getEtapesVolume = async (req, res) => {
             result: {
                 byEtapeV,
             }
-          });
-        } catch (error) {
-          console.log(error)
-          res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+        });
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
-          })
-        }
+        })
+    }
 }
 
 
