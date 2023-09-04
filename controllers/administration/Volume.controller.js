@@ -17,6 +17,7 @@ const PROFILS = require("../../constants/PROFILS")
 const IDS_ETAPES_FOLIO = require("../../constants/ETAPES_FOLIO")
 const Etapes_volumes = require("../../models/Etapes_volumes")
 const moment = require('moment')
+const ETAPES_VOLUME = require("../../constants/ETAPES_VOLUME")
 
 
 /**
@@ -563,6 +564,14 @@ const getEtapesVolume = async (req, res) => {
           //find all etapes volume
           const allEtapesV = await Etapes_volumes.findAll({
             attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
+            where: {
+                ID_ETAPE_VOLUME: {
+                  [Op.not]: [
+                     ETAPES_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES ,
+                     ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING
+                  ]
+              }
+            }
           });
 
         const allEtapes= await Promise.all(allEtapesV.map(async countObject => {

@@ -18,6 +18,7 @@ const Users = require("../../../models/Users")
 const Profils = require("../../../models/Profils")
 const Etapes_folio_historiques = require('../../../models/Etapes_folio_historiques')
 const Flashs = require("../../../models/Flashs")
+const IDS_ETAPES_FOLIO = require("../../../constants/ETAPES_FOLIO")
 
 /**
  * Permet d'afficher les details du folio
@@ -300,15 +301,17 @@ const findTraitantFolio = async (req, res) => {
 
     })
 
-    const uniqueIds = [];
-    const distinctAgent = agentsFolio.filter(element => {
-              const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
-              if (!isDuplicate) {
-                        uniqueIds.push(element.USER_TRAITEMENT);
-                        return true;
-              }
-              return false;
-    });
+    // const uniqueIds = [];
+    // const distinctAgent = agentsFolio.filter(element => {
+    //           const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
+    //           if (!isDuplicate) {
+    //                     uniqueIds.push(element.USER_TRAITEMENT);
+    //                     return true;
+    //           }
+    //           return false;
+    // });
+
+    
     // const folioHistorique = {
     //   // count: folioHistoriqueAll.count,
     //   rows: distinctAgent
@@ -339,12 +342,12 @@ const findTraitantFolio = async (req, res) => {
 
     // }))
 
-    if (distinctAgent) {
+    if (agentsFolio) {
       res.status(RESPONSE_CODES.OK).json({
         statusCode: RESPONSE_CODES.OK,
         httpStatus: RESPONSE_STATUS.OK,
         message: "Historique du dossier",
-        result: distinctAgent
+        result: agentsFolio
       })
     } else {
       res.status(RESPONSE_CODES.NOT_FOUND).json({
@@ -377,6 +380,18 @@ const getEtapesDossier = async (req, res) => {
         //find all etapes dossier
         const allEtapesDos = await Etapes_folio.findAll({
           attributes:['ID_ETAPE_FOLIO','NOM_ETAPE'],
+          where: {
+            ID_ETAPE_FOLIO: {
+              [Op.not]: [
+                  IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                  IDS_ETAPES_FOLIO.CHEF_EQUIPE_EDRMS,
+                  IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                  IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                  IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                  IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
+              ]
+          }
+          }
         });
 
       const allEtapes= await Promise.all(allEtapesDos.map(async countObject => {
