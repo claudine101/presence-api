@@ -11,7 +11,6 @@ const RESPONSE_CODES = require("./constants/RESPONSE_CODES");
 const RESPONSE_STATUS = require("./constants/RESPONSE_STATUS");
 const administrationRouter = require("./routes/administration/administrationRouter");
 const indexationRouter = require("./routes/indexation/indexationRouter");
-const excelToJson = require('convert-excel-to-json');
 
 const app = express();
 const bindUser = require("./middleware/bindUser");
@@ -79,12 +78,5 @@ io.on('disconnect', () => {
 })
 app.io = io
 server.listen(port, async () => {
-          const result = excelToJson({
-                    sourceFile: 'A.xlsx',
-                    header: {
-                              rows: 1,
-                    }
-          });
-          console.log(result)
           console.log(`${(process.env.NODE_ENV).toUpperCase()} - Server is running on : http${isHttps ? 's' : ''}://${ip.address()}:${port}/`);
 });
