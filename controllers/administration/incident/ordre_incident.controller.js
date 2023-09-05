@@ -143,6 +143,9 @@ const findAllordre = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            order:[[
+                'DATE_INSERTION','DESC'
+            ]],
             attributes: [
                 'ID_ORDRE_INCIDENT',
                 'ORDRE_INCIDENT',
@@ -189,7 +192,7 @@ const findAllordre = async (req, res) => {
             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
             message: "Erreur interne du serveur, réessayer plus tard",
         })
-    }
+    } 
 }
 
 /**

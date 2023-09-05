@@ -14,7 +14,9 @@ const allordre = async ( req, res) => {
                 'ORDRE_INCIDENT',
                 'DATE_INSERTION'
               ],
-              order: [['ID_ORDRE_INCIDENT', 'DESC']]
+              order:[[
+                'DATE_INSERTION','DESC'
+            ]],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -187,6 +189,10 @@ const findAlltype = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            
+            order:[[
+                'DATE_INSERTION','DESC'
+            ]],
             attributes: [
                 'ID_TYPE_INCIDENT',
                 'TYPE_INCIDENT',
