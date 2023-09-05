@@ -110,6 +110,9 @@ const findAllincident = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            order:[[
+                'DATE_INSERTION','DESC'
+            ]],
             attributes: [
                 'ID_INCIDENT',
                 'DESCRIPTION',
