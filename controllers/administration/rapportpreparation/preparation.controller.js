@@ -503,7 +503,7 @@ const agent_superviseur_preparation = async (req, res) => {
     // all agent superviseur
     const agent_superviseur = await Users.findAll({
       where: {
-        ID_PROFIL: PROFILS.AGENT_SUPERVISEUR,
+        ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_ARCHIVE,
       },
       attributes: ["USERS_ID", "NOM", "PRENOM", "EMAIL", "TELEPHONE"],
     });
@@ -516,7 +516,7 @@ const agent_superviseur_preparation = async (req, res) => {
           {
             attributes :["DATE_INSERTION"],
             where: {
-              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG,
               ID_USER: util.USERS_ID,
               ...dateWhere,
             },
