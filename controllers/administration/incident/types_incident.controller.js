@@ -189,10 +189,6 @@ const findAlltype = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
-            
-            order:[[
-                'DATE_INSERTION','DESC'
-            ]],
             attributes: [
                 'ID_TYPE_INCIDENT',
                 'TYPE_INCIDENT',
