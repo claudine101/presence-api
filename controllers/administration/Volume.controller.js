@@ -19,6 +19,7 @@ const Etapes_volumes = require("../../models/Etapes_volumes")
 const moment = require('moment')
 const Aile = require("../../models/Aile")
 const Batiment = require("../../models/Batiment")
+const ETAPES_VOLUME = require("../../constants/ETAPES_VOLUME")
 
 
 /**
@@ -40,17 +41,17 @@ const getDetail = async (req, res) => {
                     model: Maille,
                     as: 'maille',
                     attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-                    required: true,
-                   include: {
+                    required: false,
+                    include: {
                         model: Aile,
                         as: 'aille',
-                        required: true,
-                        attributes: ['ID_AILE','ID_BATIMENT','NUMERO_AILE'],
-                        include:{
+                        required: false,
+                        attributes: ['ID_AILE', 'ID_BATIMENT', 'NUMERO_AILE'],
+                        include: {
                             model: Batiment,
-                            as:'batiment',
-                            required:true,
-                            attributes:['ID_BATIMENT','NUMERO_BATIMENT']
+                            as: 'batiment',
+                            required: false,
+                            attributes: ['ID_BATIMENT', 'NUMERO_BATIMENT']
                         }
                     }
                 }, {
@@ -59,7 +60,7 @@ const getDetail = async (req, res) => {
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },
-                
+
 
             ]
         })
@@ -344,7 +345,7 @@ const getAgentByVolume = async (req, res) => {
     try {
 
         const dossier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION','CODE_FOLIO'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'CODE_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
@@ -587,11 +588,11 @@ const get_rapport_by_volume = async (req, res) => {
 }
 
 /**
- * Permet d'afficher les etapes du volume
+ * Permet d'afficher les etapes du volume dans le timeline
  * @date  31/08/2023
  * @param {express.Request} req 
  * @param {express.Response} res 
- * @author Jospin Va <jospin@mdiabox.bi>
+ * @author Jospin BA <jospin@mdiabox.bi>
  */
 
 const getEtapesVolume = async (req, res) => {
@@ -600,6 +601,14 @@ const getEtapesVolume = async (req, res) => {
         //find all etapes volume
         const allEtapesV = await Etapes_volumes.findAll({
             attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+            where: {
+                ID_ETAPE_VOLUME: {
+                    [Op.not]: [
+                        ETAPES_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING
+                    ]
+                }
+            }
         });
 
         const allEtapes = await Promise.all(allEtapesV.map(async countObject => {
@@ -611,7 +620,7 @@ const getEtapesVolume = async (req, res) => {
                 include: [
                     {
                         model: Users,
-                        as: 'traitant',
+                        as: 'users',
                         attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
                         required: false,
                         include: [
