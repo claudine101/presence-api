@@ -82,6 +82,29 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.get('/superviseurReValides', preparation_folio_controller.findAllSuperviseursReValides)
 
+  /**
+ * Une route  permet  un chef  plateau  de voir  les agent  sup  revalides
+ * de voir  les agents superviseur   
+ *@method GET
+ * @url /preparation/folio/ChefPlateauReValides
+ */
+ preparation_folio_routes.get('/ChefPlateauReValides', preparation_folio_controller.findAllChefPlateauReValides)
+  /**
+ * Une route  permet  un chef  equipe  de voir  les agent  sup aile  revalides
+ * de voir  les agents superviseur   
+ *@method GET
+ * @url /preparation/folio/agentSupAileReValides
+ */
+ preparation_folio_routes.get('/agentSupAileReValides', preparation_folio_controller.findAllAgentReValides)
+
+  /**
+ * Une route  permet  un chef  equipe  de voir  les agent  sup aile  retraite
+ * de voir  les agents superviseur   
+ *@method GET
+ * @url /preparation/folio/agentSupAileRetraite
+ */
+ preparation_folio_routes.get('/agentSupAileRetraite', preparation_folio_controller.findAllAgentRetraites)
+
  /**
  * Une route  permet  un chef  plateau  de voir  les agents superviseur  valides
  * de voir  les agents superviseur   
@@ -111,6 +134,29 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.post('/getPvAgentSuperviseur', preparation_folio_controller.getPvsAgentSuperviseur)
  
+ 
+  /**
+ * Une route  permet les PV d un  chef plateau et   agent  superviseur  en  retour
+ *@method POST
+ * @url /preparation/folio/getPvAgRetour
+ */
+ preparation_folio_routes.post('/getPvAgRetour', preparation_folio_controller.getPvsAgentSupRetour)
+ 
+   /**
+ * Une route  permet les PV d un  chef plateau et   agent  superviseur  aile
+ *@method POST
+ * @url /preparation/folio/getPvChefPlateau
+ */
+ preparation_folio_routes.post('/getPvChefPlateau', preparation_folio_controller.getPvsChefPlateau)
+ 
+   /**
+ * Une route  permet les PV d un  chef EQUIPE et   agent  superviseur  aile
+ *@method POST
+ * @url /preparation/folio/getPvAgentSupAILE
+ */
+ preparation_folio_routes.post('/getPvAgentSupAILE', preparation_folio_controller.getPvsAgentSupAile)
+ 
+
 
 
   /**
@@ -121,6 +167,24 @@ const preparation_folio_routes = express.Router()
  * @url /preparation/folio/checkAgentsup
  */
  preparation_folio_routes.post('/checkAgentsup', preparation_folio_controller.checkAgentsup)
+
+  /**
+ * Une route  permet  de voir si tel  agent  superviseur aile phase preparation 
+ * ont  déja effectuer  retour  avec chef plateau
+ * de voir  les agents superviseur   
+ *@method POST
+ * @url /preparation/folio/checkAgentsupAile
+ */
+ preparation_folio_routes.post('/checkAgentsupAile', preparation_folio_controller.checkAgentsupAile)
+
+  /**
+ * Une route  permet  de voir si tel  chef plateau  
+ * ont  déja effectuer  retour  agent  agent  sup
+ * de voir  les agents superviseur   
+ *@method POST
+ * @url /preparation/folio/checkAgentsuper
+ */
+ preparation_folio_routes.post('/checkAgentsuper', preparation_folio_controller.checkAgentsuper)
 
 
  /**

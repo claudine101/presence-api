@@ -300,33 +300,56 @@ const findAgentSuperviseurAile = async (req, res) => {
     try {
         const { aile } = req.query
         console.log(aile)
-        const userAile = {}
+
         if (!aile) {
             const userObject = await User_ailes.findOne({
                 where: { USERS_ID: req.userId, IS_ACTIF: 1 },
                 attributes: ['ID_AILE']
             })
-            userAile = userObject.toJSON()
-        }
-        const condition = {
-            ID_AILE: aile ? aile : userAile.ID_AILE, IS_ACTIF: 1
-        }
-        const superviseurAile = await Users.findAll({
-            where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
-            include: {
-                model: User_ailes,
-                as: 'userAile',
-                required: false,
-                where: condition,
+            const userAile  = userObject?.toJSON()
+            const condition = {
+                ID_AILE: userAile.ID_AILE, IS_ACTIF: 1
             }
-        })
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des agents superviseurs ailes",
-            result: superviseurAile
-        })
+            const superviseurAile = await Users.findAll({
+                where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
+                attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                include: {
+                    model: User_ailes,
+                    as: 'userAile',
+                    required: false,
+                    where: condition,
+                }
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Liste des agents superviseurs ailes",
+                result: superviseurAile
+            })
+
+        }
+        else{
+            const condition = {
+                ID_AILE: aile, IS_ACTIF: 1
+            }
+            const superviseurAile = await Users.findAll({
+                where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
+                attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                include: {
+                    model: User_ailes,
+                    as: 'userAile',
+                    required: false,
+                    where: condition,
+                }
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Liste des agents superviseurs ailes",
+                result: superviseurAile
+            })
+        }
+        
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({

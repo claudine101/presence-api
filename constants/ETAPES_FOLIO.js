@@ -154,6 +154,15 @@ const IDS_ETAPES_FOLIO = {
           * 32-  retour AGENT  SUP AILE  selectione agent chef plateau
           */
            RETOUR_AGENT_SUP_AILE_SELECT_CHEF_PLATEAU: 32,
+            /**
+          * 45-  retour CHEF EQUIPE  selectione agent SUP  AILE
+          */
+            RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE: 45,
+            /**
+          * 47-  SELECTION AGENT SUP  INDEXATION
+          */
+            SELECTION_AGENT_SUP_INDEXATION: 47,
+            
           
           
           

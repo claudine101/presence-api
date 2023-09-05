@@ -189,6 +189,20 @@ const preparation_volume_routes = express.Router()
  preparation_volume_routes.put('/retourAgentSuperviseurAile', preparation_volume_controller.retourAgentSupAile)
 
  /**
+ * Une route  permet  de retour  agent superviseur aile vers chef equipe
+ *@method PUT
+ * @url /preparation/volume/retourAgentSupAile
+ */
+ preparation_volume_routes.put('/retourAgentSupAile', preparation_volume_controller.retourAgentSupAileRetourne)
+
+  /**
+ * Une route  permet  de retour  chef plateau  vers agent superviseur aile
+ *@method PUT
+ * @url /preparation/volume/retournerChefPlateau
+ */
+ preparation_volume_routes.put('/retournerChefPlateau', preparation_volume_controller.retourPlateauRetourne)
+
+ /**
  * Une route  permet  de retour  chef plateau
  *@method PUT
  * @url /preparation/volume/retourChefPlateau
