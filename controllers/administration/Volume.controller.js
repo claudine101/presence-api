@@ -41,17 +41,17 @@ const getDetail = async (req, res) => {
                     model: Maille,
                     as: 'maille',
                     attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-                    required: true,
-                   include: {
+                    required: false,
+                    include: {
                         model: Aile,
                         as: 'aille',
-                        required: true,
-                        attributes: ['ID_AILE','ID_BATIMENT','NUMERO_AILE'],
-                        include:{
+                        required: false,
+                        attributes: ['ID_AILE', 'ID_BATIMENT', 'NUMERO_AILE'],
+                        include: {
                             model: Batiment,
-                            as:'batiment',
-                            required:true,
-                            attributes:['ID_BATIMENT','NUMERO_BATIMENT']
+                            as: 'batiment',
+                            required: false,
+                            attributes: ['ID_BATIMENT', 'NUMERO_BATIMENT']
                         }
                     }
                 }, {
@@ -60,7 +60,7 @@ const getDetail = async (req, res) => {
                     attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
                     required: false
                 },
-                
+
 
             ]
         })
@@ -345,7 +345,7 @@ const getAgentByVolume = async (req, res) => {
     try {
 
         const dossier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION','CODE_FOLIO'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'CODE_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME
             },
@@ -598,53 +598,53 @@ const get_rapport_by_volume = async (req, res) => {
 const getEtapesVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-          //find all etapes volume
-          const allEtapesV = await Etapes_volumes.findAll({
-            attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
+        //find all etapes volume
+        const allEtapesV = await Etapes_volumes.findAll({
+            attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
             where: {
                 ID_ETAPE_VOLUME: {
-                  [Op.not]: [
-                     ETAPES_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES ,
-                     ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING
-                  ]
-              }
+                    [Op.not]: [
+                        ETAPES_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING
+                    ]
+                }
             }
-          });
+        });
 
         const allEtapes = await Promise.all(allEtapesV.map(async countObject => {
             const etapeV = countObject.toJSON()
-        const etapesVol = await Etapes_volume_historiques.findOne({
-            where: {
-                ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
-            },
-            include: [
-                {
-                    model: Users,
-                    as: 'users',
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
-                    required: false,
-                    include: [
-                        {
-                            model: Profils,
-                            as: 'profil',
-                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
-                            required: false,
-                        }
-                    ],
+            const etapesVol = await Etapes_volume_historiques.findOne({
+                where: {
+                    ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
                 },
-                {
-                    model: Volume,
-                    as: 'volumes',
-                    attributes: ['NUMERO_VOLUME','DATE_INSERTION','ID_ETAPE_VOLUME'],
-                    required:false
-                },
-                 {
-                    model: Etape_Volume,
-                    as: 'etapes_volumes',
-                    attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
-                    required: false
-                },
-            ],
+                include: [
+                    {
+                        model: Users,
+                        as: 'users',
+                        attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                        required: false,
+                        include: [
+                            {
+                                model: Profils,
+                                as: 'profil',
+                                attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                                required: false,
+                            }
+                        ],
+                    },
+                    {
+                        model: Volume,
+                        as: 'volumes',
+                        attributes: ['NUMERO_VOLUME', 'DATE_INSERTION', 'ID_ETAPE_VOLUME'],
+                        required: false
+                    },
+                    {
+                        model: Etape_Volume,
+                        as: 'etapes_volumes',
+                        attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+                        required: false
+                    },
+                ],
 
             })
             return {
