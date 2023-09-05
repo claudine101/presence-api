@@ -68,7 +68,6 @@ const createflashs = async (req, res) => {
 const findAllflash = async (req, res) => {
     try {
         const { rows = 10, first = 0, sortField, sortOrder, search } = req.query
-
         const defaultSortField = "DATE_INSERTION"
         const defaultSortDirection = "DESC"
         const sortColumns = {
@@ -77,12 +76,11 @@ const findAllflash = async (req, res) => {
                 fields: {
                     ID_FLASH: "ID_FLASH",
                     NOM_FLASH: "NOM_FLASH",
+                    IS_DISPO: "IS_DISPO"
                 }
             },
         }
-
         var orderColumn, orderDirection
-
         // sorting
         var sortModel
         if (sortField) {
@@ -113,11 +111,11 @@ const findAllflash = async (req, res) => {
         } else {
             orderDirection = defaultSortDirection
         }
-
         // searching
         const globalSearchColumns = [
             'NOM_FLASH',
             'DATE_INSERTION',
+            'IS_DISPO'
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
