@@ -19,6 +19,7 @@ const Etapes_volumes = require("../../models/Etapes_volumes")
 const moment = require('moment')
 const Aile = require("../../models/Aile")
 const Batiment = require("../../models/Batiment")
+const ETAPES_VOLUME = require("../../constants/ETAPES_VOLUME")
 
 
 /**
@@ -587,55 +588,63 @@ const get_rapport_by_volume = async (req, res) => {
 }
 
 /**
- * Permet d'afficher les etapes du volume
+ * Permet d'afficher les etapes du volume dans le timeline
  * @date  31/08/2023
  * @param {express.Request} req 
  * @param {express.Response} res 
- * @author Jospin Va <jospin@mdiabox.bi>
+ * @author Jospin BA <jospin@mdiabox.bi>
  */
 
 const getEtapesVolume = async (req, res) => {
     const { ID_VOLUME } = req.params
     try {
-        //find all etapes volume
-        const allEtapesV = await Etapes_volumes.findAll({
-            attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
-        });
+          //find all etapes volume
+          const allEtapesV = await Etapes_volumes.findAll({
+            attributes:['ID_ETAPE_VOLUME','NOM_ETAPE'],
+            where: {
+                ID_ETAPE_VOLUME: {
+                  [Op.not]: [
+                     ETAPES_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES ,
+                     ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING
+                  ]
+              }
+            }
+          });
 
         const allEtapes = await Promise.all(allEtapesV.map(async countObject => {
             const etapeV = countObject.toJSON()
-            const etapesVol = await Etapes_volume_historiques.findOne({
-                where: {
-                    ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
+        const etapesVol = await Etapes_volume_historiques.findOne({
+            where: {
+                ID_VOLUME: ID_VOLUME, ID_ETAPE_VOLUME: etapeV.ID_ETAPE_VOLUME
+            },
+            include: [
+                {
+                    model: Users,
+                    as: 'users',
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                    required: false,
+                    include: [
+                        {
+                            model: Profils,
+                            as: 'profil',
+                            attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                            required: false,
+                        }
+                    ],
                 },
-                include: [
-                    {
-                        model: Users,
-                        as: 'traitant',
-                        attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
-                        required: false,
-                        include: [
-                            {
-                                model: Profils,
-                                as: 'profil',
-                                attributes: ['ID_PROFIL', 'DESCRIPTION'],
-                                required: false,
-                            }
-                        ],
-                    },
-                    {
-                        model: Volume,
-                        as: 'volumes',
-                        attributes: ['NUMERO_VOLUME', 'DATE_INSERTION', 'ID_ETAPE_VOLUME'],
-                        required: false
-                    },
-                    {
-                        model: Etape_Volume,
-                        as: 'etapes_volumes',
-                        attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
-                        required: false
-                    },
-                ],
+                {
+                    model: Volume,
+                    as: 'volumes',
+                    attributes: ['NUMERO_VOLUME','DATE_INSERTION','ID_ETAPE_VOLUME'],
+                    required:false
+                },
+                 {
+                    model: Etape_Volume,
+                    as: 'etapes_volumes',
+                    attributes: ['ID_ETAPE_VOLUME', 'NOM_ETAPE'],
+                    required: false
+                },
+            ],
 
             })
             return {

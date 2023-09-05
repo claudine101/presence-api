@@ -439,7 +439,7 @@ const get_rapport_chef_ekip = async (req, res) => {
         const folios = await Etapes_folio_historiques.findAndCountAll({
           where:{
               [Op.and]: [{
-                  ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH
+                  ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION
               },{
                 ID_USER:util.USERS_ID
             }],
