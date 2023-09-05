@@ -155,7 +155,39 @@ REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER: 37,
 * 38 - Reenvoyer: le retour de folios reenvoyez est valid (agent superviseur scanning entre chef plateau)
 */
 REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID: 38,
+    /**
+* 39 - Reenvoyer: le retour de folios reenvoyez est valid (chef plateau et agent superviseur aille scanning)
+*/
+REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING: 39,
+    /**
+* 40 - Reenvoyer: le retour de folios reenvoyez est valid (agent superviseur aille scanning et chef d'equipe)
+*/
+REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING: 40,
 
+    /**
+* 41 - Retour: le retour de folios bien valider bien reconciliers (chef d'equipe scanning vers agent preparation distributeur)
+*/
+RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_DISTRIBUTEUR_PREPARATION: 41,
+
+    /**
+* 42 - Reenvoyer: le retour de folios bien valider bien reconciliers (chef d'equipe scanning vers agent preparation distributeur reenvoyer)
+*/
+RETOUR_FOLIOS_VALID_RECONCILIER_CHEF_EQUIPE_SCANNING_AGENT_DISTRIBUTEUR_PREPARATION: 42,
+
+    /**
+* 43 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent preparation distributeur reenvoyer vers agent archives)
+*/
+RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_DISTRIBUTEUR_VERS_AGENT_DESARCHIVAGES: 43,
+
+    /**
+* 44 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent archives vers agent desarchivages)
+*/
+RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_ARCHIVES_VERS_AGENT_DESARCHIVAGES_PREPARATION: 44,
+
+    /**
+* 46 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent desarchivages)
+*/
+RETOUR_IS_BIEN_ARCHIVES: 46,
 }
 
 module.exports = IDS_ETAPES_FOLIO
