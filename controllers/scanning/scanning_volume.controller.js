@@ -1058,7 +1058,6 @@ const updateRetourEquipe = async (req, res) => {
             }
         })
         await Etapes_folio_historiques.bulkCreate(folio_historiques_reconcilier)
-
         folioAllObjet = JSON.parse(ID_FOLIO)
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
