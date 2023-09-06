@@ -2063,7 +2063,7 @@ const findAllAgentRetraites = async (req, res) => {
             where: {
                 [Op.and]: [{
                     ID_USER: req.userId,
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING
                 }]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', "PV_PATH", 'DATE_INSERTION'],
@@ -2564,7 +2564,7 @@ const addDetails = async (req, res) => {
                 LOCALITE: LOCALITE,
                 NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
                 PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
-                PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_dossiers.fileName}` : null,
+                PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.dossiers}/${filename_dossiers.fileName}` : null,
                 NUMERO_FEUILLE: NUMERO_FEUILLE,
                 NOMBRE_DOUBLON: NOMBRE_DOUBLON,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
@@ -2606,8 +2606,14 @@ const getPvs = async (req, res) => {
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                [Op.and]: [
+                {
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                        ]
+                    }
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3184,7 +3190,7 @@ const getPvsAgentSupAile = async (req, res) => {
 
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3237,7 +3243,7 @@ const getPvsAgentSupAile = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
                 }, {
                     ID_USER: req.userId
                 }, {
