@@ -91,7 +91,7 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO','FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -99,6 +99,18 @@ const countAndProgressionActivity = async (req, res) => {
                     attributes: [
                         'DESCRIPTION',
                     ],
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'],
+                    require: true
+                },{
+                    model: Volume,
+                    as: "volume",
+                    attributes: [
+                        'ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'DATE_INSERTION'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_PREPARE: 1
@@ -138,14 +150,25 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
-                ],
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO','FOLIO'],
                 include: [{
                     model: Nature_folio,
                     as: "natures",
                     attributes: [
                         'DESCRIPTION',
                     ],
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'],
+                    require: true
+                },{
+                    model: Volume,
+                    as: "volume",
+                    attributes: [
+                        'ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'DATE_INSERTION'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_RECONCILIE: 1
@@ -187,7 +210,7 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO','FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -195,6 +218,18 @@ const countAndProgressionActivity = async (req, res) => {
                     attributes: [
                         'DESCRIPTION',
                     ],
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'],
+                    require: true
+                },{
+                    model: Volume,
+                    as: "volume",
+                    attributes: [
+                        'ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'DATE_INSERTION'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_INDEXE: 1
@@ -235,7 +270,7 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
+                    'NUMERO_FOLIO','FOLIO','CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -243,6 +278,18 @@ const countAndProgressionActivity = async (req, res) => {
                     attributes: [
                         'DESCRIPTION',
                     ],
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'],
+                    require: true
+                },{
+                    model: Volume,
+                    as: "volume",
+                    attributes: [
+                        'ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'DATE_INSERTION'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_UPLOADED_EDRMS: 1
@@ -340,7 +387,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -352,6 +399,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 require: true
             }
@@ -388,7 +441,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -400,6 +453,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_PREPARE: 0
@@ -417,8 +476,6 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
-
         // folio prepare  sous la phase de preparation
         const folio_prepare = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -441,7 +498,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -453,6 +510,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_PREPARE: 1
@@ -493,7 +556,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -505,6 +568,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 require: true
             }
@@ -543,7 +612,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -555,6 +624,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_RECONCILIE: 1
@@ -595,7 +670,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -607,6 +682,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_RECONCILIE: 0
@@ -646,7 +727,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -658,6 +739,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 require: true
             }
@@ -696,7 +783,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -708,6 +795,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_INDEXE: 1
@@ -748,7 +841,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -760,6 +853,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_INDEXE: 0
@@ -801,7 +900,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -813,6 +912,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 require: true
             }
@@ -851,7 +956,7 @@ const rapportByphase = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -863,6 +968,12 @@ const rapportByphase = async (req, res) => {
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: [ 'NOM_ETAPE'
+                    ],
+                    require: true
                 }],
                 where: {
                     IS_UPLOADED_EDRMS: 1
@@ -899,11 +1010,11 @@ const rapportByphase = async (req, res) => {
                     ID_PHASE: 4
                 },
                 require: true
-            }, {
+            },{
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO', 'CODE_FOLIO'
+                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
                 ],
                 include: [{
                     model: Volume,
@@ -911,10 +1022,15 @@ const rapportByphase = async (req, res) => {
                     attributes: [
                         'ID_VOLUME', 'NUMERO_VOLUME'
                     ]
-                }, {
+                },{
                     model: Nature_folio,
                     as: "natures",
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: "etapes",
+                    attributes: ['NOM_ETAPE'],
+                    require: true
                 }],
                 where: {
                     IS_UPLOADED_EDRMS: 0
@@ -1018,7 +1134,7 @@ const rapportparsemaine = async (req, res) => {
             include: [{
                 model: Folio,
                 as: 'folio',
-                attributes: ['ID_FOLIO', 'ID_VOLUME', 'IS_PREPARE', 'IS_RECONCILIE', 'IS_INDEXE', 'IS_UPLOADED_EDRMS','CODE_FOLIO','NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO', 'ID_VOLUME','FOLIO','IS_PREPARE', 'IS_RECONCILIE', 'IS_INDEXE', 'IS_UPLOADED_EDRMS','CODE_FOLIO','NUMERO_FOLIO'],
                 include: [{
                     model: Volume,
                     as: 'volume',
@@ -1027,11 +1143,11 @@ const rapportparsemaine = async (req, res) => {
                     model: Nature_folio,
                     as: 'natures',
                     attributes: ['DESCRIPTION']
+                },{
+                    model: Etapes_folio,
+                    as: 'etapes',
+                    attributes: ['NOM_ETAPE']
                 }]
-            },{
-                model: Etapes_folio,
-                as: 'etapes',
-                attributes: ['NOM_ETAPE']
             }]
         })
         const reports = datesOfWeek.map(dayofWeek => {
