@@ -85,7 +85,11 @@ const ETAPES_VOLUME = {
   /**
 * 19-Retour : Archivages des volumes retourner chez un agent de desarchivages
 */
-  RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES: 19
+  RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES: 19,
+  /**
+* 20-Retour : Retour  dans la phase preparation 
+*/
+RETOUR_PREPARATION: 20
 }
 
 module.exports = ETAPES_VOLUME

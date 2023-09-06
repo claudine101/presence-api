@@ -122,6 +122,52 @@ const IDS_ETAPES_FOLIO = {
           * 25- Retour: Agent upload vers Chef equipe
           */
         RETOUR_AGENT_UPLOAD_CHEF_EQUIPE: 25,
+         /**
+          * 26- chef equipe selectione un agent  sup aile
+          */
+        CHEF_EQUIPE_SELECT_AGENT_SUP_AILE: 26,
+         /**
+          * 27- agent  sup  aile selectione chef plateau
+          */
+         AGENT_SUP_AILE_SELECT_CHEF_PLATEAU: 27,
+         /**
+          * 28-  chef plateau selectione agent  sup praparation
+          */
+         CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION: 28,
+
+          /**
+          * 29-  agent  sup praparation selectione agent praparation
+          */
+          AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION: 29,
+
+          /**
+          * 30-  retour agent  sup praparation selectione agent praparation
+          */
+          RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION: 30,
+
+          /**
+          * 31-  retour  chef plateau selectione agent sup aile praparation
+          */
+          RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION: 31,
+
+           /**
+          * 32-  retour AGENT  SUP AILE  selectione agent chef plateau
+          */
+           RETOUR_AGENT_SUP_AILE_SELECT_CHEF_PLATEAU: 32,
+            /**
+          * 45-  retour CHEF EQUIPE  selectione agent SUP  AILE
+          */
+            RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE: 45,
+            /**
+          * 47-  SELECTION AGENT SUP  INDEXATION
+          */
+            SELECTION_AGENT_SUP_INDEXATION: 47,
+            
+          
+          
+          
+
+
 
 }
 
