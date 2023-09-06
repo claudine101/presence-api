@@ -3454,7 +3454,6 @@ const retourAgentSupAileReenvoyezScan = async (req, res) => {
             attributes: ['ID_FOLIO'],
         })
         const id_folios = results.map(folio => folio.ID_FOLIO)
-
         await Folio.update({
             ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
             ID_MALLE_NO_TRAITE: ID_MAILLE,
@@ -3487,8 +3486,6 @@ const retourAgentSupAileReenvoyezScan = async (req, res) => {
                 ID_MAILLE: ID_MAILLE
             }
         })
-
-
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
