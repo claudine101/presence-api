@@ -127,16 +127,6 @@ const IDS_ETAPES_FOLIO = {
            * 27- agent  sup  aile selectione chef plateau
            */
           AGENT_SUP_AILE_SELECT_CHEF_PLATEAU: 27,
-
-          /**
-          * 26 - Retour: Sans reconcilie et sans Scan (equipe scanning vers agent sup. scanning)
-          */
-          RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING: 26,
-
-          /**
-         * 27 - Retour: is non Valide meme si il'est reconcilier (agent sup. scanning vers chef plateau scanning)
-         */
-          RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU: 27,
           /**
            * 28-  chef plateau selectione agent  sup praparation
            */
@@ -224,12 +214,18 @@ const IDS_ETAPES_FOLIO = {
       */
           RETOUR_IS_BIEN_ARCHIVES: 46,
           /**
-        * 47-  SELECTION AGENT SUP  INDEXATION
+        * 47-  Selection agent sup aile scanning
         */
           SELECTION_AGENT_SUP_INDEXATION: 47,
+          /**
+          * 48 - Retour: Sans reconcilie et sans Scan (equipe scanning vers agent sup. scanning)
+          */
+          RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING: 48,
 
-
-
+          /**
+           * 49 - Retour: is non Valide meme si il'est reconcilier (agent sup. scanning vers chef plateau scanning)
+           */
+          RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU: 49,
 }
 
 module.exports = IDS_ETAPES_FOLIO
