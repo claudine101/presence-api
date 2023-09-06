@@ -511,7 +511,7 @@ const findAll = async (req, res) => {
             where: {
                 [Op.or]: [
                     condition,
-                    { ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUI_SCANNINF_AGENT_SUP_AILE_SCANNING }
+                    // { ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUI_SCANNINF_AGENT_SUP_AILE_SCANNING }
                 ]
             },
             order: [
