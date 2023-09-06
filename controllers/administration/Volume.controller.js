@@ -209,7 +209,7 @@ const getHistoriqueFolio = async (req, res) => {
                     include: [{
                         model: Volume,
                         as: 'volume',
-                        attributes: ['NUMERO_VOLUME'],
+                        attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                         required: true,
                     },
                     {
@@ -258,7 +258,7 @@ const getHistoriqueFolio = async (req, res) => {
                         include: [{
                             model: Volume,
                             as: 'volume',
-                            attributes: ['NUMERO_VOLUME'],
+                            attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                             required: true,
                         },
                         {
@@ -365,7 +365,7 @@ const getAgentByVolume = async (req, res) => {
                 {
                     model: Volume,
                     as: "volume",
-                    attributes: ["NUMERO_VOLUME"]
+                    attributes: ["ID_VOLUME","NUMERO_VOLUME"]
                 }
             ],
 
@@ -438,7 +438,7 @@ const get_rapport_by_volume = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    attributes: ['NUMERO_VOLUME'],
+                    attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                     required: false
                 },
                 {
@@ -474,7 +474,7 @@ const get_rapport_by_volume = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    attributes: ['NUMERO_VOLUME'],
+                    attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                     required: false
                 },
                 {
@@ -500,7 +500,7 @@ const get_rapport_by_volume = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    attributes: ['NUMERO_VOLUME'],
+                    attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                     required: false
                 },
                 {
@@ -525,7 +525,7 @@ const get_rapport_by_volume = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    attributes: ['NUMERO_VOLUME'],
+                    attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                     required: false
                 },
                 {
@@ -550,7 +550,7 @@ const get_rapport_by_volume = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    attributes: ['NUMERO_VOLUME'],
+                    attributes: ['ID_VOLUME','NUMERO_VOLUME'],
                     required: false
                 },
                 {
