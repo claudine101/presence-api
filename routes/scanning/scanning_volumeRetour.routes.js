@@ -213,4 +213,395 @@ scanning_volumeRetour_routes.post('/agent/supAille/retour/pvs', scanning_volumeR
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/chefequipepreparation', scanning_volumeRetour_controller.findAllVolumeChefEquipePrepqrqtionTraites)
 
+   /**
+ * Une route  recuperer  les volumes non valide d'un chef plateau
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/nonvalide
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/nonvalide', scanning_volumeRetour_controller.findAllVolumePlateauChefNonValide)
+
+    /**
+ * Une route  recuperer  les volumes non valide chez chef plateau retourner vers agent superviseur
+ *@method GET
+ * @url /scanning/retour/agent/volume/plateau/retour/nonvalide
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/plateau/retour/nonvalide', scanning_volumeRetour_controller.findAllVolumePlateauChefNonValideRetour)
+
+   /**
+* Une route pour recuperer les pvs d'un chef plateau signe avec un agent superviseur
+*@method POST
+* @url /scanning/retour/agent/equipe/pvs/retour/nonVilid
+*/
+scanning_volumeRetour_routes.post('/agent/equipe/pvs/retour/nonVilid', scanning_volumeRetour_controller.findGetsPvsAgentSupervieurRetourNonValid)
+
+   /**
+* Une route pour recuperer les volumes retour d'un agents superviseur ailles scanning
+*@method GET
+* @url /scanning/retour/agent/allVolume/supAilleScanning
+*/
+scanning_volumeRetour_routes.get('/agent/allVolume/supAillescanning', scanning_volumeRetour_controller.findVolumeAssocierAgentsupAilleScan)
+
+ /**
+ * Une route pour archives les volumes retournez d'un agent sup ailles
+ *@method PUT
+ * @url /scanning/retour/agent/supaille/chefEquipeScan
+ */
+ scanning_volumeRetour_routes.put('/agent/supaille/chefEquipeScan', scanning_volumeRetour_controller.retourAgentSupAile)
+
+    /**
+ * Une route  permet de recuperer les folios reourner pour se faire scanner
+ *@method GET
+ * @url /scanning/retour/agent/foliosRecus/retours
+ */
+ scanning_volumeRetour_routes.get('/agent/foliosRecus/retours', scanning_volumeRetour_controller.getFoliosAllRetourner)
+
+ 
+    /**
+ * Une route  permet de recuperer les folios reourner pour se faire scanner
+ *@method GET
+ * @url /scanning/retour/agent/foliosRecus/retours/notValid
+ */
+ scanning_volumeRetour_routes.get('/agent/foliosRecus/retours/notValid', scanning_volumeRetour_controller.getFoliosAllRetournernotValid)
+
+
+     /**
+ * Une route  permet de recuperer les details de volumes
+ *@method GET
+ * @url /scanning/retour/agent/details/volume
+ */
+ scanning_volumeRetour_routes.get('/agent/details/volume/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolume)
+
+      /**
+ * Une route  permet de recuperer les details de volumes traite par un agents sup ailles scanning
+ *@method GET
+ * @url /scanning/retour/agent/details/traites
+ */
+ scanning_volumeRetour_routes.get('/agent/details/traites/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesSup)
+
+       /**
+ * Une route  permet de recuperer les details de volumes chez le chef equipe
+ *@method GET
+ * @url /scanning/retour/agent/details/chefEquiScan
+ */
+ scanning_volumeRetour_routes.get('/agent/details/chefEquiScan/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesChefEquiScan)
+
+        /**
+ * Une route  permet de recuperer les details de volumes pret a etre archiver
+ *@method GET
+ * @url /scanning/retour/agent/details/pretArchives
+ */
+ scanning_volumeRetour_routes.get('/agent/details/pretArchives/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesPretArchives)
+
+        /**
+ * Une route  permet de recuperer les details de volumes non scanner et non valid
+ *@method GET
+ * @url /scanning/retour/agent/details/nonScan/nonValid
+ */
+ scanning_volumeRetour_routes.get('/agent/details/nonScan/nonValid/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeNonScanNonValid)
+
+         /**
+ * Une route  permet de recuperer les malles disponible 
+ *@method GET
+ * @url /scanning/retour/agent/details/males
+ */
+ scanning_volumeRetour_routes.get('/agent/details/males', scanning_volumeRetour_controller.getMalesDisponible)
+
+  /**
+* Une route pour recuperer la liste des agents superviseurs scanning
+*@method GET
+* @url /scanning/retour/agent/supeAille/scanning
+*/
+scanning_volumeRetour_routes.get('/agent/supeAille/scanning', scanning_volumeRetour_controller.findAgentAllSupAgentScanning)
+
+
+ /**
+ * Une route pour reenvoyez le volumes dans la phase scanning
+ *@method PUT
+ * @url /scanning/retour/agent/scanningPhase/updtae
+ */
+ scanning_volumeRetour_routes.put('/agent/scanningPhase/updtae', scanning_volumeRetour_controller.retourAgentSupAileReenvoyezScan)
+ /**
+ * Une route pour retourner les volumes reenvoyez chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning', scanning_volumeRetour_controller.renvoyezVoluSupAilleScanning)
+
+ /**
+ * Une route reenvoyer le volume et le malle d'un agent superviseur aille et chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/chefPlateau
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/chefPlateau/:ID_VOLUME', scanning_volumeRetour_controller.volumeChefPlateauReenvoyez)
+
+  /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour', scanning_volumeRetour_controller.renvoyezVoluSupAilleScanningRetour)
+
+  /**
+ * Une route reenvoyer le folios du chef plateau vers un agents superviseurs
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/folios/superviseur
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/folios/superviseur', scanning_volumeRetour_controller.folioChefScanningReenvoyez)
+
+  /**
+ * Une route pour retourner les volumes reenvoyez chez un chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/plateau
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/supailleScanning/plateau', scanning_volumeRetour_controller.folioEquipeScanningReenvoyer)
+
+   /**
+ * Une route pour retourner les folios reenvoyez deja traites par equipe
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/equipe/retour
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/equipe/retour', scanning_volumeRetour_controller.findAllAgentsFolioRetour)
+
+   /**
+* Une route pour recuperer les pvs d'agent superviseur signe avec equipe reenvoyer
+*@method POST
+* @url /scanning/retour/agent/equipe/pvs/reenvoyez
+*/
+scanning_volumeRetour_routes.post('/agent/equipe/pvs/reenvoyez', scanning_volumeRetour_controller.findGetsPvsAgentSupervieurReenvoyer)
+
+ /**
+ * Une route pour faire le retour entre un agent superviseur et equipe folios reenvoyez
+ *@method PUT
+ * @url /scanning/retour/agent/retour/equipe/superviseur
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/equipe/superviseur', scanning_volumeRetour_controller.updateRetourEquipeFolioReenvoyez)
+
+    /**
+ * Une route pour retourner les folios reenvoyez deja reconcilier
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/equipe/retour/bien/reconcilier
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/equipe/retour/bien/reconcilier', scanning_volumeRetour_controller.findAllFolioScannimgReconciliers)
+
+   /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/chefPlateau/bien
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/chefPlateau/bien', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierPret)
+
+   /**
+* Une route pour recuperer les pvs qu'on a signe lors de chef plateau en allant
+*@method POST
+* @url /scanning/retour/agent/pvs/reenvoyer/retour
+*/
+scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/retour', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyez)
+
+  /**
+ * Une route  permet  si le chef plateau est pret a signer le pv de retours un agent superviseur  
+ *@method GET
+ * @url /scanning/retour/agent/retour/check/action
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/check/action/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefPlateauCkeckReenvoyez)
+
+ /**
+ * Une route pour faire le retour entre un agent superviseur et le chef plateau
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/renvoyer/isvalid
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/isvalid', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValid)
+
+   /**
+ * Une route  recuperer  les volumes deja traitees d'un chef plateau
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/ok
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/ok', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyer)
+
+    /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/original/retour
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/original/retour', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourOriginal)
+
+  /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/aileSupe/retour
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/aileSupe/retour', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierIsValid)
+
+    /**
+* Une route pour recuperer les pvs qu'on a signe par agent superviseur aille scanning en allant
+*@method POST
+* @url /scanning/retour/agent/pvs/reenvoyer/pvssss
+*/
+scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/pvssss', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyezPvsss)
+
+ /**
+ * Une route pour faire le retour entre le chef plateau et un agents superviseurs aille scanning
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/renvoyer/isvalid/bien/traitees
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/isvalid/bien/traitees', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidTraiteAille)
+
+    /**
+ * Une route  recuperer  les volumes deja traitees agent superviseur aille scanning
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/aille/getVol
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/aille/getVol', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerGetVolume)
+
+     /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur aile scanning
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/original/retour/Pvscscs
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/original/retour/Pvscscs', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourOriginalAilleScann)
+
+   /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez le chef equipe scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/chefEquipe/bien
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/chefEquipe/bien', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierPretEquipeChef)
+
+     /**
+* Une route pour recuperer les pvs qu'on a signe par unc chef equipe scanning en allant
+*@method POST
+* @url /scanning/retour/agent/pvs/reenvoyer/chefEqui/pvssss
+*/
+scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/chefEqui/pvssss', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyezChefequipePvsss)
+
+ /**
+ * Une route pour faire le retour entre un agents superviseurs aille scanning et chef d'equipe
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/renvoyer/chefEquipe/bien/traitees
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/chefEquipe/bien/traitees', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidTraiteChefEquipe)
+
+     /**
+ * Une route  recuperer  les volumes deja traitees un chef d'equipe
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/ChefEquipe/getVol
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/ChefEquipe/getVol', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerGetVolumeChefEquipe)
+
+      /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur aile scanning
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/ChefEquipe/retour/Pvscscs
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/ChefEquipe/retour/Pvscscs', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourOriginalEquipeScann)
+
+       /**
+ * Une route  permet de recuperer les details de volumes avec les folios valide
+ *@method GET
+ * @url /scanning/retour/agent/details/chefEquiScan/validFolios
+ */
+ scanning_volumeRetour_routes.get('/agent/details/chefEquiScan/validFolios/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesChefEquiScanValidFolios)
+
+     /**
+* Une route pour recuperer les pvs qu'on a signe par agent superviseur aille scanning en allant
+*@method POST
+* @url /scanning/retour/agent/pvs/reenvoyer/pvssss/final
+*/
+scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/pvssss/final', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyezPvsssFinal)
+
+ /**
+ * Une route pour faire le retour entre le chef plateau et un agents superviseurs aille scanning
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/renvoyer/isvalid/final
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/isvalid/final', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidTraiteAilleFinal)
+
+     /**
+ * Une route  recuperer  les volumes deja traitees agent superviseur aille scanning
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/aille/getVol/original
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/aille/getVol/original', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerGetVolumeOriginal)
+
+  /**
+ * Une route pour faire le retour entre le chef  equipe et un agents distributeur
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/archivages/equi/distr
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/archivages/equi/distr', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidArchivagesDistr)
+
+    /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/archivages/dist
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/archivages/dist', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierPretArchives)
+
+      /**
+* Une route pour recuperer les pvs qu'on a signe par agent superviseur aille scanning en allant
+*@method POST
+* @url /scanning/retour/agent/pvs/reenvoyer/archivages
+*/
+scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyezPvArchivages)
+
+ /**
+ * Une route pour faire le retour entre le chef  equipe et un agents archives
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/archivages/equi/archiv
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/archivages/equi/archiv', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidArchivagesArchiv)
+
+      /**
+ * Une route  recuperer  les volumes deja traitees agent distributeur
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/archivages/trait
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/archivages/trait', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerOri)
+
+     /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/archivages/archives
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/archivages/archives', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierArchivv)
+
+  /**
+ * Une route pour faire le retour entre le chef  equipe et un agents desarchivages
+ *@method PUT
+ * @url /scanning/retour/agent/retour/plateau/archivages/equi/desarchivages
+ */
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/archivages/equi/desarchivages', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidArchivagesDesarchivages)
+
+       /**
+ * Une route  recuperer  les volumes deja traitees agent desarchivages
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/archivages/finArchives
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/archivages/finArchives', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerOriFinArchives)
+
+      /**
+ * Une route pour retourner les volumes reenvoyez qui attend le retour chez un agent sup ailles scannings
+ *@method GET
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/retour/archivages/archives/finito
+ */
+ scanning_volumeRetour_routes.get('/agent/reenvoyez/supailleScanning/retour/archivages/archives/finito', scanning_volumeRetour_controller.findAllVolumerRetourReconcilierArchivvFiniti)
+
+  /**
+ * Une route pour retourner les volumes reenvoyez desarchivages
+ *@method PUT
+ * @url /scanning/retour/agent/reenvoyez/supailleScanning/desarchivages/nice
+ */
+ scanning_volumeRetour_routes.put('/agent/reenvoyez/supailleScanning/desarchivages/nice', scanning_volumeRetour_controller.folioEquipeScanningReenvoyerNiceArchivees)
+
+        /**
+ * Une route  recuperer  les volumes deja traitees agent desarchivages
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/plateau/asrchgg
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/asrchgg', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG)
+ 
+
+ 
+
+
 module.exports = scanning_volumeRetour_routes

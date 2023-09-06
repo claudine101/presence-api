@@ -121,6 +121,13 @@ const preparation_volume_routes = express.Router()
  preparation_volume_routes.put('/nommerChefPlateau/:ID_VOLUME', preparation_volume_controller.nommerChefPlateau)
 
   /**
+ * Une route  permet  de nommer  chef plateau en retour
+ *@method PUT
+ * @url /preparation/volume/addChefEquipe
+ */
+ preparation_volume_routes.put('/addChefEquipe', preparation_volume_controller.addChefPlateau)
+
+  /**
  * Une route  permet  un agent  suoerviseur  archive 
  * de voir chef plateau  et  les volumes   
  *@method GET
@@ -159,11 +166,47 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.get('/agentSuperviseurAile', preparation_volume_controller.findAllAgentSupAile)
 
+  /**
+ * Une route  permet  visualiser  les agent superviseur aile et les nombre de volume recu
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/agentSupRetourPhase
+ */
+ preparation_volume_routes.get('/agentSupRetourPhase', preparation_volume_controller.findAllAgentSupAileRetour)
+ /**
+ * Une route  permet  v agent superviseur aile de voir  le volume 
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/volumeRetourPhase
+ */
+ preparation_volume_routes.get('/volumeRetourPhase', preparation_volume_controller.findAllVolumeRetour)
+ 
  /**
  * Une route  permet  de retour  agent superviseur aile
  *@method PUT
  * @url /preparation/volume/retourAgentSuperviseurAile
  */
  preparation_volume_routes.put('/retourAgentSuperviseurAile', preparation_volume_controller.retourAgentSupAile)
+
+ /**
+ * Une route  permet  de retour  agent superviseur aile vers chef equipe
+ *@method PUT
+ * @url /preparation/volume/retourAgentSupAile
+ */
+ preparation_volume_routes.put('/retourAgentSupAile', preparation_volume_controller.retourAgentSupAileRetourne)
+
+  /**
+ * Une route  permet  de retour  chef plateau  vers agent superviseur aile
+ *@method PUT
+ * @url /preparation/volume/retournerChefPlateau
+ */
+ preparation_volume_routes.put('/retournerChefPlateau', preparation_volume_controller.retourPlateauRetourne)
+
+ /**
+ * Une route  permet  de retour  chef plateau
+ *@method PUT
+ * @url /preparation/volume/retourChefPlateau
+ */
+ preparation_volume_routes.put('/retourChefPlateau', preparation_volume_controller.retourAgentSupAile)
 
 module.exports = preparation_volume_routes

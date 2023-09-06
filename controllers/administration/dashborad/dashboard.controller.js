@@ -28,13 +28,7 @@ const Phases = require("../../../models/Phases");
 
 const countAndProgressionActivity = async (req, res) => {
     try {
-        // const allvolumes = await Volume.findAndCountAll({
-        //   attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
-        //   where: {
-        //     DATE_INSERTION: Sequelize.literal(`DATE(DATE_INSERTION) = CURDATE()`)
-        //   },
-        // })
-
+       
         const volumes = await Etapes_volume_historiques.findAll({
             attributes: [
                 'DATE_INSERTION', 'ID_VOLUME', 'ID_ETAPE_VOLUME'
@@ -86,14 +80,18 @@ const countAndProgressionActivity = async (req, res) => {
             include: [{
                 model: Etapes_folio,
                 as: "etapes",
-                attributes: ['NOM_ETAPE'
+                attributes: [
+                    'ID_PHASE', 'NOM_ETAPE'
                 ],
+                where: {
+                    ID_PHASE: 1
+                },
                 require: true
             }, {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION'
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -140,7 +138,7 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION'
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -189,7 +187,7 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION'
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -237,7 +235,7 @@ const countAndProgressionActivity = async (req, res) => {
                 model: Folio,
                 as: "folio",
                 attributes: [
-                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION'
+                    'NUMERO_FOLIO', 'CODE_FOLIO', 'DATE_INSERTION','ID_FOLIO'
                 ],
                 include: [{
                     model: Nature_folio,
@@ -977,7 +975,9 @@ const rapportByphase = async (req, res) => {
 const rapportparsemaine = async (req, res) => {
     try {
 
-        const currentDate = moment("2023-08-14 14:00:47");
+        // const currentDate = moment("2023-08-14 14:00:47");
+        const currentDate = moment();
+
 
         // Get the start and end of the current ISO week
         const startOfWeek = currentDate.clone().startOf('isoWeek');
@@ -1006,7 +1006,7 @@ const rapportparsemaine = async (req, res) => {
                     },
                     ID_ETAPE_FOLIO: {
                         [Op.in]: [
-                            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            IDS_ETAPES_FOLIO.FOLIO_ENREG
                             // IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                             // IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                             // IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,

@@ -139,7 +139,12 @@ scanning_volume_routes.get('/allFoliosScanning', scanning_volume_controller.find
  */
  scanning_volume_routes.get('/retour/agent', scanning_volume_controller.findAllVolumerSupAille)
 
-
+ /**
+* Une route pour retourner les folios  pres a etre valide par un agent superviseur
+*@method GET
+* @url /scanning/volume/allFoliosScanning/nonReconcilier
+*/
+scanning_volume_routes.get('/allFoliosScanning/nonReconcilier', scanning_volume_controller.findAllFolioScannimgNonReconcilier)
 
 
 
