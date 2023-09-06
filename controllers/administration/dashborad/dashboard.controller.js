@@ -34,6 +34,7 @@ const countAndProgressionActivity = async (req, res) => {
                 'DATE_INSERTION', 'ID_VOLUME', 'ID_ETAPE_VOLUME'
             ],
             where: {
+                ID_ETAPE_VOLUME: IDS_ETAPE_VOLUME.PLANIFICATION,
                 DATE_INSERTION: Sequelize.literal('DATE(etapes_volume_historiques.DATE_INSERTION) = CURDATE()'),
             },
             include: [{
