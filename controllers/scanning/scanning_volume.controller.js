@@ -37,6 +37,7 @@ const volumeScanning = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { USER_TRAITEMENT, MAILLE, AGENT_SUP_AILE, ID_ETAPE_VOLUME } = req.body
+        return  console.log(AGENT_SUP_AILE)
         // return console.log(USER_TRAITEMENT)
         
         const validation = new Validation(
