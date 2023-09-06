@@ -140,7 +140,7 @@ const planification = async (req, res) => {
             }, {
               model: Volume,
               as: "volume",
-              attributes: ["NUMERO_VOLUME"]
+              attributes: ["ID_VOLUME","NUMERO_VOLUME"]
             }
           ],
         });
@@ -298,7 +298,8 @@ const desarchivage = async (req, res) => {
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
-            "DATE_INSERTION"
+            "DATE_INSERTION",
+            "FOLIO"
           ],
           include: [
             {
@@ -315,7 +316,7 @@ const desarchivage = async (req, res) => {
             }, {
               model: Volume,
               as: "volume",
-              attributes: ["NUMERO_VOLUME"]
+              attributes: ["ID_VOLUME","NUMERO_VOLUME"]
             }
           ],
         });
@@ -473,7 +474,8 @@ const transmission = async (req, res) => {
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
-            "DATE_INSERTION"
+            "DATE_INSERTION",
+            "FOLIO"
           ],
           include: [
             {
@@ -491,7 +493,7 @@ const transmission = async (req, res) => {
             {
               model: Volume,
               as: "volume",
-              attributes: ["NUMERO_VOLUME"]
+              attributes: ["ID_VOLUME","NUMERO_VOLUME"]
             }
           ],
         });
@@ -582,7 +584,8 @@ const etiquetage = async (req, res) => {
             "ID_VOLUME",
             "ID_NATURE",
             "IS_PREPARE",
-            "DATE_INSERTION"
+            "DATE_INSERTION",
+            "FOLIO"
           ],
           include: [
             {
@@ -600,7 +603,7 @@ const etiquetage = async (req, res) => {
             {
               model: Volume,
               as: "volume",
-              attributes: ["NUMERO_VOLUME"]
+              attributes: ["ID_VOLUME","NUMERO_VOLUME"]
             }
           ],
         });
@@ -625,7 +628,7 @@ const etiquetage = async (req, res) => {
             {
               model: Volume,
               as: "volume",
-              attributes: ["NUMERO_VOLUME"]
+              attributes: ["ID_VOLUME","NUMERO_VOLUME"]
             }
           ],
         });
@@ -650,7 +653,7 @@ const etiquetage = async (req, res) => {
             {
               model: Volume,
               as: "volume",
-              attributes: ["NUMERO_VOLUME"]
+              attributes: ["ID_VOLUME","NUMERO_VOLUME"]
             }
           ],
         });
@@ -765,7 +768,8 @@ const indexation = async (req, res) => {
         "ID_VOLUME",
         "ID_NATURE",
         "IS_INDEXE",
-        "DATE_INSERTION"
+        "DATE_INSERTION",
+        "FOLIO"
       ],
       where: {
         ...globalSearchWhereLike,
