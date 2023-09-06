@@ -89,7 +89,8 @@ const ETAPES_VOLUME = {
   /**
 * 20-Retour : Retour  dans la phase preparation 
 */
-RETOUR_PREPARATION: 20
+RETOUR_PREPARATION: 20,
 }
+
 
 module.exports = ETAPES_VOLUME
