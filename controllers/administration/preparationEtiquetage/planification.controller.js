@@ -24,6 +24,7 @@ const Etapes_folio = require("../../../models/Etapes_folio");
 const planification = async (req, res) => {
   try {
     const { rows = 10, first = 0, sortField, sortOrder, search } = req.query;
+    const defaultSortField = 'DATE_INSERTION'
     const defaultSortDirection = "DESC";
     const sortColumns = {
       volume: {
