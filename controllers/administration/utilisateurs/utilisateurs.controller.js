@@ -186,7 +186,7 @@ const createuser = async (req, res) => {
         }
         const photoUpload = new UserUpload()
         const { fileInfo } = await photoUpload.upload(PHOTO_USER, false)
-        const filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
+        const filename = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         const generatepassword = `${TELEPHONE}`
         const user = await Users.create({
             ID_INSTITUTION,
@@ -287,7 +287,7 @@ const Updateuser = async (req, res) => {
         if (PHOTO_USER) {
             const userUpload = new UserUpload()
             const { fileInfo } = await userUpload.upload(PHOTO_USER, false)
-            filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
+            filename = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         }
 
         const userUpdate = await Users.update({

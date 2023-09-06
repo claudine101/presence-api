@@ -1122,7 +1122,7 @@ const rapportparsemaine = async (req, res) => {
                     },
                     ID_ETAPE_FOLIO: {
                         [Op.in]: [
-                            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            IDS_ETAPES_FOLIO.FOLIO_ENREG
                             // IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                             // IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                             // IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,

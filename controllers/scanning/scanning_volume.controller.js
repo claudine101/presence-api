@@ -22,6 +22,7 @@ const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
 const { Op } = require('sequelize');
+const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
@@ -35,7 +36,9 @@ const { Op } = require('sequelize');
 const volumeScanning = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { USER_TRAITEMENT } = req.body
+        const { USER_TRAITEMENT, MAILLE, AGENT_SUP_AILE, ID_ETAPE_VOLUME } = req.body
+        // return console.log(USER_TRAITEMENT)
+        
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -68,28 +71,119 @@ const volumeScanning = async (req, res) => {
                 result: errors
             })
         }
-        const PV = req.files?.PV
-        const volumeUpload = new VolumePvUpload()
-        var filename_pv
-        if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
-            filename_pv = fileInfo_2
+        //RETOUR  DANS LA PHASE PREPARATION
+        if (AGENT_SUP_AILE) {
+            const result = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                where: {
+                    ID_VOLUME: ID_VOLUME,
+                    IS_PREPARE: 0
+                },
+            })
+            const folio_ids = result?.map(folio => folio.ID_FOLIO)
+            await Maille.update({
+                IS_DISPO: 0,
+            }, {
+                where: {
+                    ID_MAILLE: MAILLE
+                }
+            })
+            // update des folios non  preparaes
+            await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.CHEF_EQUIPE_SELECT_AGENT_SUP_AILE,
+                ID_MALLE_NO_TRAITE: MAILLE
+            }, {
+                where: {
+                    ID_FOLIO: {
+                        [Op.in]: folio_ids
+                    }
+                },
+            })
+            const PV_PREPARATION = req.files?.PV_PREPARATION
+            const volumeUpload = new VolumePvUpload()
+            var filename_pv
+            if (PV_PREPARATION) {
+                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV_PREPARATION, false)
+                filename_pv = fileInfo_2
+            }
+            const folio_historiques = result?.map(folio => {
+                return {
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: AGENT_SUP_AILE,
+                    ID_FOLIO: folio.ID_FOLIO,
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.CHEF_EQUIPE_SELECT_AGENT_SUP_AILE,
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                }
+            })
+            await Etapes_folio_historiques.bulkCreate(folio_historiques)
         }
 
-        const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
-        }, {
-            where: {
-                ID_VOLUME: ID_VOLUME
+        //PHASE SCANNING
+        if (ID_ETAPE_VOLUME != ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE) {
+            const result = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                where: {
+                    ID_VOLUME: ID_VOLUME,
+                    IS_PREPARE: 1,
+                    ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
+                },
+            })
+            const folio_ids = result?.map(folio => folio.ID_FOLIO)
+            // update des folios non  preparaes
+            await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
+                // ID_MALLE_NO_TRAITE: MAILLE
+            }, {
+                where: {
+                    ID_FOLIO: {
+                        [Op.in]: folio_ids
+                    }
+                },
+            })
+            const PV = req.files?.PV
+            const volumeUpload = new VolumePvUpload()
+            var filename_pv
+            if (PV) {
+                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+                filename_pv = fileInfo_2
             }
-        })
-        await Etapes_volume_historiques.create({
-            USERS_ID: req.userId,
-            USER_TRAITEMENT: USER_TRAITEMENT,
-            ID_VOLUME: ID_VOLUME,
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
-            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-        })
+            const folio_historiques = result?.map(folio => {
+                return {
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: USER_TRAITEMENT,
+                    ID_FOLIO: folio.ID_FOLIO,
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                }
+            })
+            // return console.log(folio_historiques)
+            await Etapes_folio_historiques.bulkCreate(folio_historiques)
+
+        }
+        else {
+            const PV = req.files?.PV
+            const volumeUpload = new VolumePvUpload()
+            var filename_pv
+            if (PV) {
+                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+                filename_pv = fileInfo_2
+            }
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
+            }, {
+                where: {
+                    ID_VOLUME: ID_VOLUME
+                }
+            })
+            await Etapes_volume_historiques.create({
+                USERS_ID: req.userId,
+                USER_TRAITEMENT: USER_TRAITEMENT,
+                ID_VOLUME: ID_VOLUME,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            })
+        }
+
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
@@ -415,14 +509,27 @@ const findAll = async (req, res) => {
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                ...condition
+                [Op.or]: [
+                    condition,
+                    // { ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUI_SCANNINF_AGENT_SUP_AILE_SCANNING }
+                ]
             },
+            order: [
+                ["DATE_INSERTION", "DESC"]
+            ],
             include: [
                 {
                     model: Volume,
                     as: 'volume',
                     required: false,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include: [
+                        {
+                            model: Maille,
+                            as: 'maille',
+                            required: false,
+                            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                        }]
                 }]
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -799,21 +906,110 @@ const findAllAgentsFolio = async (req, res) => {
  * 
  */
 
+// const updateRetourEquipe = async (req, res) => {
+//     try {
+//         const {
+//             folio
+//         } = req.body;
+//         const PV = req.files?.PV
+//         const validation = new Validation(
+//             { ...req.body, ...req.files },
+//             {
+//                 PV: {
+//                     required: true,
+//                     image: 21000000
+//                 }
+//             },
+//             {
+//                 PV: {
+//                     image: "La taille invalide",
+//                     required: "Le pv est obligatoire"
+//                 }
+//             }
+//         );
+//         await validation.run();
+//         const isValid = await validation.isValidate()
+//         const errors = await validation.getErrors()
+//         if (!isValid) {
+//             return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+//                 statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+//                 httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+//                 message: "Probleme de validation des donnees",
+//                 result: errors
+//             })
+//         }
+//         const volumeUpload = new VolumePvUpload()
+//         var filename_pv
+//         if (PV) {
+//             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+//             filename_pv = fileInfo_2
+//         }
+//         var folioObjet = {}
+//         folioObjet = JSON.parse(folio)
+
+//         await Promise.all(folioObjet.map(async (folio) => {
+//             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+//             await Folio.update(
+//                 {
+//                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+//                     IS_RECONCILIE: 1
+//                 }, {
+//                 where: {
+//                     ID_FOLIO: folio.folio.ID_FOLIO,
+//                 }
+//             }
+//             )
+//             await Etapes_folio_historiques.create({
+//                 ID_USER: req.userId,
+//                 USER_TRAITEMENT: req.userId,
+//                 ID_FOLIO: folio.folio.ID_FOLIO,
+//                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+//                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+//             })
+//         }))
+//         res.status(RESPONSE_CODES.CREATED).json({
+//             statusCode: RESPONSE_CODES.CREATED,
+//             httpStatus: RESPONSE_STATUS.CREATED,
+//             message: "modification faite  avec succès",
+//             // result: reponse
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+//             message: "Erreur interne du serveur, réessayer plus tard",
+//         })
+//     }
+// }
+
 const updateRetourEquipe = async (req, res) => {
     try {
-        const {
-            folio
-        } = req.body;
+        const { ID_FOLIO, folio } = req.body
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
+                ID_FOLIO: {
+                    required: true
+                },
+                folio: {
+                    required: true
+                },
                 PV: {
                     required: true,
                     image: 21000000
                 }
             },
             {
+                ID_FOLIO: {
+                    image: "Id_folio est inavlide",
+                    required: "Le pv est obligatoire"
+                },
+                folio: {
+                    image: "folio est inavlide",
+                    required: "Le pv est obligatoire"
+                },
                 PV: {
                     image: "La taille invalide",
                     required: "Le pv est obligatoire"
@@ -837,34 +1033,71 @@ const updateRetourEquipe = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        var folioObjet = {}
         folioObjet = JSON.parse(folio)
+        const folio_reconcilier = folioObjet.map(folio => folio.folio.ID_FOLIO)
 
-        await Promise.all(folioObjet.map(async (folio) => {
-            const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            await Folio.update(
-                {
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-                    IS_RECONCILIE: 1
-                }, {
-                where: {
-                    ID_FOLIO: folio.folio.ID_FOLIO,
+        await Folio.update({
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+            IS_RECONCILIE: 1,
+        }, {
+            where: {
+                ID_FOLIO: {
+                    [Op.in]: folio_reconcilier
                 }
             }
-            )
-            await Etapes_folio_historiques.create({
+        })
+        const folio_historiques_reconcilier = folioObjet.map(folio => {
+            return {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: req.userId,
                 ID_FOLIO: folio.folio.ID_FOLIO,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-            })
-        }))
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "modification faite  avec succès",
-            // result: reponse
+
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(folio_historiques_reconcilier)
+
+        folioAllObjet = JSON.parse(ID_FOLIO)
+        const folios = await Folio.findAll({
+            attributes: ['ID_FOLIO'],
+            where: {
+                ID_FOLIO: {
+                    [Op.in]: folioAllObjet,
+                },
+                IS_RECONCILIE: null
+            }
+
+        })
+        const folio_no_reconciliers = folios.map(folio => folio.toJSON().ID_FOLIO)
+        await Folio.update({
+            IS_RECONCILIE: 0,
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+
+        }, {
+            where: {
+                ID_FOLIO: {
+                    [Op.in]: folio_no_reconciliers
+                }
+            }
+        })
+
+        const folio_historiques_no_reconciliers = folios.map(folio => {
+            return {
+                ID_USER: req.userId,
+                USER_TRAITEMENT: req.userId,
+                ID_FOLIO: folio.ID_FOLIO,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(folio_historiques_no_reconciliers)
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio scan reconcilier",
+            // result: FlashFolios
         })
     } catch (error) {
         console.log(error)
@@ -890,8 +1123,12 @@ const findAllFolioScannimg = async (req, res) => {
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 ID_USER: req.userId,
-                // '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+                ID_ETAPE_FOLIO: {
+                    [Op.in]: [
+                        ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                        ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+                    ]
+                }
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             order: [
@@ -1303,6 +1540,94 @@ const volumeScanningRetourAgentAille = async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuperer la liste des folios d'un agent scanning pres a donnees les details
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  3/08/2023
+ * 
+ */
+
+const findAllFolioScannimgNonReconcilier = async (req, res) => {
+    try {
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                ID_USER: req.userId,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: false,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
+                        }]
+                    },
+                    include: [
+                        {
+                            model: Equipes,
+                            as: 'equipe',
+                            required: false,
+                            attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                        }
+                    ],
+
+                }
+            ]
+        })
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.USER_TRAITEMENT
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des folio",
+            PvFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanning,
@@ -1323,5 +1648,6 @@ module.exports = {
     findAllVolumeFolioRencolier,
     findAllVolumerRetour,
     findAllVolumerSupAille,
-    volumeScanningRetourAgentAille
+    volumeScanningRetourAgentAille,
+    findAllFolioScannimgNonReconcilier
 }

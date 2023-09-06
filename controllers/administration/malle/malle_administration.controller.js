@@ -81,6 +81,7 @@ const findAllMalle = async (req, res) => {
                     ID_MAILLE:"ID_MAILLE",
                     ID_AILE: "ID_AILE",
                     NUMERO_MALLE: "NUMERO_MALLE",
+                    IS_DISPO: "IS_DISPO"
                 }
             },
             aille:{

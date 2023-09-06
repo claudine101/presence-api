@@ -20,10 +20,20 @@ const Maille = sequelize.define("maille", {
                 type: Sequelize.INTEGER(11),
                 allowNull: true
         },
+        IS_DISPO: {
+                type:  DataTypes.INTEGER,
+                defaultValue:1,
+                allowNull: false
+            },
         NUMERO_MAILLE: {
                 type: Sequelize.STRING(255),
                 allowNull: true
-        }
+        },
+        IS_DISPO: {
+                type:  DataTypes.INTEGER,
+                defaultValue:1,
+                allowNull: false
+            },
 }, {
         freezeTableName: true,
         tableName: 'maille',
