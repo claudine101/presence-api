@@ -37,9 +37,8 @@ const volumeScanning = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const { USER_TRAITEMENT, MAILLE, AGENT_SUP_AILE, ID_ETAPE_VOLUME } = req.body
-        return  console.log(AGENT_SUP_AILE)
         // return console.log(USER_TRAITEMENT)
-        
+
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -120,48 +119,9 @@ const volumeScanning = async (req, res) => {
         }
 
         //PHASE SCANNING
-        if (ID_ETAPE_VOLUME != ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE) {
-            const result = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
-                where: {
-                    ID_VOLUME: ID_VOLUME,
-                    IS_PREPARE: 1,
-                    ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
-                },
-            })
-            const folio_ids = result?.map(folio => folio.ID_FOLIO)
-            // update des folios non  preparaes
-            await Folio.update({
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
-                // ID_MALLE_NO_TRAITE: MAILLE
-            }, {
-                where: {
-                    ID_FOLIO: {
-                        [Op.in]: folio_ids
-                    }
-                },
-            })
-            const PV = req.files?.PV
-            const volumeUpload = new VolumePvUpload()
-            var filename_pv
-            if (PV) {
-                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
-                filename_pv = fileInfo_2
-            }
-            const folio_historiques = result?.map(folio => {
-                return {
-                    ID_USER: req.userId,
-                    USER_TRAITEMENT: USER_TRAITEMENT,
-                    ID_FOLIO: folio.ID_FOLIO,
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                }
-            })
-            // return console.log(folio_historiques)
-            await Etapes_folio_historiques.bulkCreate(folio_historiques)
 
-        }
-        else {
+
+        if (ID_ETAPE_VOLUME == ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE) {
             const PV = req.files?.PV
             const volumeUpload = new VolumePvUpload()
             var filename_pv
@@ -183,6 +143,49 @@ const volumeScanning = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             })
+        }
+        else {
+
+            const result = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                where: {
+                    ID_VOLUME: ID_VOLUME,
+                    IS_PREPARE: 1,
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
+                },
+            })
+
+            const folio_ids = result?.map(folio => folio.ID_FOLIO)
+            // update des folios non  preparaes
+            await Folio.update({
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
+                // ID_MALLE_NO_TRAITE: MAILLE
+            }, {
+                where: {
+                    ID_FOLIO: {
+                        [Op.in]: folio_ids
+                    }
+                },
+            })
+            const PV = req.files?.PV
+            const volumeUpload = new VolumePvUpload()
+            var filename_pv
+            if (PV) {
+                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
+                filename_pv = fileInfo_2
+            }
+            const folio_historiques = result?.map(folio => {
+                return {
+                    ID_USER: req.userId,
+                    USER_TRAITEMENT: USER_TRAITEMENT,
+                    ID_FOLIO: folio.ID_FOLIO,
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
+                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                }
+            })
+            // return console.log(folio_historiques)
+            await Etapes_folio_historiques.bulkCreate(folio_historiques)
+
         }
 
         res.status(RESPONSE_CODES.CREATED).json({
