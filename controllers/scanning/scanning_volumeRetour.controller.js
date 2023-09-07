@@ -3561,7 +3561,7 @@ const renvoyezVoluSupAilleScanning = async (req, res) => {
                 {
                     model: Folio,
                     as: 'folio',
-                    required: false,
+                    required: true,
                     attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: { ...conditionFolio },
                     include: [{
