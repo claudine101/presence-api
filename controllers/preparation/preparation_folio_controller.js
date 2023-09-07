@@ -23,6 +23,7 @@ const { Op } = require('sequelize');
 const Volume = require('../../models/Volume');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const Maille = require('../../models/Maille');
+const Etapes_folio = require('../../models/Etapes_folio');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -832,62 +833,62 @@ const retourAgentSuperviseur = async (req, res) => {
                 ]
             }
         })
-    if (malle.length > 0) {
-        await Promise.all(folioObjet.map(async (folio) => {
-            const results = await Folio.update({
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
-            }, {
-                where: {
-                    ID_FOLIO: folio.ID_FOLIO,
-                }
-            })
-            await Etapes_folio_historiques.create(
-                {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    ID_USER: req.userId,
-                    ID_FOLIO: folio.ID_FOLIO,
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR,
+        if (malle.length > 0) {
+            await Promise.all(folioObjet.map(async (folio) => {
+                const results = await Folio.update({
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
-                }
-            )
-        }))
-    }
-    else {
-        await Promise.all(folioObjet.map(async (folio) => {
-            const results = await Folio.update({
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
-            }, {
-                where: {
-                    ID_FOLIO: folio.ID_FOLIO,
-                }
-            })
-            await Etapes_folio_historiques.create(
-                {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    ID_USER: req.userId,
-                    ID_FOLIO: folio.ID_FOLIO,
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                }, {
+                    where: {
+                        ID_FOLIO: folio.ID_FOLIO,
+                    }
+                })
+                await Etapes_folio_historiques.create(
+                    {
+                        PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                        ID_USER: req.userId,
+                        ID_FOLIO: folio.ID_FOLIO,
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                    }
+                )
+            }))
+        }
+        else {
+            await Promise.all(folioObjet.map(async (folio) => {
+                const results = await Folio.update({
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
-                }
-            )
-        }))
+                }, {
+                    where: {
+                        ID_FOLIO: folio.ID_FOLIO,
+                    }
+                })
+                await Etapes_folio_historiques.create(
+                    {
+                        PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                        ID_USER: req.userId,
+                        ID_FOLIO: folio.ID_FOLIO,
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR,
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
+                    }
+                )
+            }))
+        }
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Reussi",
+
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
-
-    res.status(RESPONSE_CODES.OK).json({
-        statusCode: RESPONSE_CODES.OK,
-        httpStatus: RESPONSE_STATUS.OK,
-        message: "Reussi",
-
-    })
-
-} catch (error) {
-    console.log(error)
-    res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-        message: "Erreur interne du serveur, réessayer plus tard",
-    })
-}
 }
 /**
  * Permet de afficher tous volume
@@ -2062,7 +2063,7 @@ const findAllAgentRetraites = async (req, res) => {
             where: {
                 [Op.and]: [{
                     ID_USER: req.userId,
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING
                 }]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', "PV_PATH", 'DATE_INSERTION'],
@@ -2187,7 +2188,6 @@ const checkAgentsup = async (req, res) => {
                                     ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
                             }
                         }, {
-
                             ID_FOLIO: {
                                 [Op.in]: IdsObjet
                             }
@@ -2226,6 +2226,82 @@ const checkAgentsup = async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
             result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+const checkAgentsupDetails = async (req, res) => {
+    try {
+        const { USERS_ID,
+            folioIds
+        } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        const result = await  Folio.findAll(
+            {
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        [Op.and]: [{
+                            IS_PREPARE: 1,
+                            NOM_PROPRIETAIRE:null
+                        }, {
+                            ID_FOLIO: {
+                                [Op.in]: IdsObjet
+                            }
+                        },]
+                    }
+                }
+          )
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: result
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+const checkPlateau = async (req, res) => {
+    try {
+        const { ID_VOLUME} = req.body
+        const result = await  Folio.findAll( {
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                        }]
+                    },
+                    include: [{
+                        model: Volume,
+                        as: 'volume',
+                        required: true,
+                        attributes: ["ID_VOLUME","NOMBRE_DOSSIER"],
+                        where:{
+                            ID_VOLUME:ID_VOLUME
+                        }
+        
+                    }]
+                },
+               
+          )
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: result
             // result:result
         })
     } catch (error) {
@@ -2488,7 +2564,7 @@ const addDetails = async (req, res) => {
                 LOCALITE: LOCALITE,
                 NOM_PROPRIETAIRE: NOM_PROPRIETAIRE,
                 PRENOM_PROPRIETAIRE: PRENOM_PROPRIETAIRE,
-                PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_dossiers.fileName}` : null,
+                PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.dossiers}/${filename_dossiers.fileName}` : null,
                 NUMERO_FEUILLE: NUMERO_FEUILLE,
                 NOMBRE_DOUBLON: NOMBRE_DOUBLON,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
@@ -2530,8 +2606,14 @@ const getPvs = async (req, res) => {
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                [Op.and]: [
+                {
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                        ]
+                    }
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3108,7 +3190,7 @@ const getPvsAgentSupAile = async (req, res) => {
 
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3161,7 +3243,7 @@ const getPvsAgentSupAile = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_INDEXATION,
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3488,5 +3570,7 @@ module.exports = {
     getPvsAgentSupAile,
     checkAgentsupAile,
     checkAgentsuper,
-    getPvsAgentSupRetour
+    getPvsAgentSupRetour,
+    checkAgentsupDetails,
+    checkPlateau
 }

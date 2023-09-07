@@ -168,6 +168,18 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.post('/checkAgentsup', preparation_folio_controller.checkAgentsup)
 
+  /** 
+ *@method POST
+ * @url /preparation/folio/checkAgentsupDetails
+ */
+ preparation_folio_routes.post('/checkAgentsupDetails', preparation_folio_controller.checkAgentsupDetails)
+
+ /** 
+ *@method POST
+ * @url /preparation/folio/checkPlateau
+ */
+ preparation_folio_routes.post('/checkPlateau', preparation_folio_controller.checkPlateau)
+
   /**
  * Une route  permet  de voir si tel  agent  superviseur aile phase preparation 
  * ont  déja effectuer  retour  avec chef plateau
