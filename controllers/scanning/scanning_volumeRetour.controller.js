@@ -5088,7 +5088,7 @@ const findFoliosGetsPvsPlateauReenvoyezPvsss = async (req, res) => {
 
 const updateRetourPlateauSupReenvoyezValidTraiteAille = async (req, res) => {
     try {
-        const { ID_FOLIOS } = req.body
+        const { ID_FOLIOS, USER_TRAITEMENT } = req.body
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
@@ -5099,7 +5099,10 @@ const updateRetourPlateauSupReenvoyezValidTraiteAille = async (req, res) => {
                 PV: {
                     required: true,
                     image: 21000000
-                }
+                },
+                USER_TRAITEMENT: {
+                    required: true,
+                },
             },
             {
                 ID_FOLIOS: {
@@ -5109,7 +5112,10 @@ const updateRetourPlateauSupReenvoyezValidTraiteAille = async (req, res) => {
                 PV: {
                     image: "La taille invalide",
                     required: "Le pv est obligatoire"
-                }
+                },
+                USER_TRAITEMENT: {
+                    required: "USER_TRAITEMENT est obligatoire",
+                },
             }
         );
         await validation.run();
@@ -5143,7 +5149,7 @@ const updateRetourPlateauSupReenvoyezValidTraiteAille = async (req, res) => {
         const folio_historiques_reconcilier = folioObjet.map(folio => {
             return {
                 ID_USER: req.userId,
-                USER_TRAITEMENT: req.userId,
+                USER_TRAITEMENT: USER_TRAITEMENT,
                 ID_FOLIO: folio,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
@@ -5797,7 +5803,7 @@ const findFoliosGetsPvsPlateauReenvoyezPvsssFinal= async (req, res) => {
 
 const updateRetourPlateauSupReenvoyezValidTraiteAilleFinal = async (req, res) => {
     try {
-        const { ID_FOLIOS } = req.body
+        const { ID_FOLIOS, USER_TRAITEMENT } = req.body
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
@@ -5808,7 +5814,10 @@ const updateRetourPlateauSupReenvoyezValidTraiteAilleFinal = async (req, res) =>
                 PV: {
                     required: true,
                     image: 21000000
-                }
+                },
+                USER_TRAITEMENT: {
+                    required: true,
+                },
             },
             {
                 ID_FOLIOS: {
@@ -5818,7 +5827,10 @@ const updateRetourPlateauSupReenvoyezValidTraiteAilleFinal = async (req, res) =>
                 PV: {
                     image: "La taille invalide",
                     required: "Le pv est obligatoire"
-                }
+                },
+                USER_TRAITEMENT: {
+                    required: "USER_TRAITEMENT est obligatoire",
+                },
             }
         );
         await validation.run();
@@ -5852,7 +5864,7 @@ const updateRetourPlateauSupReenvoyezValidTraiteAilleFinal = async (req, res) =>
         const folio_historiques_reconcilier = folioObjet.map(folio => {
             return {
                 ID_USER: req.userId,
-                USER_TRAITEMENT: req.userId,
+                USER_TRAITEMENT: USER_TRAITEMENT,
                 ID_FOLIO: folio,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
