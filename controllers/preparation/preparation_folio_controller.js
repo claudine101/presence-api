@@ -24,6 +24,7 @@ const Volume = require('../../models/Volume');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 const Maille = require('../../models/Maille');
 const Etapes_folio = require('../../models/Etapes_folio');
+const Motif = require('../../models/Motif');
 /**
  * Permet de vérifier la connexion dun utilisateur
  * @author NDAYISABA Claudine <claudine@mediabox.bi>
@@ -65,17 +66,39 @@ const createfolio = async (req, res) => {
                 result: errors
             })
         }
-        const PV = req.files?.PV
+        var folioObjet = {}
+        folioObjet = JSON.parse(folio)
+        const dossiers_ids = folioObjet.map(folio => folio.NUMERO_DOSSIER)
+        const dossiersExiste = await Folio.findAll({
+            attributes: ['NUMERO_FOLIO'],
+            where: {
+                [Op.and]: [
+                    {
+                        NUMERO_FOLIO: {
+                            [Op.in]: dossiers_ids
+
+                        }
+                    }
+                ]
+            }
+        })
+        if(dossiersExiste.length>0){
+            res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "les dossiers existe déjà",
+                result:dossiersExiste
+            })
+        }
+        else{
+                 const PV = req.files?.PV
         const folioUpload = new VolumePvUpload()
         var filename_pv
         if (PV) {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-
         // const histoPv = histo.toJSON()
-        var folioObjet = {}
-        folioObjet = JSON.parse(folio)
         await Promise.all(folioObjet.map(async (folio) => {
             const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
@@ -120,6 +143,7 @@ const createfolio = async (req, res) => {
             message: "Insertion faite  avec succès",
             // result: histoPv
         })
+        }  
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
@@ -140,7 +164,7 @@ const findAll = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO', 'FOLIO','ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG
             },
@@ -151,7 +175,8 @@ const findAll = async (req, res) => {
             message: "Liste des folios",
             result: result
         })
-    } catch (error) {
+    } 
+    catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
@@ -172,7 +197,7 @@ const findAllFolioNoTraite = async (req, res) => {
     try {
         const { ID_MAILLE } = req.params
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_MALLE_NO_TRAITE: ID_MAILLE, ID_ETAPE_FOLIO: ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU
             },
@@ -227,7 +252,7 @@ const findAllFolioEquipe = async (req, res) => {
         }
         else {
             const result = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
                 where: {
                     ID_VOLUME: ID_VOLUME,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
@@ -261,7 +286,7 @@ const findAllFolioEquipeNoPrepare = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO', 'FOLIO','ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME,
                 IS_PREPARE: 0
@@ -642,7 +667,7 @@ const renommerAgentPreparation = async (req, res) => {
  */
 const retourAgentPreparation = async (req, res) => {
     try {
-        const { AGENT_PREPARATION, folio, folioPrepare, ID_MAILLE_NO_TRAITE } = req.body
+        const { AGENT_PREPARATION, folio, folioPrepare, ID_MAILLE_NO_TRAITE, MOTIF } = req.body
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -676,6 +701,16 @@ const retourAgentPreparation = async (req, res) => {
                 result: errors
             })
         }
+        var id_motif = {}
+        if (MOTIF){
+            const motif = await Motif.create(
+                {
+                    DESCRIPTION: MOTIF
+                }
+            )
+            const motifs = motif.toJSON()
+            id_motif = motifs
+        }
         const PV = req.files?.PV
         const volumeUpload = new VolumePvUpload()
         var filename_pv
@@ -691,7 +726,9 @@ const retourAgentPreparation = async (req, res) => {
             await Promise.all(folioObjet.map(async (folio) => {
                 const results = await Folio.update({
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
-                    IS_PREPARE: 0
+                    IS_PREPARE: 0,
+                    ID_MOTIF:id_motif?.ID_MOTIF ? id_motif.ID_MOTIF:null
+
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -709,7 +746,8 @@ const retourAgentPreparation = async (req, res) => {
             }))
             await Promise.all(folioPrepareObjet.map(async (folio) => {
                 const results = await Folio.update({
-                    IS_PREPARE: 1
+                    IS_PREPARE: 1,
+                    ID_MOTIF:null
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -721,7 +759,8 @@ const retourAgentPreparation = async (req, res) => {
             await Promise.all(folioObjet.map(async (folio) => {
                 const results = await Folio.update({
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
-                    IS_PREPARE: 0
+                    IS_PREPARE: 0,
+                    ID_MOTIF:id_motif?.ID_MOTIF ? id_motif.ID_MOTIF:null
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -739,7 +778,8 @@ const retourAgentPreparation = async (req, res) => {
             }))
             await Promise.all(folioPrepareObjet.map(async (folio) => {
                 const results = await Folio.update({
-                    IS_PREPARE: 1
+                    IS_PREPARE: 1,
+                    ID_MOTIF:null
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -917,7 +957,7 @@ const nbre = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
                     }
@@ -985,7 +1025,7 @@ const findAllFolio = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     include: {
                         model: Volume,
                         as: 'volume',
@@ -1098,7 +1138,7 @@ const findAllFolioChefPlateau = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG
@@ -1162,7 +1202,7 @@ const findAllAgent = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 }
             ]
         })
@@ -1248,7 +1288,7 @@ const findAllAgentRetourne = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1355,7 +1395,7 @@ const findAllAgents = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         IS_PREPARE: 1,
                     },
@@ -1434,7 +1474,7 @@ const findAllAgentsRetourne = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         IS_PREPARE: 1,
                     },
@@ -1521,7 +1561,7 @@ const findAllSuperviseurs = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [ETAPES_FOLIO.SELECTION_AGENT_SUP,
@@ -1623,7 +1663,7 @@ const findAllSuperviseurRetourPhase = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1724,7 +1764,7 @@ const findAllSuperviseursValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 }
             ]
         })
@@ -1809,7 +1849,7 @@ const findAllSuperviseursReValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 }
             ]
         })
@@ -1893,7 +1933,7 @@ const findAllChefPlateauReValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 }
             ]
         })
@@ -1978,7 +2018,7 @@ const findAllAgentReValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
                     },
@@ -2081,7 +2121,7 @@ const findAllAgentRetraites = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     include: [{
                         model: Volume,
                         as: 'volume',
@@ -2178,7 +2218,7 @@ const checkAgentsup = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                     where: {
                         [Op.and]: [{
@@ -2243,21 +2283,21 @@ const checkAgentsupDetails = async (req, res) => {
             folioIds
         } = req.body
         const IdsObjet = JSON.parse(folioIds)
-        const result = await  Folio.findAll(
+        const result = await Folio.findAll(
             {
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-                    where: {
-                        [Op.and]: [{
-                            IS_PREPARE: 1,
-                            NOM_PROPRIETAIRE:null
-                        }, {
-                            ID_FOLIO: {
-                                [Op.in]: IdsObjet
-                            }
-                        },]
-                    }
+                attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        IS_PREPARE: 1,
+                        NOM_PROPRIETAIRE: null
+                    }, {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    },]
                 }
-          )
+            }
+        )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -2276,27 +2316,27 @@ const checkAgentsupDetails = async (req, res) => {
 }
 const checkPlateau = async (req, res) => {
     try {
-        const { ID_VOLUME} = req.body
-        const result = await  Folio.findAll( {
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-                    where: {
-                        [Op.and]: [{
-                            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                        }]
-                    },
-                    include: [{
-                        model: Volume,
-                        as: 'volume',
-                        required: true,
-                        attributes: ["ID_VOLUME","NOMBRE_DOSSIER"],
-                        where:{
-                            ID_VOLUME:ID_VOLUME
-                        }
-        
-                    }]
-                },
-               
-          )
+        const { ID_VOLUME } = req.body
+        const result = await Folio.findAll({
+            attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                }]
+            },
+            include: [{
+                model: Volume,
+                as: 'volume',
+                required: true,
+                attributes: ["ID_VOLUME", "NOMBRE_DOSSIER"],
+                where: {
+                    ID_VOLUME: ID_VOLUME
+                }
+
+            }]
+        },
+
+        )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -2345,7 +2385,7 @@ const checkAgentsupAile = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                     where: {
                         [Op.and]: [{
@@ -2437,7 +2477,7 @@ const checkAgentsuper = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                     where: {
                         [Op.and]: [{
@@ -2607,22 +2647,22 @@ const getPvs = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [
-                {
-                    ID_ETAPE_FOLIO: {
-                        [Op.in]: [
-                            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
-                            IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
-                        ]
-                    }
-                }, {
-                    ID_USER: req.userId
-                }, {
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR
-                }, {
-                    ID_FOLIO: {
-                        [Op.in]: IdsObjet
-                    }
-                }]
+                    {
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                            ]
+                        }
+                    }, {
+                        ID_USER: req.userId
+                    }, {
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR
+                    }, {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
             }
 
         })
@@ -3348,7 +3388,7 @@ const findAllFolioPrepare = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         IS_PREPARE: { [Op.in]: [1, 0] },
                     },
