@@ -605,7 +605,8 @@ const getEtapesVolume = async (req, res) => {
                 ID_ETAPE_VOLUME: {
                     [Op.not]: [
                         ETAPES_VOLUME.RESELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_NON_TRAITES,
-                        ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP,
                     ]
                 }
             }
