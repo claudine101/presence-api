@@ -1360,6 +1360,9 @@ const findAllVolumerSupAille = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ["DATE_INSERTION", "DESC"]
+            ],
             include: [
                 {
                     model: Users,

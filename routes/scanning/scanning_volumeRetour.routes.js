@@ -619,7 +619,7 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_vo
  *@method GET
  * @url /scanning/retour/agent/retour/pvs/reenvoyez/supAille/chef
  */
- scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/supAille/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezHHH)
+ scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/supAille/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezSupCheck)
  
 
 
