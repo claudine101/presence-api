@@ -613,6 +613,13 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_vo
  * @url /scanning/retour/agent/retour/pvs/reenvoyez/chef
  */
  scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezHHH)
+
+    /**
+ * Une route  permet  de verifier si on pret a faire le retour
+ *@method GET
+ * @url /scanning/retour/agent/retour/pvs/reenvoyez/supAille/chef
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/supAille/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezHHH)
  
 
 
