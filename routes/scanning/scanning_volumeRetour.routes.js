@@ -599,8 +599,13 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_vo
  * @url /scanning/retour/agent/volume/traitees/plateau/asrchgg
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/asrchgg', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG)
- 
 
+        /**
+ * Une route  recuperer  les volumes deja traitees agent desarchivages
+ *@method GET
+ * @url /scanning/retour/agent/volume/tousVolume
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/tousVolume', scanning_volumeRetour_controller.findAllVolumeSupAilleScanningAllVolumeNice)
  
 
 

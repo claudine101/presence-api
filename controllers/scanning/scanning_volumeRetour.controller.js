@@ -1066,22 +1066,6 @@ const findFoliosGetsPvsPlateau = async (req, res) => {
             }
 
         })
-        // const pvRetour = await Etapes_folio_historiques.findOne({
-        //     attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
-        //     where: {
-        //         [Op.and]: [{
-        //             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-        //         }, {
-        //             ID_USER: req.userId
-        //         }, {
-        //             USER_TRAITEMENT: AGENT_SUPERVISEUR
-        //         }, {
-        //             ID_FOLIO: {
-        //                 [Op.in]: IdsObjet
-        //             }
-        //         }]
-        //     }
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1578,7 +1562,7 @@ const findAllVolumePlateauChef = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
@@ -6906,6 +6890,79 @@ const findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG = async (req, re
     }
 }
 
+const findAllVolumeSupAilleScanningAllVolumeNice = async (req, res) => {
+    try {
+        const userObject = await Users.findOne({
+            where: { USERS_ID: req.userId },
+            attributes: ['ID_PROFIL', 'USERS_ID']
+        })
+
+        const user = userObject.toJSON()
+        var condition = {}
+        condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES, USER_TRAITEMENT: req.userId }
+
+        const result = await Etapes_volume_historiques.findAll({
+            attributes: ['ID_VOLUME_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            where: {
+                ...condition
+            },
+            include: [
+                {
+                    model: Volume,
+                    as: 'volume',
+                    required: false,
+                    attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    include:
+                    {
+                        model: Maille,
+                        as: 'maille',
+                        required: false,
+                        attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+
+                    }
+                }]
+
+        })
+        const allVolume = []
+        const volume = await Promise.all(result?.map(async resObject => {
+            const util = resObject.toJSON()
+            const folios = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
+                    }, {
+                        ID_VOLUME: util.volume.ID_VOLUME
+                    }]
+                },
+            })
+            if (folios?.length > 0) {
+                allVolume.push({
+                    ...util,
+                    folios,
+                });
+            }
+        })
+        )
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: allVolume
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -6993,6 +7050,7 @@ module.exports = {
     findAllVolumePlateauChefTraitesReenvoyerOriFinArchives,
     findAllVolumerRetourReconcilierArchivvFiniti,
     folioEquipeScanningReenvoyerNiceArchivees,
-    findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG
+    findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG,
+    findAllVolumeSupAilleScanningAllVolumeNice
     
 }
