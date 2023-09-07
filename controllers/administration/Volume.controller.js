@@ -429,7 +429,7 @@ const get_rapport_by_volume = async (req, res) => {
         // });
 
         //count dossiers indexé
-        const indexe = await Folio.findAndCountAll({
+        const indexe = await Folio.findAll({
             attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_INDEXE'],
             where: {
                 ID_VOLUME: ID_VOLUME, IS_INDEXE: 1, ...dateWhere
@@ -455,7 +455,7 @@ const get_rapport_by_volume = async (req, res) => {
         })
 
         //count all dossiers
-        const all_dossier = await Folio.findAndCountAll({
+        const all_dossier = await Folio.findAll({
             attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION'],
             where: {
                 ID_VOLUME: ID_VOLUME, ...dateWhere
@@ -491,7 +491,7 @@ const get_rapport_by_volume = async (req, res) => {
         })
 
         //count dossiers preparé
-        const prepare = await Folio.findAndCountAll({
+        const prepare = await Folio.findAll({
             attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_PREPARE'],
             where: {
                 ID_VOLUME: ID_VOLUME, IS_PREPARE: 1, ...dateWhere,
@@ -516,7 +516,7 @@ const get_rapport_by_volume = async (req, res) => {
 
         })
         //count dossiers uploadé
-        const uploade = await Folio.findAndCountAll({
+        const uploade = await Folio.findAll({
             attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_UPLOADED_EDRMS'],
             where: {
                 ID_VOLUME: ID_VOLUME, IS_UPLOADED_EDRMS: 1, ...dateWhere,
@@ -541,7 +541,7 @@ const get_rapport_by_volume = async (req, res) => {
 
         })
         //count dossiers scanné
-        const scanne = await Folio.findAndCountAll({
+        const scanne = await Folio.findAll({
             attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'DATE_INSERTION', 'IS_RECONCILIE'],
             where: {
                 ID_VOLUME: ID_VOLUME, IS_RECONCILIE: 1, ...dateWhere,
@@ -622,6 +622,20 @@ const getEtapesVolume = async (req, res) => {
                     {
                         model: Users,
                         as: 'users',
+                        attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                        required: false,
+                        include: [
+                            {
+                                model: Profils,
+                                as: 'profil',
+                                attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                                required: false,
+                            }
+                        ],
+                    },
+                    {
+                        model: Users,
+                        as: 'traitant',
                         attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
                         required: false,
                         include: [
