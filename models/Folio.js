@@ -60,6 +60,10 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.INTEGER,
         allowNull: true
     },
+    ID_MOTIF: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
         allowNull: true
