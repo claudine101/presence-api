@@ -606,6 +606,13 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_vo
  * @url /scanning/retour/agent/volume/tousVolume
  */
  scanning_volumeRetour_routes.get('/agent/volume/tousVolume', scanning_volumeRetour_controller.findAllVolumeSupAilleScanningAllVolumeNice)
+
+   /**
+ * Une route  permet  si le chef plateau est pret a signer le pv de retours un agent superviseur  
+ *@method GET
+ * @url /scanning/retour/agent/retour/pvs/reenvoyez/chef
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezHHH)
  
 
 

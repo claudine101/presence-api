@@ -6963,6 +6963,86 @@ const findAllVolumeSupAilleScanningAllVolumeNice = async (req, res) => {
     }
 }
 
+/**
+ * Permet de faire retourner le volumees deja traiter par agent superviseur aile
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  4/09/2023
+ * 
+ */
+
+const checkRetourChefEquipeReenvoyezHHH = async (req, res) => {
+    try {
+        const { USERS_ID } = req.params
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: {
+                            [Op.and]: [
+                                ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,]
+                        }
+                    }
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -7051,6 +7131,7 @@ module.exports = {
     findAllVolumerRetourReconcilierArchivvFiniti,
     folioEquipeScanningReenvoyerNiceArchivees,
     findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG,
-    findAllVolumeSupAilleScanningAllVolumeNice
+    findAllVolumeSupAilleScanningAllVolumeNice,
+    checkRetourChefEquipeReenvoyezHHH
     
 }
