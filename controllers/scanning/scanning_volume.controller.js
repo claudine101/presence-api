@@ -500,13 +500,13 @@ const findAll = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
             }
         }
-        else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-            condition = {
-                '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
-                USER_TRAITEMENT: req.userId,
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
-            }
-        }
+        // else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
+        //     condition = {
+        //         '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
+        //         USER_TRAITEMENT: req.userId,
+        //         ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
+        //     }
+        // }
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
         }
@@ -1061,7 +1061,6 @@ const updateRetourEquipe = async (req, res) => {
             }
         })
         await Etapes_folio_historiques.bulkCreate(folio_historiques_reconcilier)
-
         folioAllObjet = JSON.parse(ID_FOLIO)
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
@@ -1361,6 +1360,9 @@ const findAllVolumerSupAille = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ["DATE_INSERTION", "DESC"]
+            ],
             include: [
                 {
                     model: Users,
