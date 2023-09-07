@@ -493,7 +493,7 @@ const agent_chefequipe=async(req,res)=>{
       const etapes_folio_histo_chefequipe=await Etapes_volume_historiques.findAndCountAll({
         where:{
           ID_ETAPE_VOLUME:ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
-          USER_TRAITEMENT:util.USERS_ID,
+          USERS_ID:util.USERS_ID,
           ...dateWhere  
         },
         include:{
