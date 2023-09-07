@@ -553,9 +553,7 @@ const rapportByphase = async (req, res) => {
 
         //  tous les folio   sous la phase de scanning
         const all_folio_scan = await Etapes_volume_historiques.findAll({
-            attributes: [
-                'DATE_INSERTION', 'ID_VOLUME', 'ID_ETAPE_VOLUME'
-            ],
+            attributes: ["ID_VOLUME"],
             where: {
                 ...dateWhereV
 
@@ -564,18 +562,11 @@ const rapportByphase = async (req, res) => {
                 model: Etapes_volumes,
                 as: "etapes_volumes",
                 attributes: [
-                    'ID_PHASE', 'NOM_ETAPE'
+                    'ID_PHASE'
                 ],
                 where: {
                     ID_PHASE: 2
                 },
-                require: true
-            }, {
-                model: Volume,
-                as: "volume",
-                attributes: [
-                    'NUMERO_VOLUME', 'ID_VOLUME'
-                ],
                 require: true
             }
             ]
@@ -597,19 +588,7 @@ const rapportByphase = async (req, res) => {
                   ID_VOLUME: volume.toJSON().ID_VOLUME,
                 },
                 attributes: [
-                  "NUMERO_FOLIO","FOLIO","IS_RECONCILIE","DATE_INSERTION",
-                ],
-                include: [
-                  {
-                    model: Etapes_folio,
-                    as: "etapes",
-                    attributes: ["NOM_ETAPE"],
-                    required: false,
-                  },{
-                    model: Volume,
-                    as: "volume",
-                    attributes: ["ID_VOLUME","NUMERO_VOLUME"]
-                  }
+                  "IS_RECONCILIE",
                 ],
               });
               const folioscan = folios.filter(
@@ -620,7 +599,7 @@ const rapportByphase = async (req, res) => {
               );
               
               return {
-                ...volume.toJSON(),
+                // ...volume.toJSON(),
                 folios,
                 folioscan,
                 foliononscan
@@ -1092,8 +1071,7 @@ const rapportByphase = async (req, res) => {
                 foliofilterall: foliofilter,
                 foliofilter_prepare: foliofilter_prepare,
                 foliofilter_nonprepare: foliofilter_nonprepare,
-
-                foliofilter_allscan: volumes,
+                volumes,
                 foliofilter_scan: foliofilter_scan,
                 foliofilter_nonscan: foliofilter_nonscan,
 
