@@ -599,8 +599,27 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_vo
  * @url /scanning/retour/agent/volume/traitees/plateau/asrchgg
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/asrchgg', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG)
- 
 
+        /**
+ * Une route  recuperer  les volumes deja traitees agent desarchivages
+ *@method GET
+ * @url /scanning/retour/agent/volume/tousVolume
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/tousVolume', scanning_volumeRetour_controller.findAllVolumeSupAilleScanningAllVolumeNice)
+
+   /**
+ * Une route  permet  si le chef plateau est pret a signer le pv de retours un agent superviseur  
+ *@method GET
+ * @url /scanning/retour/agent/retour/pvs/reenvoyez/chef
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezHHH)
+
+    /**
+ * Une route  permet  de verifier si on pret a faire le retour
+ *@method GET
+ * @url /scanning/retour/agent/retour/pvs/reenvoyez/supAille/chef
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/pvs/reenvoyez/supAille/chef/:USERS_ID', scanning_volumeRetour_controller.checkRetourChefEquipeReenvoyezSupCheck)
  
 
 
