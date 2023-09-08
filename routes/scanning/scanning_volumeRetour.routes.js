@@ -627,6 +627,21 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages', scanning_vo
 * @url /scanning/retour/agent/pvs/reenvoyer/archivages/pvs
 */
 scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages/pvs', scanning_volumeRetour_controller.findFoliosGetsPvsPlateauReenvoyezPvArchivagesPVS)
+
+   /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/nonValid/plateau
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/nonValid/plateau', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourNonValid)
+
+
+   /**
+* Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/supAille/pvs
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/supAille/pvs', scanning_volumeRetour_controller.findGetsPvsSupAilletourNonValid)
  
 
 

@@ -1689,7 +1689,7 @@ const findAllVolumePlateauChefTraites = async (req, res) => {
 
 const findGetsPvsChefPlateauRetour = async (req, res) => {
     try {
-        const { folioIds } = req.body
+        const { folioIds, AGENT_SUPERVISEUR } = req.body
         const IdsObjet = JSON.parse(folioIds)
 
         const pv = await Etapes_folio_historiques.findOne({
@@ -1700,7 +1700,7 @@ const findGetsPvsChefPlateauRetour = async (req, res) => {
                 }, {
                     ID_USER: req.userId
                 }, {
-                    USER_TRAITEMENT: req.userId
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
                 }, {
                     ID_FOLIO: {
                         [Op.in]: IdsObjet
@@ -2471,14 +2471,14 @@ const findAllVolumePlateauChefNonValideRetour = async (req, res) => {
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            attributes: ['ID_FOLIO_HISTORIQUE','ID_USER', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             order: [
                 ["DATE_INSERTION", "DESC"]
             ],
             include: [
                 {
                     model: Users,
-                    as: 'traitement',
+                    as: 'user',
                     required: false,
                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
                 },
@@ -2506,7 +2506,7 @@ const findAllVolumePlateauChefNonValideRetour = async (req, res) => {
         result.forEach(histo => {
             const PV_PATH = histo.PV_PATH
             const folio = histo.folio
-            const users = histo.traitement
+            const users = histo.user
             const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
@@ -4473,7 +4473,8 @@ const findAllVolumerRetourReconcilierPret = async (req, res) => {
                             [Op.in]: [
                                 ETAPES_FOLIO.REENVOYER_CHEF_PLATEAU_SCANNING_VERS_AGENT_SUPERVISEUR_SCANNING,
                                 ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING,
-                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER,
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID
                             ]
                         }
                     },
@@ -7156,6 +7157,106 @@ const findFoliosGetsPvsPlateauReenvoyezPvArchivagesPVS= async (req, res) => {
     }
 }
 
+/**
+ * Permet de recuper les pvs d'un chef plateau signe avec agent superviseur scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
+
+const findGetsPvsChefPlateauRetourNonValid = async (req, res) => {
+    try {
+        const { folioIds, AGENT_SUPERVISEUR } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "PVS agent superviseur",
+            result: {
+                ...pv.toJSON(),
+                // pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+/**
+ * Permet de recuper les pvs d'un chef plateau signe avec agent superviseur scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
+
+const findGetsPvsSupAilletourNonValid = async (req, res) => {
+    try {
+        const { volume_ids, AGENT_SUPERVISEUR } = req.body
+        const IdsObjet = JSON.parse(volume_ids)
+
+        const pv = await Etapes_volume_historiques.findOne({
+            attributes: ['ID_VOLUME_HISTORIQUE','USERS_ID', 'USER_TRAITEMENT','ID_ETAPE_VOLUME','ID_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
+                }, {
+                    USERS_ID: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_VOLUME: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "PVS agent superviseur",
+            result: {
+                ...pv.toJSON(),
+                // pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -7247,6 +7348,8 @@ module.exports = {
     findAllVolumeSupAilleScanningAllVolumeNice,
     checkRetourChefEquipeReenvoyezHHH,
     checkRetourChefEquipeReenvoyezSupCheck,
-    findFoliosGetsPvsPlateauReenvoyezPvArchivagesPVS
+    findFoliosGetsPvsPlateauReenvoyezPvArchivagesPVS,
+    findGetsPvsChefPlateauRetourNonValid,
+    findGetsPvsSupAilletourNonValid
     
 }
