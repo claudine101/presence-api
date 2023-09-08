@@ -642,6 +642,13 @@ scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/nonValid/platea
 * @url /scanning/retour/agent/chefPlateau/retour/pvs/supAille/pvs
 */
 scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/supAille/pvs', scanning_volumeRetour_controller.findGetsPvsSupAilletourNonValid)
+
+    /**
+ * Une route  recuperer  les volumes deja traitees agent superviseur aille scanning
+ *@method GET
+ * @url /scanning/retour/agent/volume/traitees/chefEquipe/aille
+ */
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/chefEquipe/aille', scanning_volumeRetour_controller.findAllVolumeChefEquipeTraitesReenvoyerFolios)
  
 
 
