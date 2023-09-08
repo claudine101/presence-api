@@ -26,5 +26,6 @@ indexationRouter.get("/flashs/details/enattente/:ID_FLASH", indexation_folio_con
 indexationRouter.get("/flashs/chef_plateau/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateau)
 indexationRouter.get("/flashs/chef_plateau/enattante/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateauRetour)
 indexationRouter.get("/flashs/sup_aile_indexation/:ID_FLASH", indexation_folio_contoller.getFrashSupAileIndexation)
+indexationRouter.get("/flashs/chef_plateau/details_valide/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateauValide)
 
 module.exports = indexationRouter
