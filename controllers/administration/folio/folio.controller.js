@@ -417,6 +417,20 @@ const getEtapesDossier = async (req, res) => {
                   ],
               },
               {
+                model: Users,
+                as: 'traitement',
+                attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                required: false,
+                include: [
+                    {
+                        model: Profils,
+                        as: 'profil',
+                        attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                        required: false,
+                    }
+                ],
+            },
+              {
                   model: Folio,
                   as: 'folio',
                   attributes: ['FOLIO','NUMERO_FOLIO','ID_ETAPE_FOLIO'],
