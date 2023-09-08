@@ -2204,7 +2204,7 @@ const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
             where: {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES,
             },
-            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
+            attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME','PV_PATH', 'DATE_INSERTION'],
             order: [
                 ["DATE_INSERTION", "DESC"]
             ],
@@ -2225,40 +2225,33 @@ const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
                 }
             ]
         })
-        //         var PvVolume = []
-        //         result.forEach(histo => {
-        //             const PV_PATH = histo.PV_PATH
-        //             const volume = histo.volume
-        //             const users = histo.traitant
-        //             const date = histo.DATE_INSERTION
-
-        //             const isExists = PvVolume.find(pv => pv.PV_PATH == PV_PATH) ? true : false
-        //             if (isExists) {
-        //                 const allFolio = PvVolume.find(pv => pv.PV_PATH == PV_PATH)
-        //                 const newFolios = { ...allFolio, volumes: [...allFolio.volumes, volume] }
-        //                 PvVolume = PvVolume.map(pv => {
-        //                     if (pv.PV_PATH == PV_PATH) {
-        //                         return newFolios
-        //                     } else {
-        //                         return pv
-        //                     }
-        //                 })
-        //             }
-        //             else {
-        //                 PvVolume.push({
-        //                     PV_PATH,
-        //                     users,
-        //                     date,
-        //                     volumes: [volume]
-        //                 })
-        //             }
-        //         })
+        const allVolume = []
+        const volume = await Promise.all(result?.map(async resObject => {
+            const util = resObject.toJSON()
+            const folios = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU
+                    }, {
+                        ID_VOLUME: util.volume.ID_VOLUME
+                    }]
+                },
+            })
+            if (folios?.length > 0) {
+                allVolume.push({
+                    ...util,
+                    folios,
+                });
+            }
+        })
+        )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes traitees",
             // PvVolume
-            result: result
+            result: allVolume
         })
     } catch (error) {
         console.log(error)
