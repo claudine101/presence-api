@@ -21,7 +21,10 @@ indexationRouter.post("/chef_plateau_indexation/retour", indexation_folio_contol
 indexationRouter.post("/agent_indexation", indexation_folio_contoller.saveAgentIndexation)
 indexationRouter.post("/agent_indexation/retour/indexation_folios", indexation_folio_contoller.retourAgentIndexation)
 indexationRouter.get("/flashs/details/:ID_FLASH", indexation_folio_contoller.getFlashDetail)
+indexationRouter.get("/flashs/details/valide/:ID_FLASH", indexation_folio_contoller.getFlashDetailValide)
+indexationRouter.get("/flashs/details/enattente/:ID_FLASH", indexation_folio_contoller.getFlashDetailEnattente)
 indexationRouter.get("/flashs/chef_plateau/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateau)
+indexationRouter.get("/flashs/chef_plateau/enattante/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateauRetour)
 indexationRouter.get("/flashs/sup_aile_indexation/:ID_FLASH", indexation_folio_contoller.getFrashSupAileIndexation)
 
 module.exports = indexationRouter
