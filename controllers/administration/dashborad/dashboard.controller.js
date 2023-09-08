@@ -366,6 +366,22 @@ const rapportByphase = async (req, res) => {
             };
         }
 
+        var dateWhereV = {
+            DATE_INSERTION: Sequelize.literal('DATE(etapes_volume_historiques.DATE_INSERTION) = CURDATE()')
+        };
+        if (startDate) {
+            
+            const startDateFormat = moment(startDate).format("YYYY-MM-DD 00:00:00");
+            const endDateFormat = endDate
+                ? moment(endDate).format("YYYY-MM-DD 23:59:59")
+                : moment().format("YYYY-MM-DD 23:59:59");
+            dateWhereV = {
+                DATE_INSERTION: {
+                    [Op.between]: [startDateFormat, endDateFormat],
+                },
+            };
+        }
+
         //all folio sous la phase de preparation
         const all_folios = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -536,176 +552,87 @@ const rapportByphase = async (req, res) => {
         });
 
         //  tous les folio   sous la phase de scanning
-        const all_folio_scan = await Etapes_folio_historiques.findAll({
-            attributes: [
-                'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
-            ],
+        const all_folio_scan = await Etapes_volume_historiques.findAll({
+            attributes: ["ID_VOLUME"],
             where: {
-                ...dateWhere,
+                ...dateWhereV
+
             },
             include: [{
-                model: Etapes_folio,
-                as: "etapes",
+                model: Etapes_volumes,
+                as: "etapes_volumes",
                 attributes: [
-                    'ID_PHASE', 'NOM_ETAPE'
+                    'ID_PHASE'
                 ],
                 where: {
                     ID_PHASE: 2
                 },
-                require: true
-            }, {
-                model: Folio,
-                as: "folio",
-                attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
-                ],
-                include: [{
-                    model: Volume,
-                    as: "volume",
-                    attributes: [
-                        'ID_VOLUME', 'NUMERO_VOLUME'
-                    ]
-                }, {
-                    model: Nature_folio,
-                    as: "natures",
-                    attributes: ['DESCRIPTION']
-                },{
-                    model: Etapes_folio,
-                    as: "etapes",
-                    attributes: [ 'NOM_ETAPE'
-                    ],
-                    require: true
-                }],
                 require: true
             }
             ]
         })
         const uniqueIds_SCANall = [];
-        const foliofilter_allscan = all_folio_scan.filter((element) => {
-            const isDuplicate = uniqueIds_SCANall.includes(element.toJSON().ID_FOLIO);
+        const volumes = all_folio_scan.filter((element) => {
+            const isDuplicate = uniqueIds_SCANall.includes(element.toJSON().ID_VOLUME);
             if (!isDuplicate) {
-                uniqueIds_SCANall.push(element.toJSON().ID_FOLIO);
+                uniqueIds_SCANall.push(element.toJSON().ID_VOLUME);
                 return true;
             }
             return false;
         });
-
-
-        // folio scanne  sous la phase de scanning
-        const folio_scan = await Etapes_folio_historiques.findAll({
-            attributes: [
-                'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
-            ],
-            where: {
-                ...dateWhere,
-            },
-            include: [{
-                model: Etapes_folio,
-                as: "etapes",
-                attributes: [
-                    'ID_PHASE', 'NOM_ETAPE'
-                ],
-                where: {
-                    ID_PHASE: 2
-                },
-                require: true
-            }, {
-                model: Folio,
-                as: "folio",
-                attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
-                ],
-                include: [{
-                    model: Volume,
-                    as: "volume",
-                    attributes: [
-                        'ID_VOLUME', 'NUMERO_VOLUME'
-                    ]
-                }, {
-                    model: Nature_folio,
-                    as: "natures",
-                    attributes: ['DESCRIPTION']
-                },{
-                    model: Etapes_folio,
-                    as: "etapes",
-                    attributes: [ 'NOM_ETAPE'
-                    ],
-                    require: true
-                }],
-                where: {
-                    IS_RECONCILIE: 1
-                },
-                require: true
-            }
-            ]
-        })
-        const uniqueIds_scan = [];
-        const foliofilter_scan = folio_scan.filter((element) => {
-            const isDuplicate = uniqueIds_scan.includes(element.toJSON().ID_FOLIO);
-            if (!isDuplicate) {
-                uniqueIds_scan.push(element.toJSON().ID_FOLIO);
-                return true;
-            }
-            return false;
-        });
-
-        // folio non scanne  sous la phase de scanning
-        const folio_nonscan = await Etapes_folio_historiques.findAll({
-            attributes: [
-                'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
-            ],
-            where: {
-                ...dateWhere,
-            },
-            include: [{
-                model: Etapes_folio,
-                as: "etapes",
-                attributes: [
-                    'ID_PHASE', 'NOM_ETAPE'
-                ],
-                where: {
-                    ID_PHASE: 2
-                },
-                require: true
-            }, {
-                model: Folio,
-                as: "folio",
-                attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
-                ],
-                include: [{
-                    model: Volume,
-                    as: "volume",
-                    attributes: [
-                        'ID_VOLUME', 'NUMERO_VOLUME'
-                    ]
-                }, {
-                    model: Nature_folio,
-                    as: "natures",
-                    attributes: ['DESCRIPTION']
-                },{
-                    model: Etapes_folio,
-                    as: "etapes",
-                    attributes: [ 'NOM_ETAPE'
-                    ],
-                    require: true
-                }],
-                where: {
-                    IS_RECONCILIE: 0
-                },
-                require: true
-            }
-            ]
-        })
-        const uniqueIds_nonscan = [];
-        const foliofilter_nonscan = folio_nonscan.filter((element) => {
-            const isDuplicate = uniqueIds_nonscan.includes(element.toJSON().ID_FOLIO);
-            if (!isDuplicate) {
-                uniqueIds_nonscan.push(element.toJSON().ID_FOLIO);
-                return true;
-            }
-            return false;
-        });
+        const volumesIds = volumes.map(vol => vol.toJSON().ID_VOLUME)
+                    const foliofilter_allscan = volumesIds.length > 0 ? await Etapes_folio_historiques.findAll({
+                        attributes: [
+                            'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
+                        ],
+                        where: {
+                              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG
+                        },
+                        include: [{
+                            model: Etapes_folio,
+                            as: "etapes",
+                            attributes: [
+                                'ID_PHASE', 'NOM_ETAPE'
+                            ],
+                            require: true
+                        }, {
+                            model: Folio,
+                            as: "folio",
+                            attributes: [
+                                'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO', 'IS_RECONCILIE'
+                            ],
+                            include: [{
+                                model: Volume,
+                                as: "volume",
+                                attributes: [
+                                    'ID_VOLUME', 'NUMERO_VOLUME'
+                                ]
+                            }, {
+                                model: Nature_folio,
+                                as: "natures",
+                                attributes: ['DESCRIPTION']
+                            },{
+                                model: Etapes_folio,
+                                as: "etapes",
+                                attributes: [ 'NOM_ETAPE'
+                                ],
+                                require: true
+                            }],
+                            where: {
+                              ID_VOLUME: {
+                                        [Op.in]: volumesIds
+                              }
+                          },
+                            require: true
+                        }
+                        ]
+                    }) : []
+              const foliofilter_scan = foliofilter_allscan.filter(
+                (f) => f.toJSON().folio.IS_RECONCILIE == 1
+              );
+              const foliofilter_nonscan = foliofilter_allscan.filter(
+                (f) =>   f.toJSON().folio.IS_RECONCILIE == 0
+              );
         //  tous les folio   sous la phase d'indexation
         const all_folio_indexe = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -760,8 +687,6 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
-
         // folio indexe  sous la phase d'indexation
         const folio_indexe = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -819,7 +744,6 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
         // folio non indexe  sous la phase d'indexation
         const folio_nonindexe = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -877,8 +801,6 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
-
         //  tous les folio   sous la phase d'upload
         const all_folio_upload = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -933,7 +855,6 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
 
         // folio upload  sous la phase d'upload
         const folio_upload = await Etapes_folio_historiques.findAll({
@@ -992,7 +913,6 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
         // folio non upload  sous la phase d'upload
         const folio_nonupload = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -1050,9 +970,6 @@ const rapportByphase = async (req, res) => {
             return false;
         });
 
-
-
-
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1063,9 +980,9 @@ const rapportByphase = async (req, res) => {
                 foliofilter_prepare: foliofilter_prepare,
                 foliofilter_nonprepare: foliofilter_nonprepare,
 
-                foliofilter_allscan: foliofilter_allscan,
-                foliofilter_scan: foliofilter_scan,
-                foliofilter_nonscan: foliofilter_nonscan,
+                foliofilter_allscan,
+                foliofilter_scan,
+                foliofilter_nonscan,
 
 
                 foliofilter_allindexe: foliofilter_allindexe,
