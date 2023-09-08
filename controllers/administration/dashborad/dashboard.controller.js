@@ -572,7 +572,7 @@ const rapportByphase = async (req, res) => {
             ]
         })
         const uniqueIds_SCANall = [];
-        const foliofilter_allscan = all_folio_scan.filter((element) => {
+        const volumes = all_folio_scan.filter((element) => {
             const isDuplicate = uniqueIds_SCANall.includes(element.toJSON().ID_VOLUME);
             if (!isDuplicate) {
                 uniqueIds_SCANall.push(element.toJSON().ID_VOLUME);
@@ -580,151 +580,59 @@ const rapportByphase = async (req, res) => {
             }
             return false;
         });
-
-        const volumes = await Promise.all(
-            foliofilter_allscan.map(async (volume) => {
-              const folios = await Folio.findAll({
-                where: {
-                  ID_VOLUME: volume.toJSON().ID_VOLUME,
-                },
-                attributes: [
-                  "IS_RECONCILIE",
-                ],
-              });
-              const folioscan = folios.filter(
-                (f) => f.toJSON().IS_RECONCILIE == 1
+        const volumesIds = volumes.map(vol => vol.toJSON().ID_VOLUME)
+                    const foliofilter_allscan = volumesIds.length > 0 ? await Etapes_folio_historiques.findAll({
+                        attributes: [
+                            'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
+                        ],
+                        where: {
+                              ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG
+                        },
+                        include: [{
+                            model: Etapes_folio,
+                            as: "etapes",
+                            attributes: [
+                                'ID_PHASE', 'NOM_ETAPE'
+                            ],
+                            require: true
+                        }, {
+                            model: Folio,
+                            as: "folio",
+                            attributes: [
+                                'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO', 'IS_RECONCILIE'
+                            ],
+                            include: [{
+                                model: Volume,
+                                as: "volume",
+                                attributes: [
+                                    'ID_VOLUME', 'NUMERO_VOLUME'
+                                ]
+                            }, {
+                                model: Nature_folio,
+                                as: "natures",
+                                attributes: ['DESCRIPTION']
+                            },{
+                                model: Etapes_folio,
+                                as: "etapes",
+                                attributes: [ 'NOM_ETAPE'
+                                ],
+                                require: true
+                            }],
+                            where: {
+                              ID_VOLUME: {
+                                        [Op.in]: volumesIds
+                              }
+                          },
+                            require: true
+                        }
+                        ]
+                    }) : []
+              const foliofilter_scan = foliofilter_allscan.filter(
+                (f) => f.toJSON().folio.IS_RECONCILIE == 1
               );
-              const foliononscan = folios.filter(
-                (f) =>   f.toJSON().IS_RECONCILIE == 0
+              const foliofilter_nonscan = foliofilter_allscan.filter(
+                (f) =>   f.toJSON().folio.IS_RECONCILIE == 0
               );
-              
-              return {
-                // ...volume.toJSON(),
-                folios,
-                folioscan,
-                foliononscan
-              };
-            })
-          )
-
-        //   console.log(volumes);
-
-
-        // folio scanne  sous la phase de scanning
-        const folio_scan = await Etapes_folio_historiques.findAll({
-            attributes: [
-                'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
-            ],
-            where: {
-                ...dateWhere,
-            },
-            include: [{
-                model: Etapes_folio,
-                as: "etapes",
-                attributes: [
-                    'ID_PHASE', 'NOM_ETAPE'
-                ],
-                where: {
-                    ID_PHASE: 2
-                },
-                require: true
-            }, {
-                model: Folio,
-                as: "folio",
-                attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
-                ],
-                include: [{
-                    model: Volume,
-                    as: "volume",
-                    attributes: [
-                        'ID_VOLUME', 'NUMERO_VOLUME'
-                    ]
-                }, {
-                    model: Nature_folio,
-                    as: "natures",
-                    attributes: ['DESCRIPTION']
-                },{
-                    model: Etapes_folio,
-                    as: "etapes",
-                    attributes: [ 'NOM_ETAPE'
-                    ],
-                    require: true
-                }],
-                where: {
-                    IS_RECONCILIE: 1
-                },
-                require: true
-            }
-            ]
-        })
-        const uniqueIds_scan = [];
-        const foliofilter_scan = folio_scan.filter((element) => {
-            const isDuplicate = uniqueIds_scan.includes(element.toJSON().ID_FOLIO);
-            if (!isDuplicate) {
-                uniqueIds_scan.push(element.toJSON().ID_FOLIO);
-                return true;
-            }
-            return false;
-        });
-
-        // folio non scanne  sous la phase de scanning
-        const folio_nonscan = await Etapes_folio_historiques.findAll({
-            attributes: [
-                'DATE_INSERTION', 'ID_FOLIO', 'ID_ETAPE_FOLIO'
-            ],
-            where: {
-                ...dateWhere,
-            },
-            include: [{
-                model: Etapes_folio,
-                as: "etapes",
-                attributes: [
-                    'ID_PHASE', 'NOM_ETAPE'
-                ],
-                where: {
-                    ID_PHASE: 2
-                },
-                require: true
-            }, {
-                model: Folio,
-                as: "folio",
-                attributes: [
-                    'NUMERO_FOLIO', 'ID_FOLIO','FOLIO','CODE_FOLIO'
-                ],
-                include: [{
-                    model: Volume,
-                    as: "volume",
-                    attributes: [
-                        'ID_VOLUME', 'NUMERO_VOLUME'
-                    ]
-                }, {
-                    model: Nature_folio,
-                    as: "natures",
-                    attributes: ['DESCRIPTION']
-                },{
-                    model: Etapes_folio,
-                    as: "etapes",
-                    attributes: [ 'NOM_ETAPE'
-                    ],
-                    require: true
-                }],
-                where: {
-                    IS_RECONCILIE: 0
-                },
-                require: true
-            }
-            ]
-        })
-        const uniqueIds_nonscan = [];
-        const foliofilter_nonscan = folio_nonscan.filter((element) => {
-            const isDuplicate = uniqueIds_nonscan.includes(element.toJSON().ID_FOLIO);
-            if (!isDuplicate) {
-                uniqueIds_nonscan.push(element.toJSON().ID_FOLIO);
-                return true;
-            }
-            return false;
-        });
         //  tous les folio   sous la phase d'indexation
         const all_folio_indexe = await Etapes_folio_historiques.findAll({
             attributes: [
@@ -1071,9 +979,10 @@ const rapportByphase = async (req, res) => {
                 foliofilterall: foliofilter,
                 foliofilter_prepare: foliofilter_prepare,
                 foliofilter_nonprepare: foliofilter_nonprepare,
-                volumes,
-                foliofilter_scan: foliofilter_scan,
-                foliofilter_nonscan: foliofilter_nonscan,
+
+                foliofilter_allscan,
+                foliofilter_scan,
+                foliofilter_nonscan,
 
 
                 foliofilter_allindexe: foliofilter_allindexe,
