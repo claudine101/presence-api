@@ -1586,7 +1586,8 @@ const findAllVolumePlateauChefTraites = async (req, res) => {
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                // ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             order: [
@@ -1607,7 +1608,7 @@ const findAllVolumePlateauChefTraites = async (req, res) => {
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
-                                ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
+                                // ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
                                 ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                                 ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
                                 ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
@@ -1696,7 +1697,7 @@ const findGetsPvsChefPlateauRetour = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP_SCANNIMG,
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -1836,7 +1837,7 @@ const findGetsPvsSupAilleScanRetour = async (req, res) => {
                 }, {
                     USERS_ID: req.userId
                 }, {
-                    USER_TRAITEMENT: req.userId
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
                 }, {
                     ID_VOLUME: {
                         [Op.in]: IdsObjet
@@ -7345,6 +7346,51 @@ const findAllVolumeChefEquipeTraitesReenvoyerFolios = async (req, res) => {
     }
 }
 
+/**
+ * Permet de faire retourner le volumees deja traiter par agent superviseur aile
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  4/09/2023
+ * 
+ */
+
+const checkRetourSupAilleScanningTraites = async (req, res) => {
+    try {
+        const { ID_VOLUME } = req.params
+        const folios = await Folio.findAll({
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_ETAPE_FOLIO'],
+            where: {
+                [Op.and]: [
+                    {
+                        ID_VOLUME: ID_VOLUME
+                    },
+                    {
+                        [Op.or]: [
+                            { ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU },
+                            { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU }
+                        ]
+                    }
+                ]
+            },
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: folios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     volumeScanningRetourAgentAille,
@@ -7439,6 +7485,7 @@ module.exports = {
     findFoliosGetsPvsPlateauReenvoyezPvArchivagesPVS,
     findGetsPvsChefPlateauRetourNonValid,
     findGetsPvsSupAilletourNonValid,
-    findAllVolumeChefEquipeTraitesReenvoyerFolios
+    findAllVolumeChefEquipeTraitesReenvoyerFolios,
+    checkRetourSupAilleScanningTraites
     
 }
