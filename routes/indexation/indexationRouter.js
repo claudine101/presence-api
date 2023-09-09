@@ -9,6 +9,7 @@ indexationRouter.get("/flashs", indexation_folio_contoller.getFlashs)
 indexationRouter.get("/flashs/sup_aile_indexation", indexation_folio_contoller.getFlashBySupAile)
 indexationRouter.get("/flashs/sup_aile_indexation/enattante", indexation_folio_contoller.getFlashBySupAileENattante)
 indexationRouter.get("/flashs/sup_aile_indexation/valides", indexation_folio_contoller.getFlashBySupAileValide)
+indexationRouter.get("/flashs/chef_equipe_indexation/valides", indexation_folio_contoller.getFlashByChefEquipeValide)
 indexationRouter.get("/flashs/chef_plateau", indexation_folio_contoller.getFlashByChefPlateauIndexation)
 indexationRouter.get("/flashs/chef_plateau/enattante", indexation_folio_contoller.getFlashByChefPlateauEnAttante)
 indexationRouter.get("/flashs/chef_plateau/valides", indexation_folio_contoller.getFlashByChefPlateauValides)
@@ -27,5 +28,7 @@ indexationRouter.get("/flashs/chef_plateau/:ID_FLASH", indexation_folio_contolle
 indexationRouter.get("/flashs/chef_plateau/enattante/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateauRetour)
 indexationRouter.get("/flashs/sup_aile_indexation/:ID_FLASH", indexation_folio_contoller.getFrashSupAileIndexation)
 indexationRouter.get("/flashs/chef_plateau/details_valide/:ID_FLASH", indexation_folio_contoller.getFrashChefPlateauValide)
+indexationRouter.get("/flashs/chef_equipe/details_valide/:ID_FLASH", indexation_folio_contoller.getFrashChefEquipeValide)
+indexationRouter.get("/flashs/chef_equipe/enattante/:ID_FLASH", indexation_folio_contoller.getFrashChefEquipeRetour)
 
 module.exports = indexationRouter
