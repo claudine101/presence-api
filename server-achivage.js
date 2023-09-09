@@ -38,7 +38,7 @@ app.use(fileUpload());
 
 
 app.all('*', bindUser)
-app.use('/auth', authRouter)
+app.use('/auth', authRouter) 
 app.use('/indexation', indexationRouter)
 app.use('/admin', administrationRouter)
 app.use('/preparation', preparationRouter)
