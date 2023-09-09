@@ -649,6 +649,13 @@ scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/supAille/pvs', 
  * @url /scanning/retour/agent/volume/traitees/chefEquipe/aille
  */
  scanning_volumeRetour_routes.get('/agent/volume/traitees/chefEquipe/aille', scanning_volumeRetour_controller.findAllVolumeChefEquipeTraitesReenvoyerFolios)
+
+   /**
+ * Une route  permet  si le chef plateau est pret a signer le pv de retours un agent superviseur  
+ *@method GET
+ * @url /scanning/retour/agent/retour/pvs/supAilles
+ */
+ scanning_volumeRetour_routes.get('/agent/retour/pvs/supAilles/:ID_VOLUME', scanning_volumeRetour_controller.checkRetourSupAilleScanningTraites)
  
 
 
