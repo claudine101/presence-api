@@ -15,6 +15,7 @@ const Etapes_folio = require('../../models/Etapes_folio')
 const Folio_types_documents = require('../../models/Folio_types_documents')
 const Folio_documents = require('../../models/Folio_documents')
 const Folio_document_non_enregistres_historiques = require('../../models/Folio_document_non_enregistres_historiques')
+const Nature_folio = require('../../models/Nature_folio')
 
 
 /**
@@ -28,20 +29,20 @@ const getFlashByChefEquipe = async (req, res) => {
     try {
 
         const flashsIndexe = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'ID_NATURE'],
             where: { ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE },
             include: {
 
                 model: Flashs,
-                as: 'flash',
+                as: 'flashindexe',
                 required: true,
                 attributes: ['ID_FLASH', 'NOM_FLASH']
             }
         })
         var FlashFolios = []
         flashsIndexe.forEach(flash => {
-            const ID_FLASH = flash.flash?.ID_FLASH
-            const flashs = flash.flash
+            const ID_FLASH = flash.flashindexe?.ID_FLASH
+            const flashs = flash.flashindexe
             const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
             if (isExists) {
                 const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
@@ -147,14 +148,14 @@ const saveAgent = async (req, res) => {
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
-                ID_FLASH
+                ID_FLASH_INDEXE: ID_FLASH
             }
         })
         await Folio.update({
             ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
         }, {
             where: {
-                ID_FLASH
+                ID_FLASH_INDEXE: ID_FLASH
             }
         })
         const pvUpload = new VolumePvUpload()
@@ -198,10 +199,10 @@ const getFlashByAgent = async (req, res) => {
         var whereFilter = {}
 
 
-            whereFilter = {
-                ID_ETAPE_FOLIO:
-                    IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
-            }
+        whereFilter = {
+            ID_ETAPE_FOLIO:
+                IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
@@ -220,13 +221,18 @@ const getFlashByAgent = async (req, res) => {
                 required: true,
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
-                    'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE','ID_ETAPE_FOLIO'],
-                include: {
+                    'NUMERO_PARCELLE', 'NOMBRE_DOUBLON', 'LOCALITE', 'ID_ETAPE_FOLIO'],
+                include: [{
                     model: Flashs,
-                    as: 'flash',
+                    as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
-                },
+                }, {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: true,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION']
+                }],
                 where: whereFilter
             }, {
                 model: Users,
@@ -239,11 +245,11 @@ const getFlashByAgent = async (req, res) => {
         var PvFolios = []
         flashs.forEach(histo => {
             const PV_PATH = histo.PV_PATH
-            const flash = histo.folio.flash
+            const flash = histo.folio.flashindexe
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -295,21 +301,22 @@ const getFlashByAgent = async (req, res) => {
 const getFlashByChefEquipeENattante = async (req, res) => {
     try {
         var whereFilter = {}
-            whereFilter = {
-                ID_ETAPE_FOLIO: {
-                    [Op.in]: [
-                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
-                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
-                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+        whereFilter = {
+            ID_ETAPE_FOLIO: {
+                [Op.in]: [
+                    IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                    IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                    IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
 
-                    ]
-                }
+                ]
             }
+        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
-                include: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'ID_FOLIO', 'DATE_INSERTION']
+                include: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'ID_FOLIO', 'DATE_INSERTION']
             },
             where: {
                 [Op.and]: [{
@@ -324,7 +331,7 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
                 include: {
                     model: Flashs,
-                    as: 'flash',
+                    as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 },
@@ -341,11 +348,11 @@ const getFlashByChefEquipeENattante = async (req, res) => {
         var PvFolios = []
         flashs.forEach(histo => {
             const PV_PATH = histo.PV_PATH
-            const flash = histo.folio.flash
+            const flash = histo.folio.flashindexe
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -400,12 +407,12 @@ const getFlashByChefEquipeENattante = async (req, res) => {
 const findAllFolioUpload = async (req, res) => {
     try {
         var whereFilter = {}
-            whereFilter = {
-                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
-            }
+        whereFilter = {
+            ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
+        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
-                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO','PV_PATH', 'DATE_INSERTION']
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO', 'PV_PATH', 'DATE_INSERTION']
             },
             where: {
                 [Op.and]: [{
@@ -420,7 +427,7 @@ const findAllFolioUpload = async (req, res) => {
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
                 include: {
                     model: Flashs,
-                    as: 'flash',
+                    as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 },
@@ -436,11 +443,11 @@ const findAllFolioUpload = async (req, res) => {
         var PvFolios = []
         flashs.forEach(histo => {
             const PV_PATH = histo.PV_PATH
-            const flash = histo.folio.flash
+            const flash = histo.folio.flashindexe
             const folio = histo.folio
 
             const users = histo.traitement
-            const  date= histo.DATE_INSERTION
+            const date = histo.DATE_INSERTION
 
             const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -545,7 +552,7 @@ const getDocument = async (req, res) => {
                 required: true,
                 attributes: ['ID_TYPE_FOLIO_DOCUMENT', 'NOM_DOCUMENT']
             }],
-           
+
             // include: [{
             //     model: Folio_documents,
             //     as: 'documents',
@@ -556,8 +563,8 @@ const getDocument = async (req, res) => {
             //             '$Folio_documents.ID_FOLIO$': ID_FOLIO,
             //         }]
             //     },
-               
-               
+
+
             // }],
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -644,6 +651,74 @@ const saveIsUpload = async (req, res) => {
     }
 }
 /**
+ * Permet d'inserer les type d'un document  qui est  upload dans EDRMS
+ * @author claudine <claudine@mediabox.bi>
+ * @date 13/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ */
+const saveIsreUpload = async (req, res) => {
+    try {
+        const { ID_FOLIO, TYPE_DOCUMENT } = req.body
+        const validation = new Validation({ ...req.body, ...req.files || {} }, {
+            ID_FOLIO: {
+                required: true
+            },
+            TYPE_DOCUMENT: {
+                required: true
+            }
+        })
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        await Folio.update({
+            ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+            IS_UPLOADED_EDRMS: 1,
+        }, {
+            where: {
+                ID_FOLIO
+            }
+        })
+        typeObjet = JSON.parse(TYPE_DOCUMENT)
+        const folio_documents = typeObjet.map(type => {
+            return {
+                ID_FOLIO: ID_FOLIO,
+                ID_TYPE_FOLIO_DOCUMENT: type.ID_TYPE_FOLIO_DOCUMENT,
+                USERS_ID: req.userId
+            }
+        })
+        await Folio_documents.bulkCreate(folio_documents)
+        // await Etapes_folio_historiques.create(
+        //     {
+        //         ID_USER: req.userId,
+        //         USER_TRAITEMENT: req.userId,
+        //         ID_FOLIO: ID_FOLIO,
+        //         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+        //     }
+        // )
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "Folio  est  verifie avec succes"
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+/**
  * Permet de recuperer les USB des d'un agent uploadEDRMS
  * @author claudine <claudine@mediabox.bi>
  * @date 10/08/2023
@@ -652,11 +727,6 @@ const saveIsUpload = async (req, res) => {
  */
 const getFolioUpload = async (req, res) => {
     try {
-        var whereFilter = {}
-        whereFilter = {
-            ID_ETAPE_FOLIO:
-                IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
-        }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
                 include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
@@ -666,24 +736,40 @@ const getFolioUpload = async (req, res) => {
                 [Op.and]: [{
                     USER_TRAITEMENT: req.userId,
                 },
-                    whereFilter]
+                {
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                            IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS
+                        ]
+                    }
+                }
+                ]
             },
             include: [{
                 model: Folio,
                 as: 'folio',
                 required: true,
+                where: {
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                            IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS
+                        ]
+                    }
+                },
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
                 include: [{
                     model: Flashs,
-                    as: 'flash',
+                    as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 }, {
                     model: Folio_documents,
                     as: 'documents',
-                    required: true,
+                    required: false,
                     attributes: ['ID_FOLIO_DOCUMENT'],
                     // where: { USERS_ID: req.userId },
                     include: {
@@ -706,10 +792,10 @@ const getFolioUpload = async (req, res) => {
 
         var FlashFolios = []
         flashs.forEach(flash => {
-            const ID_FLASH = flash.folio?.flash.ID_FLASH
-            const flashs = flash.folio.flash
+            const ID_FLASH = flash.folio?.flashindexe.ID_FLASH
+            const flashs = flash.folio.flashindexe
             const users = flash.traitement
-            const  date=flash.DATE_INSERTION
+            const date = flash.DATE_INSERTION
             const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
             if (isExists) {
                 const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
@@ -761,7 +847,7 @@ const getFolioInvalide = async (req, res) => {
         var whereFilter = {}
         whereFilter = {
             ID_ETAPE_FOLIO:
-                IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
         }
         const flashs = await Etapes_folio_historiques.findAll({
             attributes: {
@@ -770,27 +856,27 @@ const getFolioInvalide = async (req, res) => {
             },
             where: {
                 [Op.and]: [{
-                    USER_TRAITEMENT: req.userId,
+                    ID_USER: req.userId,
                 },
-                    whereFilter]
+                ]
             },
             include: [{
                 model: Folio,
                 as: 'folio',
                 required: true,
-                where: { ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS},
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                where: { ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS },
+                attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
                 include: [{
                     model: Flashs,
-                    as: 'flash',
+                    as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 }, {
                     model: Folio_documents,
                     as: 'documents',
-                    required: true,
+                    required: false,
                     attributes: ['ID_FOLIO_DOCUMENT'],
                     // where: { USERS_ID: req.userId },
                     include: {
@@ -810,10 +896,10 @@ const getFolioInvalide = async (req, res) => {
         })
         var FlashFolios = []
         flashs.forEach(flash => {
-            const ID_FLASH = flash.folio?.flash.ID_FLASH
-            const flashs = flash.folio.flash
+            const ID_FLASH = flash.folio?.flashindexe.ID_FLASH
+            const flashs = flash.folio.flashindexe
             const users = flash.traitement
-            const  date=flash.DATE_INSERTION
+            const date = flash.DATE_INSERTION
             const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
             if (isExists) {
                 const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
@@ -880,18 +966,19 @@ const getFolioUploads = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
+                where: { ...whereFilter },
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
                 include: [{
                     model: Flashs,
-                    as: 'flash',
+                    as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 }, {
                     model: Folio_documents,
                     as: 'documents',
-                    required: true,
+                    required: false,
                     attributes: ['ID_FOLIO_DOCUMENT'],
                     include: {
                         model: Folio_types_documents,
@@ -911,8 +998,8 @@ const getFolioUploads = async (req, res) => {
         })
         var FlashFolios = []
         flashs.forEach(flash => {
-            const ID_FLASH = flash.folio?.flash.ID_FLASH
-            const flashs = flash.folio.flash
+            const ID_FLASH = flash.folio?.flashindexe.ID_FLASH
+            const flashs = flash.folio.flashindexe
             const users = flash.traitement
             const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
             if (isExists) {
@@ -1004,14 +1091,21 @@ const enregistreFolio = async (req, res) => {
             }
         })
         await Etapes_folio_historiques.bulkCreate(folio_historiques_enregi)
-        
+
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
                 [Op.and]: [{
-                    ID_FLASH: ID_FLASH,
+                    ID_FLASH_INDEXE: ID_FLASH,
                 },
-                { IS_DOCUMENT_BIEN_ENREGISTRE: null }
+                {
+                    IS_DOCUMENT_BIEN_ENREGISTRE: null
+                }, {
+                    IS_UPLOADED_EDRMS: 1
+                }, {
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS
+                },
+
                 ]
             }
 
@@ -1047,7 +1141,15 @@ const enregistreFolio = async (req, res) => {
             }
         })
         await Folio_document_non_enregistres_historiques.bulkCreate(folio_no_enregi)
-
+        await Folio_documents.destroy(
+            {
+                where: {
+                    ID_FOLIO: {
+                        [Op.in]: folio_no_enregistres
+                    }
+                }
+            }
+        )
 
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -1099,7 +1201,6 @@ const getFolioEnregistre = async (req, res) => {
             }],
             order: [['DATE_INSERTION', 'DESC']]
         })
-        console.log(folios)
         // var FlashFolios = []
         // flashs.forEach(flash => {
         //     const ID_FLASH = flash.folio?.ID_FLASH
@@ -1157,20 +1258,23 @@ const getFolioNoEnregistre = async (req, res) => {
             ID_ETAPE_FOLIO:
                 IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
         }
-        const folios = await Folio_document_non_enregistres_historiques.findAll({
+        const folios = await Etapes_folio_historiques.findAll({
             attributes: {
-                include: ['ID_HISTORIQUE', 'ID_FOLIO',
+                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
                     'DATE_INSERTION']
             },
             where: {
                 [Op.and]: [
-                    { USERS_ID: req.userId },
+                    { ...whereFilter },
+                    { ID_USER: req.userId },
                 ]
             },
             include: [{
                 model: Folio,
                 as: 'folio',
                 required: true,
+                where:
+                    { ...whereFilter },
                 attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
@@ -1229,7 +1333,7 @@ const retourAgentUpload = async (req, res) => {
         const foliosEnregistre = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
-                ID_FLASH,
+                ID_FLASH_INDEXE: ID_FLASH,
                 IS_UPLOADED_EDRMS: 1,
                 IS_DOCUMENT_BIEN_ENREGISTRE: 1,
             }
@@ -1239,7 +1343,7 @@ const retourAgentUpload = async (req, res) => {
             ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
         }, {
             where: {
-                ID_FLASH,
+                ID_FLASH_INDEXE: ID_FLASH,
                 IS_UPLOADED_EDRMS: 1,
                 IS_DOCUMENT_BIEN_ENREGISTRE: 1,
 
@@ -1289,75 +1393,38 @@ const check = async (req, res) => {
             ID_ETAPE_FOLIO: {
                 [Op.in]: [
                     IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
-                    IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                    // IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
                 ]
             }
         }
-        const flashs = await Etapes_folio_historiques.findAll({
-            attributes: {
-                include: ['ID_FOLIO_HISTORIQUE', 'ID_FOLIO',
-                    'DATE_INSERTION']
+        const flashs = await Folio.findAll({
+            required: true,
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
+                'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
+            where: {
+                [Op.and]: [
+                    { ID_FLASH_INDEXE: ID_FLASH },
+                    {
+                        ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS
+                    },
+                    {
+                        IS_UPLOADED_EDRMS: 1
+                    },
+                    {
+                        IS_DOCUMENT_BIEN_ENREGISTRE: 1,
+                    }
+
+                ]
             },
-            include: [{
-                model: Folio,
-                as: 'folio',
-                required: true,
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
-                    'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
-                    'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
-                where: {
-                    [Op.and]: [
-                        { ID_FLASH: ID_FLASH },
-                        whereFilter]
-                },
-                include: {
-                    model: Flashs,
-                    as: 'flash',
-                    required: true,
-                    where: { ID_FLASH: ID_FLASH },
-                    attributes: ['ID_FLASH', 'NOM_FLASH']
-                },
-            }, {
-                model: Users,
-                as: 'traitement',
-                required: true,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }],
             order: [['DATE_INSERTION', 'DESC']]
         })
-        var FlashFolios = []
-        flashs.forEach(flash => {
-            const ID_FLASH = flash.folio?.ID_FLASH
-            const flashs = flash.folio.flash
-            const users = flash.traitement
-            const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
-            if (isExists) {
-                const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
-                const newFolios = { ...folio, folios: [...folio.folios, flash] }
 
-                FlashFolios = FlashFolios.map(flash => {
-                    if (flash.ID_FLASH == ID_FLASH) {
-                        return newFolios
-                    } else {
-                        return flash
-                    }
-                })
-            } else {
-                FlashFolios.push({
-                    ID_FLASH,
-                    flashs,
-                    users,
-                    folios: [flash]
-                })
-
-            }
-
-        })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des flash indexe",
-            result: FlashFolios
+            result: flashs
         })
     } catch (error) {
         console.log(error)
@@ -1389,12 +1456,12 @@ const getPvsAgentUpload = async (req, res) => {
                 }]
             }
         })
-        
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "PV D'un agent  upload EDRMS",
-            result: 
+            result:
                 pv.toJSON()
         })
     } catch (error) {
@@ -1424,5 +1491,6 @@ module.exports = {
     getDocument,
     findAllFolioUpload,
     getPvsAgentUpload,
-    getFolioInvalide
+    getFolioInvalide,
+    saveIsreUpload
 }

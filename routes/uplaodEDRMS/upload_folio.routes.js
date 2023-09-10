@@ -3,8 +3,8 @@ const upload_folio_contoller = require("../../controllers/uploadEDMS/upload_foli
 
 const upload_folio_routes = express.Router()
 /**
- * Une route  permet  de retour  les folio  indexé
- *@method GET
+* Une route  permet  de retourner  les folio  indexé pour  un chef equipe upload edrms
+ *@method GET 
  * @url uploadEDMRS/folio/flashs
  */
 upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
@@ -71,6 +71,14 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
  * @url uploadEDMRS/folio/isUpload
  */
  upload_folio_routes.post("/isUpload/", upload_folio_contoller.saveIsUpload)
+
+  /**
+ * Une route  permet  de recuperer les folios d'un agent  uploadEDRMS
+ *@method POST
+ * @url uploadEDMRS/folio/isReUpload
+ */
+ upload_folio_routes.post("/isReUpload/", upload_folio_contoller.saveIsreUpload)
+
 
  /**
  * Une route  permet  de recuperer les folios d'un agent  qui est uploadEDRMS
