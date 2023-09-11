@@ -8,7 +8,6 @@ const upload_folio_routes = express.Router()
  * @url uploadEDMRS/folio/flashs
  */
 upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
-
 /**
  * Une route  permet  de recuperer les  agents uploadEDRMS
  *@method GET

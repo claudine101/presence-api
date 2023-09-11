@@ -60,7 +60,6 @@ const findAllTypesIncidents = async (req, res) => {
 const findAllTypesIncidentsByordres = async (req, res) => {
     try {
         const {ID_ORDRE_INCIDENT} = req.params
-        console.log(ID_ORDRE_INCIDENT)
         const typesIncidents = await Types_incident.findAll({
             where: {
                 [Op.and]: [{ ID_ORDRE_INCIDENT:ID_ORDRE_INCIDENT,  IS_AUTRE:0}]
@@ -131,7 +130,6 @@ const createIncidents = async (req, res) => {
         const {
             ID_ORDRE_INCIDENT,ID_TYPE_INCIDENT, DESCRIPTION,NOM_LOGICIEL, Autres, AutresIncident
         } = req.body;
-        console.log(req.body)
         const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
         if (Autres) {
             const newTypeOrdrerInsert = await Ordres_incident.create({

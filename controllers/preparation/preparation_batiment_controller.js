@@ -299,8 +299,6 @@ const findAgentArchive = async (req, res) => {
 const findAgentSuperviseurAile = async (req, res) => {
     try {
         const { aile } = req.query
-        console.log(aile)
-
         if (!aile) {
             const userObject = await User_ailes.findOne({
                 where: { USERS_ID: req.userId, IS_ACTIF: 1 },

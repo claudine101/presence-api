@@ -771,7 +771,6 @@ const getnumber_user_by_profil = async (req, res) => {
         const userProfil = result.map((uP)=> {
             return uP.profil.DESCRIPTION
          });
-// console.log(userProfil)
          const numberUser=result.map((uP)=> {
             return uP.fetCmpt.rows.count
          });

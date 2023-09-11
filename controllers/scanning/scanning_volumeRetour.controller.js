@@ -309,60 +309,7 @@ const volumeScanningRetourAgentDistributeur = async (req, res) => {
  * @date  4/08/2023
  * 
  */
-// const findAllVolumerRetourDistributeur = async (req, res) => {
-//     try {
-//         const userObject = await Users.findOne({
-//             where: { USERS_ID: req.userId },
-//             attributes: ['ID_PROFIL', 'USERS_ID']
-//         })
-//         const user = userObject.toJSON()
 
-//         var condition = {}
-
-//         if (user.ID_PROFIL == PROFILS.AGENTS_DISTRIBUTEUR) {
-//             condition = {
-//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR, USER_TRAITEMENT: req.userId,
-//                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR
-//             }
-//         } else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_ARCHIVE) {
-//             condition = {
-//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE, USER_TRAITEMENT: req.userId
-//                 , ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE
-//             }
-//         } else if (user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES) {
-//             condition = {
-//                 '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE, USER_TRAITEMENT: req.userId
-//                 , ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE
-//             }
-//         }
-//         const result = await Etapes_volume_historiques.findAll({
-//             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
-//             where: {
-//                 ...condition
-//             },
-//             include: [
-//                 {
-//                     model: Volume,
-//                     as: 'volume',
-//                     required: false,
-//                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
-//                 }]
-//         })
-//         res.status(RESPONSE_CODES.OK).json({
-//             statusCode: RESPONSE_CODES.OK,
-//             httpStatus: RESPONSE_STATUS.OK,
-//             message: "Liste des volumes",
-//             result
-//         })
-//     } catch (error) {
-//         console.log(error)
-//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-//             message: "Erreur interne du serveur, réessayer plus tard",
-//         })
-//     }
-// }
 const findAllVolumerRetourDistributeur = async (req, res) => {
     try {
         const result = await Etapes_volume_historiques.findAll({
@@ -913,53 +860,6 @@ const volumeAileScanning = async (req, res) => {
  * @date  9/08/2023
  * 
  */
-// const findAllVolumerEnvoyerScanning = async (req, res) => {
-//     try {
-//         const userObject = await Users.findOne({
-//             where: { USERS_ID: req.userId },
-//             attributes: ['ID_PROFIL', 'USERS_ID']
-//         })
-//         const user = userObject.toJSON()
-
-//         var condition = {}
-
-//         if (user.ID_PROFIL == PROFILS.CHEF_EQUIPE) {
-//             condition = { ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES }
-//         } else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-//             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING }
-//         }
-//         // else if(user.ID_PROFIL == PROFILS.AGENTS_DESARCHIVAGES){
-//         //     condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE, USER_TRAITEMENT: req.userId }
-//         // }
-//         const result = await Etapes_volume_historiques.findAll({
-//             attributes: ['USERS_ID', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'PV_PATH', 'DATE_INSERTION'],
-//             where: {
-//                 ...condition
-//             },
-//             include: [
-//                 {
-//                     model: Users,
-//                     as: 'traitant',
-//                     required: false,
-//                     attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'TELEPHONE'],
-//                 }]
-//         })
-//         res.status(RESPONSE_CODES.OK).json({
-//             statusCode: RESPONSE_CODES.OK,
-//             httpStatus: RESPONSE_STATUS.OK,
-//             message: "Liste des volumes chef equipe",
-//             result
-//         })
-//     } catch (error) {
-//         console.log(error)
-//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-//             message: "Erreur interne du serveur, réessayer plus tard",
-//         })
-//     }
-// }
-
 const findAllVolumerEnvoyerScanning = async (req, res) => {
     try {
         const userObject = await Users.findOne({
@@ -2794,36 +2694,10 @@ const getFoliosAllRetourner = async (req, res) => {
 
 
         })
-        // var volumeFolios = []
-        // result.forEach(folio => {
-        //     console.log(folio)
-        //     const ID_VOLUME = folio.folio.ID_VOLUME
-        //     const volume = folio.folio.volume
-        //     const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
-        //     if (isExists) {
-        //         const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
-
-        //         const newVolumes = { ...volume, folios: [...volume.folios, folio] }
-        //         volumeFolios = volumeFolios.map(vol => {
-        //             if (vol.ID_VOLUME == ID_VOLUME) {
-        //                 return newVolumes
-        //             } else {
-        //                 return vol
-        //             }
-        //         })
-        //     } else {
-        //         volumeFolios.push({
-        //             ID_VOLUME,
-        //             volume,
-        //             folios: [folio]
-        //         })
-        //     }
-        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folios d'un volumnes",
-            // result: volumeFolios
             result: result
         })
     } catch (error) {
@@ -4077,8 +3951,6 @@ const folioEquipeScanningReenvoyer = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
-        // console.log(folioObjet)
-        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
@@ -5241,7 +5113,6 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolume = async (req, res) => {
 const findGetsPvsChefPlateauRetourOriginalAilleScann = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
-        console.log(req.body)
         const IdsObjet = JSON.parse(folioIds)
 
         const pv = await Etapes_folio_historiques.findOne({

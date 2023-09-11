@@ -346,9 +346,6 @@ const rapportByphase = async (req, res) => {
 
         const { startDate, endDate } = req.query;
         const today = new Date();
-        // var todayFormat = moment(today).format("YYYY-MM-DD");
-        // console.log(todayFormat);
-
         // Date filter
         var dateWhere = {
             DATE_INSERTION: Sequelize.literal('DATE(etapes_folio_historiques.DATE_INSERTION) = CURDATE()')

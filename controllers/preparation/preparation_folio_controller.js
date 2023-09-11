@@ -940,7 +940,6 @@ const retourAgentSuperviseur = async (req, res) => {
 const nbre = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR } = req.params
-        console.log(AGENT_SUPERVISEUR)
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 [Op.and]: [{ ID_USER: req.userId, USER_TRAITEMENT: AGENT_SUPERVISEUR }]
