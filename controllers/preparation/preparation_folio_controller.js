@@ -2975,7 +2975,7 @@ const getPvsAgentSupRetour = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO:{[Op.in]: [
                         IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
-                        IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                        // IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
                     ]},
                 }, {
                     ID_USER: req.userId
@@ -3031,6 +3031,140 @@ const getPvsAgentSupRetour = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO:{[Op.in]: [
                         IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                        // IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                    ]},
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+        })
+        var foliosPrepares = []
+        var foliosNoPrepare = []
+
+        if (pvRetour) {
+            foliosPrepares = await Folio.findAll({
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+                where: {
+                    [Op.and]: [{
+                        IS_PREPARE: 1
+                    },
+                        , {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
+                }
+            })
+
+            foliosNoPrepare = await Folio.findAll({
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+                where: {
+                    [Op.and]: [{
+                        IS_PREPARE: 0
+                    },
+                        , {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
+                }
+            })
+        }
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...PvFolios[0],
+                pvRetour,
+                foliosPrepares,
+                foliosNoPrepare
+
+            }
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+const getRePvsAgentSupRetour = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        const pv = await Etapes_folio_historiques.findAll({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO:{[Op.in]: [
+                        // IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                        IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                    ]},
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            },
+            include: [{
+                model: Folio,
+                as: 'folio',
+                required: true,
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+
+            }]
+
+        })
+        var PvFolios = []
+        pv.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
+            if (isExists) {
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
+                    } else {
+                        return pv
+                    }
+                })
+            }
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    date,
+                    folios: [folio]
+                })
+            }
+
+
+
+        })
+        const pvRetour = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO:{[Op.in]: [
+                        // IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
                         IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
                     ]},
                 }, {
@@ -3617,5 +3751,6 @@ module.exports = {
     checkAgentsuper,
     getPvsAgentSupRetour,
     checkAgentsupDetails,
-    checkPlateau
+    checkPlateau,
+    getRePvsAgentSupRetour
 }
