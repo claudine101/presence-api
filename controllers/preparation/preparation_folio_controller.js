@@ -2769,7 +2769,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: {
                         [Op.in]: [
-                            IDS_ETAPES_FOLIO.SELECTION_AGENT_PREPARATION,
+                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP ,
                             IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                         ]
                     }
@@ -2974,7 +2974,10 @@ const getPvsAgentSupRetour = async (req, res) => {
 
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                    ID_ETAPE_FOLIO:{[Op.in]: [
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                        IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                    ]},
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3027,7 +3030,10 @@ const getPvsAgentSupRetour = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                    ID_ETAPE_FOLIO:{[Op.in]: [
+                        IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                    ]},
                 }, {
                     ID_USER: req.userId
                 }, {
