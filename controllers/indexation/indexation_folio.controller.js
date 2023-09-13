@@ -11,6 +11,7 @@ const Etapes_folio_historiques = require('../../models/Etapes_folio_historiques'
 const VolumePvUpload = require('../../class/uploads/VolumePvUpload')
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
 const Validation = require('../../class/Validation')
+const Nature_folio = require('../../models/Nature_folio')
 
 /**
  * Permet de recuperer les folio qui ont un etape quelconque
@@ -32,6 +33,12 @@ const getFolioByEtapes = async (req, res) => {
                     IS_VALIDE: 1
                 }]
             },
+            include: {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -381,39 +388,7 @@ const retourAgentIndexation = async (req, res) => {
                 result: errors
             })
         }
-        // const foliosNoIndexes = await Folio.findAll({
-        //     attributes: ['ID_FOLIO'],
-        //     where: {
-        //         [Op.and]: [{
-        //             ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
-        //         }, {
-        //             ID_FLASH: ID_FLASH
-        //         }, {
-        //             ID_FOLIO: {
-        //                 [Op.notIn]: foliosIndexesIds
-        //             }
-        //         }]
-        //     },
 
-        // })
-
-        // // update des folios no indexes
-        // if (foliosNoIndexes.length > 0) {
-        //     const foliosNoIndexesIds = foliosNoIndexes.map(folioObject => {
-        //         const folio = folioObject.toJSON()
-        //         return folio.ID_FOLIO
-        //     })
-        //     await Folio.update({
-        //         IS_INDEXE: 0
-        //     }, {
-        //         where: {
-        //             ID_FOLIO: {
-        //                 [Op.in]: foliosNoIndexesIds
-        //             }
-        //         }
-        //     })
-
-        // }
         await Flashs.update({
             IS_DISPO: 0
         }, {
@@ -699,17 +674,17 @@ const getFlashBySupAileValide = async (req, res) => {
                 },
                 include: [
                     {
-                    model: Flashs,
-                    as: 'flash',
-                    required: true,
-                    attributes: ['ID_FLASH', 'NOM_FLASH']
-                },
-                {
-                    model: Flashs,
-                    as: 'flashindexe',
-                    required: false,
-                    attributes: ['ID_FLASH', 'NOM_FLASH']
-                }
+                        model: Flashs,
+                        as: 'flash',
+                        required: true,
+                        attributes: ['ID_FLASH', 'NOM_FLASH']
+                    },
+                    {
+                        model: Flashs,
+                        as: 'flashindexe',
+                        required: false,
+                        attributes: ['ID_FLASH', 'NOM_FLASH']
+                    }
                 ]
 
             }, {
@@ -721,12 +696,12 @@ const getFlashBySupAileValide = async (req, res) => {
             // group: ['folio->flash.ID_FLASH'],
             order: [['DATE_INSERTION', 'DESC']]
         })
-     
+
         var FlashFoliosIndexe = []
         allFlashs.forEach(folio => {
-            const flash =folio.folio.flashindexe
+            const flash = folio.folio.flashindexe
             const ID_FLASH = folio.folio.flashindexe.ID_FLASH
-            const flashInitial =folio.folio.flash
+            const flashInitial = folio.folio.flash
             const fol = folio
             const date = folio.DATE_INSERTION
             const isExists = FlashFoliosIndexe.find(flash => flash.ID_FLASH == ID_FLASH) ? true : false
@@ -800,17 +775,17 @@ const getFlashByChefEquipeValide = async (req, res) => {
                 },
                 include: [
                     {
-                    model: Flashs,
-                    as: 'flash',
-                    required: true,
-                    attributes: ['ID_FLASH', 'NOM_FLASH']
-                },
-                {
-                    model: Flashs,
-                    as: 'flashindexe',
-                    required: false,
-                    attributes: ['ID_FLASH', 'NOM_FLASH']
-                }
+                        model: Flashs,
+                        as: 'flash',
+                        required: true,
+                        attributes: ['ID_FLASH', 'NOM_FLASH']
+                    },
+                    {
+                        model: Flashs,
+                        as: 'flashindexe',
+                        required: false,
+                        attributes: ['ID_FLASH', 'NOM_FLASH']
+                    }
                 ]
 
             }, {
@@ -822,12 +797,12 @@ const getFlashByChefEquipeValide = async (req, res) => {
             // group: ['folio->flash.ID_FLASH'],
             order: [['DATE_INSERTION', 'DESC']]
         })
-     
+
         var FlashFoliosIndexe = []
         allFlashs.forEach(folio => {
-            const flash =folio.folio.flashindexe
+            const flash = folio.folio.flashindexe
             const ID_FLASH = folio.folio.flashindexe.ID_FLASH
-            const flashInitial =folio.folio.flash
+            const flashInitial = folio.folio.flash
             const fol = folio
             const date = folio.DATE_INSERTION
             const isExists = FlashFoliosIndexe.find(flash => flash.ID_FLASH == ID_FLASH) ? true : false
@@ -1366,18 +1341,23 @@ const getFlashDetail = async (req, res) => {
 
 
         const folios = (await Folio.findAll({
-            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","IS_INDEXE","ID_ETAPE_FOLIO"],
+            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "IS_INDEXE", "ID_ETAPE_FOLIO"],
             where: {
                 IS_INDEXE: 1,
-                ID_FLASH:ID_FLASH,
-                ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
+                ID_FLASH: ID_FLASH,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
             },
-            include:{
+            include: [{
                 model: Flashs,
                 as: 'flashindexe',
                 required: true,
                 attributes: ['ID_FLASH', 'NOM_FLASH']
-            }
+            }, {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }]
         }))
         var FlashFoliosIndexe = []
         folios.forEach(folio => {
@@ -1463,7 +1443,13 @@ const getFlashDetail = async (req, res) => {
                     as: 'flash',
                     required: false,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
-                }]
+                }, {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
+                ]
             })
         }
         res.status(RESPONSE_CODES.OK).json({
@@ -1497,14 +1483,14 @@ const getFlashDetail = async (req, res) => {
 const getFlashDetailValide = async (req, res) => {
     try {
         const { ID_FLASH } = req.params
-        
+
         const folios = await Etapes_folio_historiques.findAll({
             attributes: ['ID_FOLIO_HISTORIQUE'],
             where: {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
                 }, {
-                    ID_USER:req.userId
+                    ID_USER: req.userId
                 }]
             },
             include: [
@@ -1512,17 +1498,22 @@ const getFlashDetailValide = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"],
+                    attributes: ["ID_FOLIO","FOLIO", "NUMERO_FOLIO", "ID_NATURE"],
                     where: {
                         IS_INDEXE: 1,
-                        ID_FLASH_INDEXE:ID_FLASH,
+                        ID_FLASH_INDEXE: ID_FLASH,
                     },
-                    include: {
+                    include: [{
                         model: Flashs,
                         as: 'flash',
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
-                    },
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }],
                 }]
         })
         const folio_ids = folios.map(folio => folio.folio.ID_FOLIO)
@@ -1532,7 +1523,7 @@ const getFlashDetailValide = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION
                 }, {
-                    ID_FOLIO: {[Op.in]:folio_ids}
+                    ID_FOLIO: { [Op.in]: folio_ids }
                 }]
             },
             include: [
@@ -1541,18 +1532,23 @@ const getFlashDetailValide = async (req, res) => {
                     as: 'folio',
                     required: true,
                     attributes: ['ID_FOLIO'],
-                    include: {
+                    include: [{
                         model: Flashs,
                         as: 'flash',
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
-                    },
-                },{
-                model: Users,
-                as: 'traitement',
-                required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }]
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }],
+                }, {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                }]
         })
         const pvRetour = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
@@ -1560,7 +1556,7 @@ const getFlashDetailValide = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
                 }, {
-                    ID_FOLIO: {[Op.in]:folio_ids}
+                    ID_FOLIO: { [Op.in]: folio_ids }
                 }]
             },
             include: [{
@@ -1570,11 +1566,17 @@ const getFlashDetailValide = async (req, res) => {
                 attributes: ['ID_FOLIO'],
                 where: {
                     [Op.and]: [{
-                        ID_FOLIO: {[Op.in]:folio_ids},
+                        ID_FOLIO: { [Op.in]: folio_ids },
                     }, {
                         IS_INDEXE: 1
                     }]
-                }
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
             }, {
                 model: Users,
                 as: 'traitement',
@@ -1582,7 +1584,7 @@ const getFlashDetailValide = async (req, res) => {
                 attributes: ['USERS_ID', 'NOM', 'PRENOM']
             }]
         })
-        
+
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1625,7 +1627,13 @@ const getFlashDetailEnattente = async (req, res) => {
 
                     IS_INDEXE: null
                 },
-                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"]
+                attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"],
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
             }]
         })).toJSON()
         const agentIndexation = await Etapes_folio_historiques.findOne({
@@ -1744,18 +1752,23 @@ const getFrashSupAileRetour = async (req, res) => {
     try {
         const { ID_FLASH } = req.params
         const folios = (await Folio.findAll({
-            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","IS_INDEXE","ID_ETAPE_FOLIO"],
+            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "IS_INDEXE", "ID_ETAPE_FOLIO"],
             where: {
                 IS_INDEXE: 1,
-                ID_FLASH:ID_FLASH,
-                ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
+                ID_FLASH: ID_FLASH,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
             },
-            include:{
+            include: [{
                 model: Flashs,
                 as: 'flashindexe',
                 required: true,
                 attributes: ['ID_FLASH', 'NOM_FLASH']
-            }
+            }, {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }]
         }))
         var FlashFoliosIndexe = []
         folios.forEach(folio => {
@@ -1783,7 +1796,7 @@ const getFrashSupAileRetour = async (req, res) => {
                 })
             }
         })
-        
+
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
             where: {
@@ -1803,12 +1816,12 @@ const getFrashSupAileRetour = async (req, res) => {
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
                     },
-                },{
-                model: Users,
-                as: 'traitement',
-                required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }]
+                }, {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                }]
         })
 
 
@@ -1839,7 +1852,7 @@ const getFrashSupAileRetour = async (req, res) => {
                 attributes: ['USERS_ID', 'NOM', 'PRENOM']
             }]
         })
-        
+
         const retour = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
@@ -1890,18 +1903,23 @@ const getFrashChefPlateauRetour = async (req, res) => {
     try {
         const { ID_FLASH } = req.params
         const folios = (await Folio.findAll({
-            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","IS_INDEXE","ID_ETAPE_FOLIO"],
+            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "IS_INDEXE", "ID_ETAPE_FOLIO"],
             where: {
                 IS_INDEXE: 1,
-                ID_FLASH:ID_FLASH,
-                ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
+                ID_FLASH: ID_FLASH,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU
             },
-            include:{
+            include: [{
                 model: Flashs,
                 as: 'flashindexe',
                 required: true,
                 attributes: ['ID_FLASH', 'NOM_FLASH']
-            }
+            }, {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }]
         }))
         var FlashFoliosIndexe = []
         folios.forEach(folio => {
@@ -1929,7 +1947,7 @@ const getFrashChefPlateauRetour = async (req, res) => {
                 })
             }
         })
-        
+
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
             where: {
@@ -1949,12 +1967,12 @@ const getFrashChefPlateauRetour = async (req, res) => {
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
                     },
-                },{
-                model: Users,
-                as: 'traitement',
-                required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }]
+                }, {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                }]
         })
 
 
@@ -1985,7 +2003,7 @@ const getFrashChefPlateauRetour = async (req, res) => {
                 attributes: ['USERS_ID', 'NOM', 'PRENOM']
             }]
         })
-        
+
         const retour = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
@@ -2036,18 +2054,23 @@ const getFrashChefEquipeRetour = async (req, res) => {
     try {
         const { ID_FLASH } = req.params
         const folios = (await Folio.findAll({
-            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE","IS_INDEXE","ID_ETAPE_FOLIO"],
+            attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "IS_INDEXE", "ID_ETAPE_FOLIO"],
             where: {
                 IS_INDEXE: 1,
-                ID_FLASH:ID_FLASH,
-                ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
+                ID_FLASH: ID_FLASH,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
             },
-            include:{
+            include: [{
                 model: Flashs,
                 as: 'flashindexe',
                 required: true,
                 attributes: ['ID_FLASH', 'NOM_FLASH']
-            }
+            }, {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }]
         }))
         var FlashFoliosIndexe = []
         folios.forEach(folio => {
@@ -2075,7 +2098,7 @@ const getFrashChefEquipeRetour = async (req, res) => {
                 })
             }
         })
-        
+
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT'],
             where: {
@@ -2095,12 +2118,12 @@ const getFrashChefEquipeRetour = async (req, res) => {
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
                     },
-                },{
-                model: Users,
-                as: 'traitement',
-                required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }]
+                }, {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                }]
         })
 
 
@@ -2138,7 +2161,7 @@ const getFrashChefPlateauValide = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
                 }, {
-                    ID_USER:req.userId
+                    ID_USER: req.userId
                 }]
             },
             include: [
@@ -2149,7 +2172,7 @@ const getFrashChefPlateauValide = async (req, res) => {
                     attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"],
                     where: {
                         IS_INDEXE: 1,
-                        ID_FLASH_INDEXE:ID_FLASH,
+                        ID_FLASH_INDEXE: ID_FLASH,
                     },
                     include: {
                         model: Flashs,
@@ -2166,7 +2189,7 @@ const getFrashChefPlateauValide = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION
                 }, {
-                    ID_FOLIO: {[Op.in]:folio_ids}
+                    ID_FOLIO: { [Op.in]: folio_ids }
                 }]
             },
             include: [
@@ -2181,12 +2204,12 @@ const getFrashChefPlateauValide = async (req, res) => {
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
                     },
-                },{
-                model: Users,
-                as: 'traitement',
-                required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }]
+                }, {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                }]
         })
 
 
@@ -2197,10 +2220,10 @@ const getFrashChefPlateauValide = async (req, res) => {
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE
                 },
                 {
-                    ID_FOLIO: {[Op.in]:folio_ids}
+                    ID_FOLIO: { [Op.in]: folio_ids }
                 }]
             },
-           
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -2238,7 +2261,7 @@ const getFrashChefEquipeValide = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE
                 }, {
-                    ID_USER:req.userId
+                    ID_USER: req.userId
                 }]
             },
             include: [
@@ -2246,17 +2269,25 @@ const getFrashChefEquipeValide = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE"],
+                    attributes: ["ID_FOLIO", "FOLIO", "NUMERO_FOLIO", "ID_NATURE"],
                     where: {
                         IS_INDEXE: 1,
-                        ID_FLASH_INDEXE:ID_FLASH,
+                        ID_FLASH_INDEXE: ID_FLASH,
                     },
-                    include: {
+                    include: [{
                         model: Flashs,
                         as: 'flash',
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
                     },
+                    {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
+
+                    ],
                 }]
         })
         const folio_ids = folios.map(folio => folio.folio.ID_FOLIO)
@@ -2266,7 +2297,7 @@ const getFrashChefEquipeValide = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION
                 }, {
-                    ID_FOLIO: {[Op.in]:folio_ids}
+                    ID_FOLIO: { [Op.in]: folio_ids }
                 }]
             },
             include: [
@@ -2281,12 +2312,12 @@ const getFrashChefEquipeValide = async (req, res) => {
                         required: true,
                         attributes: ['ID_FLASH', 'NOM_FLASH']
                     },
-                },{
-                model: Users,
-                as: 'traitement',
-                required: false,
-                attributes: ['USERS_ID', 'NOM', 'PRENOM']
-            }]
+                }, {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM']
+                }]
         })
 
 
@@ -2297,10 +2328,10 @@ const getFrashChefEquipeValide = async (req, res) => {
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE
                 },
                 {
-                    ID_FOLIO: {[Op.in]:folio_ids}
+                    ID_FOLIO: { [Op.in]: folio_ids }
                 }]
             },
-           
+
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -2428,9 +2459,9 @@ const retourChefPlateau = async (req, res) => {
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
-                ID_FLASH:ID_FLASH_INDEXE,
-                ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
-                IS_INDEXE:1
+                ID_FLASH: ID_FLASH_INDEXE,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                IS_INDEXE: 1
             }
         })
         const folio_ids = folios.map(folio => folio.ID_FOLIO)
@@ -2509,9 +2540,9 @@ const retourSupAileIndexation = async (req, res) => {
         const folios = await Folio.findAll({
             attributes: ['ID_FOLIO'],
             where: {
-                ID_FLASH:ID_FLASH_INDEXE,
-                ID_ETAPE_FOLIO:IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
-                IS_INDEXE:1
+                ID_FLASH: ID_FLASH_INDEXE,
+                ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+                IS_INDEXE: 1
             }
         })
         const folio_ids = folios.map(folio => folio.ID_FOLIO)

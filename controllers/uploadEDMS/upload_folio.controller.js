@@ -31,13 +31,18 @@ const getFlashByChefEquipe = async (req, res) => {
         const flashsIndexe = await Folio.findAll({
             attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'FOLIO', 'ID_NATURE'],
             where: { ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE },
-            include: {
+            include: [{
 
                 model: Flashs,
                 as: 'flashindexe',
                 required: true,
                 attributes: ['ID_FLASH', 'NOM_FLASH']
-            }
+            }, {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }]
         })
         var FlashFolios = []
         flashsIndexe.forEach(flash => {
@@ -219,7 +224,7 @@ const getFlashByAgent = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NOMBRE_DOUBLON', 'LOCALITE', 'ID_ETAPE_FOLIO'],
                 include: [{
@@ -328,13 +333,18 @@ const getFlashByChefEquipeENattante = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
-                include: {
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
+                include: [{
                     model: Flashs,
                     as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
-                },
+                }, {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }],
                 where: whereFilter
             }, {
                 model: Users,
@@ -424,13 +434,18 @@ const findAllFolioUpload = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
-                include: {
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'ID_NATURE'],
+                include: [{
                     model: Flashs,
                     as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
-                },
+                }, {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }],
                 where: whereFilter
             }, {
                 model: Users,
@@ -553,19 +568,7 @@ const getDocument = async (req, res) => {
                 attributes: ['ID_TYPE_FOLIO_DOCUMENT', 'NOM_DOCUMENT']
             }],
 
-            // include: [{
-            //     model: Folio_documents,
-            //     as: 'documents',
-            //     required: true,
-            //     attributes: ['ID_FOLIO_DOCUMENT'],
-            //     where: {
-            //         [Op.and]: [{
-            //             '$Folio_documents.ID_FOLIO$': ID_FOLIO,
-            //         }]
-            //     },
 
-
-            // }],
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -740,7 +743,7 @@ const getFolioUpload = async (req, res) => {
                     ID_ETAPE_FOLIO: {
                         [Op.in]: [
                             IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
-                            IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS
+                            IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
                         ]
                     }
                 }
@@ -750,15 +753,7 @@ const getFolioUpload = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                where: {
-                    ID_ETAPE_FOLIO: {
-                        [Op.in]: [
-                            IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
-                            IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS
-                        ]
-                    }
-                },
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
                 include: [{
@@ -766,7 +761,14 @@ const getFolioUpload = async (req, res) => {
                     as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
-                }, {
+                },
+                {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                },
+                {
                     model: Folio_documents,
                     as: 'documents',
                     required: false,
@@ -865,7 +867,7 @@ const getFolioInvalide = async (req, res) => {
                 as: 'folio',
                 required: true,
                 where: { ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS },
-                attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
                 include: [{
@@ -873,7 +875,15 @@ const getFolioInvalide = async (req, res) => {
                     as: 'flashindexe',
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
-                }, {
+                }, 
+                    {
+                        model:Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
+                ,
+                {
                     model: Folio_documents,
                     as: 'documents',
                     required: false,
@@ -967,7 +977,7 @@ const getFolioUploads = async (req, res) => {
                 as: 'folio',
                 required: true,
                 where: { ...whereFilter },
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
                 include: [{
@@ -976,6 +986,12 @@ const getFolioUploads = async (req, res) => {
                     required: true,
                     attributes: ['ID_FLASH', 'NOM_FLASH']
                 }, {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                },
+                {
                     model: Folio_documents,
                     as: 'documents',
                     required: false,
@@ -1195,40 +1211,19 @@ const getFolioEnregistre = async (req, res) => {
                 model: Folio,
                 as: 'folio',
                 required: true,
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
             }],
             order: [['DATE_INSERTION', 'DESC']]
         })
-        // var FlashFolios = []
-        // flashs.forEach(flash => {
-        //     const ID_FLASH = flash.folio?.ID_FLASH
-        //     const flashs = flash.folio.flash
-        //     const users = flash.traitement
-        //     const isExists = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH) ? true : false
-        //     if (isExists) {
-        //         const folio = FlashFolios.find(vol => vol.ID_FLASH == ID_FLASH)
-        //         const newFolios = { ...folio, folios: [...folio.folios, flash] }
-
-        //         FlashFolios = FlashFolios.map(flash => {
-        //             if (flash.ID_FLASH == ID_FLASH) {
-        //                 return newFolios
-        //             } else {
-        //                 return flash
-        //             }
-        //         })
-        //     } else {
-        //         FlashFolios.push({
-        //             ID_FLASH,
-        //             flashs,
-        //             users,
-        //             folios: [flash]
-        //         })
-
-        //     }
-
-        // })
+   
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -1275,10 +1270,17 @@ const getFolioNoEnregistre = async (req, res) => {
                 required: true,
                 where:
                     { ...whereFilter },
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
+                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO', 'ID_NATURE',
                     'NOM_PROPRIETAIRE', 'PRENOM_PROPRIETAIRE', 'NUMERO_FEUILLE',
                     'NUMERO_PARCELLE', 'NUMERO_FEUILLE', 'LOCALITE'],
+                    include: {
+                        model:Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    },
             }],
+            
             order: [['DATE_INSERTION', 'DESC']]
         })
         res.status(RESPONSE_CODES.OK).json({

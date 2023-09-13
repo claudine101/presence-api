@@ -69,6 +69,7 @@ const login = async (req, res) => {
                 attributes: ['ID_PROFIL', 'DESCRIPTION']
             }]
         })
+        console.log(userObject)
         if (userObject) {
             const user = userObject.toJSON()
             if (user.PASSEWORD == md5(PASSEWORD)) {

@@ -96,7 +96,7 @@ upload_folio_routes.get("/flashs", upload_folio_contoller.getFlashByChefEquipe)
   /**
  * Une route  permet  de recuperer les folios qui est uploadEDRMS
  *@method GET
- * @url uploadEDMRS/folio/folioUpload
+ * @url uploadEDMRS/folio/folioUploads
  */
  upload_folio_routes.get("/folioUploads", upload_folio_contoller.getFolioUploads)
 

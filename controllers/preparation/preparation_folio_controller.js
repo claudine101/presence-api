@@ -80,70 +80,76 @@ const createfolio = async (req, res) => {
                         }
                     }
                 ]
+            },
+            include: {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
             }
         })
-        if(dossiersExiste.length>0){
+        if (dossiersExiste.length > 0) {
             res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
                 statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
                 httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
                 message: "les dossiers existe déjà",
-                result:dossiersExiste
+                result: dossiersExiste
             })
         }
-        else{
-                 const PV = req.files?.PV
-        const folioUpload = new VolumePvUpload()
-        var filename_pv
-        if (PV) {
-            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
-            filename_pv = fileInfo_2
-        }
-        // const histoPv = histo.toJSON()
-        await Promise.all(folioObjet.map(async (folio) => {
-            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-            const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
-            const folioInsert = await Folio.create({
-                ID_VOLUME: ID_VOLUME,
-                NUMERO_FOLIO: folio.NUMERO_DOSSIER,
-                FOLIO: folio.NUMERO_FOLIO,
-                ID_NATURE: folio.ID_NATURE,
-                CODE_FOLIO: CODE_REFERENCE,
-                ID_USERS: req.userId,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
+        else {
+            const PV = req.files?.PV
+            const folioUpload = new VolumePvUpload()
+            var filename_pv
+            if (PV) {
+                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
+                filename_pv = fileInfo_2
             }
-            )
-            const insertData = folioInsert.toJSON()
-            await Etapes_folio_historiques.create(
-                {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    ID_USER: req.userId,
-                    ID_FOLIO: insertData.ID_FOLIO,
+            // const histoPv = histo.toJSON()
+            await Promise.all(folioObjet.map(async (folio) => {
+                const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+                const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
+                const folioInsert = await Folio.create({
+                    ID_VOLUME: ID_VOLUME,
+                    NUMERO_FOLIO: folio.NUMERO_DOSSIER,
+                    FOLIO: folio.NUMERO_FOLIO,
+                    ID_NATURE: folio.ID_NATURE,
+                    CODE_FOLIO: CODE_REFERENCE,
+                    ID_USERS: req.userId,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
-                    USER_TRAITEMENT: req.userId,
                 }
-            )
-        }))
-        const results = await Volume.update({
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
-        }, {
-            where: {
-                ID_VOLUME: ID_VOLUME
-            }
-        })
-        await Etapes_volume_historiques.create({
-            USERS_ID: req.userId,
-            USER_TRAITEMENT: req.userId,
-            ID_VOLUME: ID_VOLUME,
-            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
-        })
-        res.status(RESPONSE_CODES.CREATED).json({
-            statusCode: RESPONSE_CODES.CREATED,
-            httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Insertion faite  avec succès",
-            // result: histoPv
-        })
-        }  
+                )
+                const insertData = folioInsert.toJSON()
+                await Etapes_folio_historiques.create(
+                    {
+                        PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                        ID_USER: req.userId,
+                        ID_FOLIO: insertData.ID_FOLIO,
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
+                        USER_TRAITEMENT: req.userId,
+                    }
+                )
+            }))
+            const results = await Volume.update({
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+            }, {
+                where: {
+                    ID_VOLUME: ID_VOLUME
+                }
+            })
+            await Etapes_volume_historiques.create({
+                USERS_ID: req.userId,
+                USER_TRAITEMENT: req.userId,
+                ID_VOLUME: ID_VOLUME,
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+            })
+            res.status(RESPONSE_CODES.CREATED).json({
+                statusCode: RESPONSE_CODES.CREATED,
+                httpStatus: RESPONSE_STATUS.CREATED,
+                message: "Insertion faite  avec succès",
+                // result: histoPv
+            })
+        }
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
@@ -164,10 +170,16 @@ const findAll = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'FOLIO','ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -175,7 +187,7 @@ const findAll = async (req, res) => {
             message: "Liste des folios",
             result: result
         })
-    } 
+    }
     catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
@@ -197,10 +209,16 @@ const findAllFolioNoTraite = async (req, res) => {
     try {
         const { ID_MAILLE } = req.params
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_MALLE_NO_TRAITE: ID_MAILLE, ID_ETAPE_FOLIO: ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -242,6 +260,12 @@ const findAllFolioEquipe = async (req, res) => {
                 where: {
                     ID_VOLUME: ID_VOLUME
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
             })
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -252,11 +276,17 @@ const findAllFolioEquipe = async (req, res) => {
         }
         else {
             const result = await Folio.findAll({
-                attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
                 where: {
                     ID_VOLUME: ID_VOLUME,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
             })
             res.status(RESPONSE_CODES.OK).json({
                 statusCode: RESPONSE_CODES.OK,
@@ -286,11 +316,17 @@ const findAllFolioEquipeNoPrepare = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'FOLIO','ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
             where: {
                 ID_VOLUME: ID_VOLUME,
                 IS_PREPARE: 0
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -702,7 +738,7 @@ const retourAgentPreparation = async (req, res) => {
             })
         }
         var id_motif = {}
-        if (MOTIF){
+        if (MOTIF) {
             const motif = await Motif.create(
                 {
                     DESCRIPTION: MOTIF
@@ -727,7 +763,7 @@ const retourAgentPreparation = async (req, res) => {
                 const results = await Folio.update({
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                     IS_PREPARE: 0,
-                    ID_MOTIF:id_motif?.ID_MOTIF ? id_motif.ID_MOTIF:null
+                    ID_MOTIF: id_motif?.ID_MOTIF ? id_motif.ID_MOTIF : null
 
                 }, {
                     where: {
@@ -747,7 +783,7 @@ const retourAgentPreparation = async (req, res) => {
             await Promise.all(folioPrepareObjet.map(async (folio) => {
                 const results = await Folio.update({
                     IS_PREPARE: 1,
-                    ID_MOTIF:null
+                    ID_MOTIF: null
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -760,7 +796,7 @@ const retourAgentPreparation = async (req, res) => {
                 const results = await Folio.update({
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
                     IS_PREPARE: 0,
-                    ID_MOTIF:id_motif?.ID_MOTIF ? id_motif.ID_MOTIF:null
+                    ID_MOTIF: id_motif?.ID_MOTIF ? id_motif.ID_MOTIF : null
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -779,7 +815,7 @@ const retourAgentPreparation = async (req, res) => {
             await Promise.all(folioPrepareObjet.map(async (folio) => {
                 const results = await Folio.update({
                     IS_PREPARE: 1,
-                    ID_MOTIF:null
+                    ID_MOTIF: null
                 }, {
                     where: {
                         ID_FOLIO: folio.ID_FOLIO,
@@ -871,6 +907,12 @@ const retourAgentSuperviseur = async (req, res) => {
 
                     }
                 ]
+            },
+            include: {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
             }
         })
         if (malle.length > 0) {
@@ -956,9 +998,15 @@ const nbre = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                 }
             ]
@@ -1024,13 +1072,18 @@ const findAllFolio = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-                    include: {
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: [{
                         model: Volume,
                         as: 'volume',
                         required: false,
                         attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
-                    }
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }]
                 }]
         })
         var volumeFolios = []
@@ -1137,7 +1190,7 @@ const findAllFolioChefPlateau = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.FOLIO_ENREG
@@ -1145,6 +1198,12 @@ const findAllFolioChefPlateau = async (req, res) => {
                         ID_VOLUME: util.volume.ID_VOLUME
                     }]
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
             })
             if (folios?.length > 0) {
                 allVolume.push({
@@ -1201,7 +1260,13 @@ const findAllAgent = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
                 }
             ]
         })
@@ -1287,7 +1352,7 @@ const findAllAgentRetourne = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1296,12 +1361,17 @@ const findAllAgentRetourne = async (req, res) => {
                             ]
                         }
                     },
-                    include: {
+                    include: [{
                         model: Maille,
                         as: 'malleNonTraite',
                         required: true,
                         attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-                    }
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }]
                 }
             ]
         })
@@ -1394,10 +1464,16 @@ const findAllAgents = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         IS_PREPARE: 1,
                     },
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
 
                 }
             ]
@@ -1473,16 +1549,21 @@ const findAllAgentsRetourne = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         IS_PREPARE: 1,
                     },
-                    include: {
+                    include: [{
                         model: Maille,
                         as: 'malleNonTraite',
                         required: true,
                         attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-                    }
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }]
 
                 }
             ]
@@ -1560,7 +1641,7 @@ const findAllSuperviseurs = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [ETAPES_FOLIO.SELECTION_AGENT_SUP,
@@ -1569,6 +1650,12 @@ const findAllSuperviseurs = async (req, res) => {
                             ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
                             ]
                         }
+                    },
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                 }
             ]
@@ -1662,7 +1749,7 @@ const findAllSuperviseurRetourPhase = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1673,12 +1760,17 @@ const findAllSuperviseurRetourPhase = async (req, res) => {
                             ]
                         }
                     },
-                    include: {
+                    include: [{
                         model: Maille,
                         as: 'malleNonTraite',
                         required: true,
                         attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
-                    }
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }]
                 }
             ]
         })
@@ -1763,7 +1855,13 @@ const findAllSuperviseursValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
                 }
             ]
         })
@@ -1848,7 +1946,13 @@ const findAllSuperviseursReValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
                 }
             ]
         })
@@ -1932,7 +2036,13 @@ const findAllChefPlateauReValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
                 }
             ]
         })
@@ -2017,7 +2127,7 @@ const findAllAgentReValides = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
                     },
@@ -2031,6 +2141,11 @@ const findAllAgentReValides = async (req, res) => {
                         as: 'malleNonTraite',
                         required: true,
                         attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                     ]
                 }
@@ -2120,7 +2235,7 @@ const findAllAgentRetraites = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     include: [{
                         model: Volume,
                         as: 'volume',
@@ -2131,6 +2246,11 @@ const findAllAgentRetraites = async (req, res) => {
                         as: 'malleNonTraite',
                         required: true,
                         attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+                    }, {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                     ]
                 }
@@ -2217,7 +2337,7 @@ const checkAgentsup = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                     where: {
                         [Op.and]: [{
@@ -2231,6 +2351,12 @@ const checkAgentsup = async (req, res) => {
                                 [Op.in]: IdsObjet
                             }
                         },]
+                    },
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                 }
             ]
@@ -2284,7 +2410,7 @@ const checkAgentsupDetails = async (req, res) => {
         const IdsObjet = JSON.parse(folioIds)
         const result = await Folio.findAll(
             {
-                attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                 where: {
                     [Op.and]: [{
                         IS_PREPARE: 1,
@@ -2294,6 +2420,12 @@ const checkAgentsupDetails = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     },]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             }
         )
@@ -2317,7 +2449,7 @@ const checkPlateau = async (req, res) => {
     try {
         const { ID_VOLUME } = req.body
         const result = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+            attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
             where: {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
@@ -2331,7 +2463,11 @@ const checkPlateau = async (req, res) => {
                 where: {
                     ID_VOLUME: ID_VOLUME
                 }
-
+            }, {
+                model: Nature_folio,
+                as: 'natures',
+                required: false,
+                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
             }]
         },
 
@@ -2384,7 +2520,7 @@ const checkAgentsupAile = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                     where: {
                         [Op.and]: [{
@@ -2399,6 +2535,12 @@ const checkAgentsupAile = async (req, res) => {
                                 [Op.in]: IdsObjet
                             }
                         },]
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                 }
             ]
@@ -2476,7 +2618,7 @@ const checkAgentsuper = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
 
                     where: {
                         [Op.and]: [{
@@ -2491,6 +2633,12 @@ const checkAgentsuper = async (req, res) => {
                                 [Op.in]: IdsObjet
                             }
                         },]
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                 }
             ]
@@ -2729,6 +2877,12 @@ const getPvsAgentPREPARATION = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
 
@@ -2768,7 +2922,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: {
                         [Op.in]: [
-                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP ,
+                            IDS_ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
                             IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                         ]
                     }
@@ -2798,6 +2952,12 @@ const getPvsAgentPREPARATION = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+               include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
 
@@ -2812,6 +2972,12 @@ const getPvsAgentPREPARATION = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
         }
@@ -2861,6 +3027,12 @@ const getPvsAgentSuperviseur = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
 
@@ -2925,6 +3097,12 @@ const getPvsAgentSuperviseur = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
 
@@ -2939,6 +3117,12 @@ const getPvsAgentSuperviseur = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+              include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
         }
@@ -2973,10 +3157,12 @@ const getPvsAgentSupRetour = async (req, res) => {
 
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO:{[Op.in]: [
-                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
-                        // IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
-                    ]},
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            // IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                        ]
+                    },
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -2992,6 +3178,12 @@ const getPvsAgentSupRetour = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
 
@@ -3029,10 +3221,12 @@ const getPvsAgentSupRetour = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO:{[Op.in]: [
-                        IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                        // IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
-                    ]},
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                            // IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                        ]
+                    },
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3059,6 +3253,12 @@ const getPvsAgentSupRetour = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
 
@@ -3073,6 +3273,12 @@ const getPvsAgentSupRetour = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
         }
@@ -3107,10 +3313,12 @@ const getRePvsAgentSupRetour = async (req, res) => {
 
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO:{[Op.in]: [
-                        // IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
-                        IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
-                    ]},
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            // IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                        ]
+                    },
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3126,6 +3334,12 @@ const getRePvsAgentSupRetour = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
 
@@ -3163,10 +3377,12 @@ const getRePvsAgentSupRetour = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO:{[Op.in]: [
-                        // IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
-                    ]},
+                    ID_ETAPE_FOLIO: {
+                        [Op.in]: [
+                            // IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                            IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
+                        ]
+                    },
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -3193,6 +3409,12 @@ const getRePvsAgentSupRetour = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
 
@@ -3207,6 +3429,12 @@ const getRePvsAgentSupRetour = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
         }
@@ -3257,6 +3485,12 @@ const getPvsChefPlateau = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
 
@@ -3321,6 +3555,12 @@ const getPvsChefPlateau = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
 
@@ -3335,6 +3575,12 @@ const getPvsChefPlateau = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
         }
@@ -3385,6 +3631,12 @@ const getPvsAgentSupAile = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
 
@@ -3449,6 +3701,12 @@ const getPvsAgentSupAile = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
 
@@ -3463,6 +3721,12 @@ const getPvsAgentSupAile = async (req, res) => {
                             [Op.in]: IdsObjet
                         }
                     }]
+                },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                 }
             })
         }
@@ -3527,10 +3791,16 @@ const findAllFolioPrepare = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         IS_PREPARE: { [Op.in]: [1, 0] },
                     },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
 
                 }
             ]
@@ -3610,7 +3880,13 @@ const getAgentDetail = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"]
+                    attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
                 }]
             })).toJSON()
 
@@ -3638,6 +3914,12 @@ const getAgentDetail = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    required: false,
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                }
 
             }]
         })
@@ -3688,6 +3970,12 @@ const getAgentDetail = async (req, res) => {
                         [Op.and]: [{
                             IS_PREPARE: 1
                         }]
+                    },
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
                     }
                 }]
             })
