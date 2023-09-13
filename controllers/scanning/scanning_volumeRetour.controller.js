@@ -22,6 +22,7 @@ const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
 const { Op } = require('sequelize');
+const Nature_folio = require('../../models/Nature_folio');
 
 /**
  * Permet de faire la mise a jour des volume envoyer chez un agent superviseur aille phase scanning
@@ -149,7 +150,7 @@ const volumeScanningRetourChefEquipe = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_ETAPE_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO','ID_ETAPE_FOLIO'],
                 where: {
                     [Op.and]: [
                         {
@@ -1441,7 +1442,7 @@ const findAllVolumePlateauChef = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO','NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO', 'Folio','NUMERO_FOLIO','NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
@@ -1449,6 +1450,12 @@ const findAllVolumePlateauChef = async (req, res) => {
                         ID_VOLUME: util.volume.ID_VOLUME
                     }]
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                    required: false
+                }
             })
             if (folios?.length > 0) {
                 allVolume.push({
@@ -2130,7 +2137,7 @@ const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU
@@ -2138,6 +2145,12 @@ const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
                         ID_VOLUME: util.volume.ID_VOLUME
                     }]
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                    required: false
+                }
             })
             if (folios?.length > 0) {
                 allVolume.push({
@@ -2187,7 +2200,7 @@ const findAllVolumeChefEquipePrepqrqtionTraites = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER','NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -2810,42 +2823,67 @@ const getVolumeDetailsVolume = async (req, res) => {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME
             },
+            
 
         })
         const foliosValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_VALIDE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
         })
         const foliosNonValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
                 IS_VALIDE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosNoScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -2905,39 +2943,63 @@ const getVolumeDetailsVolumeTraitesSup = async (req, res) => {
 
         })
         const foliosValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_VALIDE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
         })
         const foliosNonValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
                 IS_VALIDE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosNoScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -2996,39 +3058,63 @@ const getVolumeDetailsVolumeTraitesChefEquiScan = async (req, res) => {
 
         })
         const foliosValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_VALIDE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
         })
         const foliosNonValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
                 IS_VALIDE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO','NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosNoScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -3079,12 +3165,18 @@ const getVolumeDetailsVolumeTraitesPretArchives = async (req, res) => {
             }]
         })
         const foliosValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_VALIDE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -3130,22 +3222,34 @@ const getVolumeDetailsVolumeNonScanNonValid = async (req, res) => {
             }]
         })
         const foliosNonValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
                 IS_VALIDE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         const foliosNoScanReconcilier = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 0,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -5547,12 +5651,18 @@ const getVolumeDetailsVolumeTraitesChefEquiScanValidFolios = async (req, res) =>
     try {
         const { ID_VOLUME } = req.params
         const foliosValid = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_DISTRIBUTEUR_PREPARATION,
                 ID_VOLUME: ID_VOLUME,
                 IS_VALIDE: 1,
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -6781,7 +6891,7 @@ const findAllVolumeSupAilleScanningAllVolumeNice = async (req, res) => {
         const volume = await Promise.all(result?.map(async resObject => {
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU
@@ -6789,6 +6899,12 @@ const findAllVolumeSupAilleScanningAllVolumeNice = async (req, res) => {
                         ID_VOLUME: util.volume.ID_VOLUME
                     }]
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                    required: false
+                }
             })
             if (folios?.length > 0) {
                 allVolume.push({
@@ -7230,7 +7346,7 @@ const checkRetourSupAilleScanningTraites = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
         const folios = await Folio.findAll({
-            attributes: ['ID_FOLIO', 'NUMERO_FOLIO','ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO','ID_ETAPE_FOLIO'],
             where: {
                 [Op.and]: [
                     {
@@ -7244,6 +7360,12 @@ const checkRetourSupAilleScanningTraites = async (req, res) => {
                     }
                 ]
             },
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,

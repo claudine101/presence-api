@@ -23,6 +23,7 @@ const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
 const { Op } = require('sequelize');
 const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
+const Nature_folio = require('../../models/Nature_folio');
 
 /**
  * Permet de faire la mise a jour des volume envoyer entre un agent superviseur aille phase scanning
@@ -73,11 +74,17 @@ const volumeScanning = async (req, res) => {
         //RETOUR  DANS LA PHASE PREPARATION
         if (AGENT_SUP_AILE) {
             const result = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
                 where: {
                     ID_VOLUME: ID_VOLUME,
                     IS_PREPARE: 0
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                    required: false
+                }
             })
             const folio_ids = result?.map(folio => folio.ID_FOLIO)
             await Maille.update({
@@ -146,12 +153,18 @@ const volumeScanning = async (req, res) => {
         else {
 
             const result = await Folio.findAll({
-                attributes: ['ID_FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
+                attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'CODE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO'],
                 where: {
                     ID_VOLUME: ID_VOLUME,
                     IS_PREPARE: 1,
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
                 },
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                    required: false
+                }
             })
 
             const folio_ids = result?.map(folio => folio.ID_FOLIO)
@@ -498,13 +511,6 @@ const findAll = async (req, res) => {
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
             }
         }
-        // else if (user.ID_PROFIL == PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING) {
-        //     condition = {
-        //         '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES,
-        //         USER_TRAITEMENT: req.userId,
-        //         ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_AGENT_SUP_AILE_SCANNING_FOLIO_TRAITES
-        //     }
-        // }
         else if (user.ID_PROFIL == PROFILS.CHEF_PLATEAU_SCANNING) {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, USER_TRAITEMENT: req.userId }
         }
@@ -844,13 +850,19 @@ const findAllAgentsFolio = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
                     include: [
                         {
                             model: Equipes,
                             as: 'equipe',
                             required: false,
                             attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                            required: false
                         }
                     ]
                 }
@@ -1063,13 +1075,19 @@ const findAllFolioScannimg = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
                     include: [
                         {
                             model: Equipes,
                             as: 'equipe',
                             required: false,
                             attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                        }
+                       ,{
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                            required: false
                         }
                     ],
 
@@ -1207,7 +1225,7 @@ const findAllVolumerRetour = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1217,6 +1235,12 @@ const findAllVolumerRetour = async (req, res) => {
                             ]
                         }
                     },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                        required: false
+                    }
                 }
             ]
         })
@@ -1449,7 +1473,7 @@ const findAllFolioScannimgNonReconcilier = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
+                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
                     where: {
                         [Op.and]: [{
                             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING
