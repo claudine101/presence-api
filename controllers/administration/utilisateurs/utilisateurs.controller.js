@@ -69,6 +69,7 @@ const login = async (req, res) => {
                 attributes: ['ID_PROFIL', 'DESCRIPTION']
             }]
         })
+        console.log(userObject)
         if (userObject) {
             const user = userObject.toJSON()
             if (user.PASSEWORD == md5(PASSEWORD)) {
@@ -771,7 +772,6 @@ const getnumber_user_by_profil = async (req, res) => {
         const userProfil = result.map((uP)=> {
             return uP.profil.DESCRIPTION
          });
-// console.log(userProfil)
          const numberUser=result.map((uP)=> {
             return uP.fetCmpt.rows.count
          });

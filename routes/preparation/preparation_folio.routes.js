@@ -142,6 +142,14 @@ const preparation_folio_routes = express.Router()
  */
  preparation_folio_routes.post('/getPvAgRetour', preparation_folio_controller.getPvsAgentSupRetour)
  
+  
+  /**
+ * Une route  permet les PV d un  chef plateau et   agent  superviseur  en  retour
+ *@method POST
+ * @url /preparation/folio/getRePvAgRetour
+ */
+ preparation_folio_routes.post('/getRePvAgRetour', preparation_folio_controller.getRePvsAgentSupRetour)
+ 
    /**
  * Une route  permet les PV d un  chef plateau et   agent  superviseur  aile
  *@method POST

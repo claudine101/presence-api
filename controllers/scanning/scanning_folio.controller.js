@@ -183,8 +183,6 @@ const folioEquipeScanning = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
-        // console.log(folioObjet)
-        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
@@ -232,8 +230,6 @@ const folioEquipeScanning = async (req, res) => {
 
 const updateReconsilier = async (req, res) => {
     try {
-        // const {ID_FOLIO} = route.params
-        console.log("ID_FOLIO")
         const {
             IS_RECONCILIE,
             ID_FOLIO
