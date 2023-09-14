@@ -21,6 +21,7 @@ const Users = require('../../models/Users');
 const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
+const Nature_folio = require('../../models/Nature_folio');
 
 /**
  * Permet de recuperer la liste des tous les folios
@@ -35,8 +36,15 @@ const findAllFolio = async (req, res) => {
         const { ID_VOLUME } = req.params
         const folios = await Folio.findAll({
             where: { ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU },
-            attributes: ['ID_FOLIO', 'ID_VOLUME', 'NUMERO_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO'],
-        })
+            attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'NUMERO_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO'],
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
+        }
+        )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,

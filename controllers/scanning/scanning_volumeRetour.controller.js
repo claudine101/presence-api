@@ -939,13 +939,27 @@ const findFoliosGetsPvsPlateau = async (req, res) => {
             }
 
         })
+
+       const check= await  Folio.findAll({
+        attributes: ['ID_FOLIO', 'FOLIO','IS_RECONCILIE' , 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+        where: {
+            [Op.and]: [{
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING
+            }, {
+                ID_FOLIO: {
+                    [Op.in]: IdsObjet
+                }
+            },]
+        }
+    }
+    )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Chef platteau de la volume",
+            message: "Chef platteau de la volume ggg",
             result: {
                 ...pv.toJSON(),
-                // pvRetour
+                check
             }
         })
     } catch (error) {
@@ -1052,14 +1066,20 @@ const getFoliosAll = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-                    include: {
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    include:[ {
                         model: Volume,
                         as: 'volume',
                         required: false,
                         attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'CODE_VOLUME', 'DATE_INSERTION'],
 
-                    }
+                    },
+                    {
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                        required: false
+                    }]
                 }]
 
 
@@ -1318,7 +1338,7 @@ const updateRetourPlateauSup = async (req, res) => {
             filename_pv = fileInfo_2
         }
         folioObjet = JSON.parse(folio)
-        const folio_reconcilier = folioObjet.map(folio => folio.folio.ID_FOLIO)
+        const folio_reconcilier = folioObjet.map(folio => folio.ID_FOLIO)
 
         await Folio.update({
             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
@@ -1334,7 +1354,7 @@ const updateRetourPlateauSup = async (req, res) => {
             return {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: USER_TRAITEMENT,
-                ID_FOLIO: folio.folio.ID_FOLIO,
+                ID_FOLIO: folio.ID_FOLIO,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
 
@@ -1648,7 +1668,7 @@ const findAllVolumeSupAileScanningTraites = async (req, res) => {
     try {
         const result = await Etapes_volume_historiques.findAll({
             where: {
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
             },
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_VOLUME', 'DATE_INSERTION', 'PV_PATH'],
             order: [
@@ -1733,19 +1753,22 @@ const findAllVolumeSupAileScanningTraites = async (req, res) => {
 
 const findGetsPvsSupAilleScanRetour = async (req, res) => {
     try {
-        const { volume_ids } = req.body
+        const { volume_ids,AGENT_SUPERVISEUR } = req.body
         const IdsObjet = JSON.parse(volume_ids)
 
         const pv = await Etapes_volume_historiques.findOne({
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'DATE_INSERTION', 'PV_PATH'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_VOLUME: ETAPES_VOLUME.RETOUR_CHEF_PLATEAU_ET_AGENT_SUP_AILE_SCANNING,
+                    ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
                 }, {
                     USERS_ID: req.userId
-                }, {
+                },
+                 {
                     USER_TRAITEMENT: AGENT_SUPERVISEUR
-                }, {
+                }, 
+                
+                {
                     ID_VOLUME: {
                         [Op.in]: IdsObjet
                     }

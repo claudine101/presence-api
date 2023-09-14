@@ -1225,7 +1225,7 @@ const findAllVolumerRetour = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO','IS_RECONCILIE', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1245,35 +1245,39 @@ const findAllVolumerRetour = async (req, res) => {
             ]
         })
         var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+       
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
-
             }
-
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folio donnees",
-            UserFolios
+            PvFolios
             // result:result
         })
     } catch (error) {
