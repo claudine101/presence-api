@@ -505,13 +505,9 @@ const findCheckPlateau = async (req, res) => {
             condition = { '$volume.ID_ETAPE_VOLUME$': ETAPES_VOLUME.CHOIX_CHEF_PLATAEU, USER_TRAITEMENT: req.userId }
         }
         const result = await Etapes_volume_historiques.findAndCountAll({
-            // attributes: ['NUMERO_VOLUME','CODE_VOLUME','NOMBRE_DOSSIER','USERS_ID','ID_MALLE','ID_ETAPE_VOLUME'],
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
-            //         order: [
-            //             [orderColumn, defaultSortDirection]
-            //   ],
             where: {
                 ...condition
             },
@@ -713,10 +709,9 @@ const updateVolume = async (req, res) => {
         const volumeDossier = (await Volume.findOne({
             where: {
                 ID_VOLUME,
-                NOMBRE_DOSSIER: null
-
+                NOMBRE_DOSSIER: null,
+                ID_ETAPE_VOLUME:ETAPES_VOLUME.PLANIFICATION
             }
-
         }))
 
         if (volumeDossier) {
@@ -744,14 +739,13 @@ const updateVolume = async (req, res) => {
                 statusCode: RESPONSE_CODES.OK,
                 httpStatus: RESPONSE_STATUS.OK,
                 message: "Reussi",
-
             })
         }
         else {
             res.status(RESPONSE_CODES.UNAUTHORIZED).json({
                 statusCode: RESPONSE_CODES.UNAUTHORIZED,
                 httpStatus: RESPONSE_CODES.UNAUTHORIZED,
-                message: "Nombre de dossier  existe déjà",
+                message: "Ce volume a été déjà désarchivé",
 
             })
         }

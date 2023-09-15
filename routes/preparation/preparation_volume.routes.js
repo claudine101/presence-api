@@ -19,21 +19,21 @@ const preparation_volume_routes = express.Router()
 
  /**
  * Une route  permet  recupere les volumes
- *@method POST
+ *@method GET
  * @url /preparation/volume
  */
  preparation_volume_routes.get('/', preparation_volume_controller.findAll)
 
   /**
  * Une route  permet  recupere les volumes desarchives par  un agent  desarchivages
- *@method POST
+ *@method GET
  * @url /preparation/volume/desarchives
  */
  preparation_volume_routes.get('/desarchives', preparation_volume_controller.findAllDesarchive)
  
   /**
  * Une route  permet  recupere les volumes desarchives par  un agent  desarchivages
- *@method POST
+ *@method GET
  * @url /preparation/volume/distribues
  */
  preparation_volume_routes.get('/distribues', preparation_volume_controller.findAllDistribue)
@@ -41,21 +41,21 @@ const preparation_volume_routes = express.Router()
 
  /**
  * Une route  permet  un agent  superviseur  aile de voir  les volume prepares 
- *@method POST
+ *@method GET
  * @url /preparation/volume/volumePrepares
  */
  preparation_volume_routes.get('/volumePrepares', preparation_volume_controller.findAllVolume)
 
 /**
  * Une route  permet  recupere les volumes et leurs details
- *@method POST
+ *@method GET
  * @url /preparation/volume
  */
  preparation_volume_routes.get('/allVolume', preparation_volume_controller.findAll)
 
   /**
  * Une route  permet  recupere les volumes detailler
- *@method POST
+ *@method GET
  * @url /preparation/volume/volumeDetailler
  */
  preparation_volume_routes.get('/volumeDetailler', preparation_volume_controller.findDetailler)
@@ -63,7 +63,7 @@ const preparation_volume_routes = express.Router()
  
   /**
  * Une route  permet  recupere les volumes superviser par  un agnt  sup  archive
- *@method POST
+ *@method GET
  * @url /preparation/volume/volumeSuperviser
  */
  preparation_volume_routes.get('/volumeSuperviser', preparation_volume_controller.findAllVolumeSuperviser)
