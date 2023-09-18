@@ -220,12 +220,12 @@ const IDS_ETAPES_FOLIO = {
           /**
           * 48 - Retour: Sans reconcilie et sans Scan (equipe scanning vers agent sup. scanning)
           */
-          RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING: 48,
+                                      // RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING: 48, vanny
 
           /**
            * 49 - Retour: is non Valide meme si il'est reconcilier (agent sup. scanning vers chef plateau scanning)
            */
-          RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU: 49,
+                                      //  RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU: 49, vanny
 }
 
 module.exports = IDS_ETAPES_FOLIO

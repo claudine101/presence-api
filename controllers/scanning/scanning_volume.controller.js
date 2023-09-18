@@ -1008,7 +1008,7 @@ const updateRetourEquipe = async (req, res) => {
         const folio_no_reconciliers = folios.map(folio => folio.toJSON().ID_FOLIO)
         await Folio.update({
             IS_RECONCILIE: 0,
-            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
 
         }, {
             where: {
@@ -1023,7 +1023,7 @@ const updateRetourEquipe = async (req, res) => {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: req.userId,
                 ID_FOLIO: folio.ID_FOLIO,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             }
         })

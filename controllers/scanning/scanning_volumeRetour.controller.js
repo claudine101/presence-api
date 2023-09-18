@@ -159,8 +159,6 @@ const volumeScanningRetourChefEquipe = async (req, res) => {
                         {
                             [Op.or]: [
                                 { ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU },
-                                { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING },
-                                { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU }
                             ]
                         }
                     ]
@@ -1376,7 +1374,7 @@ const updateRetourPlateauSup = async (req, res) => {
         const folio_no_reconciliers = folios.map(folio => folio.toJSON().ID_FOLIO)
         await Folio.update({
             IS_VALIDE: 0,
-            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
 
         }, {
             where: {
@@ -1391,7 +1389,7 @@ const updateRetourPlateauSup = async (req, res) => {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: USER_TRAITEMENT,
                 ID_FOLIO: folio.ID_FOLIO,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
             }
         })
@@ -2581,7 +2579,6 @@ const findVolumeAssocierAgentsupAilleScan = async (req, res) => {
                 })
 
             }
-
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -2817,7 +2814,7 @@ const getVolumeDetailsVolume = async (req, res) => {
         const chefPlateau = await Etapes_volume_historiques.findOne({
             attributes: ['ID_VOLUME_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING,
+                ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_PLATEAU_SCANNING, 
                 ID_VOLUME: ID_VOLUME
             },
             include: [{
@@ -2845,10 +2842,9 @@ const getVolumeDetailsVolume = async (req, res) => {
             where: {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME
-            },
-            
-
+            }
         })
+
         const foliosValid = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
@@ -2866,7 +2862,7 @@ const getVolumeDetailsVolume = async (req, res) => {
         const foliosNonValid = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
                 IS_VALIDE: 0,
@@ -2882,7 +2878,7 @@ const getVolumeDetailsVolume = async (req, res) => {
         const foliosScanReconcilier = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
             },
@@ -2897,7 +2893,7 @@ const getVolumeDetailsVolume = async (req, res) => {
         const foliosNoScanReconcilier = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 0,
             },
@@ -3097,7 +3093,7 @@ const getVolumeDetailsVolumeTraitesChefEquiScan = async (req, res) => {
         const foliosNonValid = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
                 IS_VALIDE: 0,
@@ -3113,7 +3109,7 @@ const getVolumeDetailsVolumeTraitesChefEquiScan = async (req, res) => {
         const foliosScanReconcilier = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO','NUMERO_FOLIO'],
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 1,
             },
@@ -3128,7 +3124,7 @@ const getVolumeDetailsVolumeTraitesChefEquiScan = async (req, res) => {
         const foliosNoScanReconcilier = await Folio.findAll({
             attributes: ['ID_FOLIO','FOLIO', 'NUMERO_FOLIO'],
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_SANS_RECO_SANS_SCAN_V_AGENT_SUP_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
                 ID_VOLUME: ID_VOLUME,
                 IS_RECONCILIE: 0,
             },
@@ -7377,8 +7373,7 @@ const checkRetourSupAilleScanningTraites = async (req, res) => {
                     },
                     {
                         [Op.or]: [
-                            { ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU },
-                            { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU }
+                            { ID_ETAPE_FOLIO : ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU }
                         ]
                     }
                 ]
