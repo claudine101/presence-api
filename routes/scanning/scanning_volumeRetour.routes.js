@@ -512,16 +512,16 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/pvssss/final', scanning_
  /**
  * Une route pour faire le retour entre le chef plateau et un agents superviseurs aille scanning
  *@method PUT
- * @url /scanning/retour/agent/retour/plateau/renvoyer/isvalid/final
+ * @url /scanning/retour/agent/retour/plateau/renvoyer/isvalid/retourChefequipescan
  */
- scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/isvalid/final', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidTraiteAilleFinal)
+ scanning_volumeRetour_routes.put('/agent/retour/plateau/renvoyer/isvalid/retourChefequipescan', scanning_volumeRetour_controller.updateRetourPlateauSupReenvoyezValidTraiteAilleFinal)
 
      /**
  * Une route  recuperer  les volumes deja traitees agent superviseur aille scanning
  *@method GET
- * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/aille/getVol/original
+ * @url /scanning/retour/agent/volume/traitees/plateau/reenvoyer/aille/getVol/traitees
  */
- scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/aille/getVol/original', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerGetVolumeOriginal)
+ scanning_volumeRetour_routes.get('/agent/volume/traitees/plateau/reenvoyer/aille/getVol/traitees', scanning_volumeRetour_controller.findAllVolumePlateauChefTraitesReenvoyerGetVolumeOriginal)
 
   /**
  * Une route pour faire le retour entre le chef  equipe et un agents distributeur
@@ -656,6 +656,13 @@ scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/supAille/pvs', 
  * @url /scanning/retour/agent/retour/pvs/supAilles
  */
  scanning_volumeRetour_routes.get('/agent/retour/pvs/supAilles/:ID_VOLUME', scanning_volumeRetour_controller.checkRetourSupAilleScanningTraites)
+
+        /**
+ * Une route  permet de recuperer les details de volumes chez le chef equipe
+ *@method GET
+ * @url /scanning/retour/agent/details/verifier/volume/dossier/valid
+ */
+ scanning_volumeRetour_routes.get('/agent/details/verifier/volume/dossier/valid/:ID_VOLUME', scanning_volumeRetour_controller.getVolumeDetailsVolumeTraitesValid)
  
 
 
