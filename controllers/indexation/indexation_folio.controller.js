@@ -12,6 +12,7 @@ const VolumePvUpload = require('../../class/uploads/VolumePvUpload')
 const IMAGES_DESTINATIONS = require('../../constants/IMAGES_DESTINATIONS')
 const Validation = require('../../class/Validation')
 const Nature_folio = require('../../models/Nature_folio')
+const Etapes_folio = require('../../models/Etapes_folio')
 
 /**
  * Permet de recuperer les folio qui ont un etape quelconque
@@ -26,7 +27,11 @@ const getFolioByEtapes = async (req, res) => {
         const folios = await Folio.findAll({
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: ID_ETAPE_FOLIO
+                    ID_ETAPE_FOLIO: {[Op.in]:[
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING
+                    ]
+                    }
                 }, {
                     IS_RECONCILIE: 1
                 }, {
