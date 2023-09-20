@@ -117,10 +117,6 @@ const volumeScanningRetourAgentAille = async (req, res) => {
 */
 const volumeScanningRetourChefEquipe = async (req, res) => {
     try {
-        // const volu = await Volume.findAll({
-        //     where: { ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING },
-        //     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'NOMBRE_DOSSIER', 'ID_MALLE', 'ID_ETAPE_VOLUME', 'DATE_INSERTION'],
-        // })
         const result = await Etapes_volume_historiques.findAll({
             attributes: ['ID_VOLUME_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION'],
             order: [
@@ -133,8 +129,11 @@ const volumeScanningRetourChefEquipe = async (req, res) => {
                 {
                     model: Volume,
                     as: 'volume',
-                    required: false,
+                    required: true,
                     attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'USERS_ID', 'ID_MALLE', 'ID_ETAPE_VOLUME'],
+                    where: {
+                        ID_ETAPE_VOLUME: ETAPES_VOLUME.SELECTION_CHEF_EQUIPE_SCANNING
+                    },
                     include:
                     {
                         model: Maille,
@@ -157,10 +156,23 @@ const volumeScanningRetourChefEquipe = async (req, res) => {
                             ID_VOLUME: util.volume.ID_VOLUME
                         },
                         {
-                            [Op.or]: [
-                                { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU },
-                                { ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING },
-                            ]
+                            ID_ETAPE_FOLIO:{ [Op.in]: [ 
+                                ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU ,
+                                ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING ,
+                                ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                                ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                                ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                                ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                                ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                                ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+                                ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+                                ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                                ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                                ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                                ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                                ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                                ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
+                            ]}
                         }
                     ]
                 },
@@ -499,7 +511,7 @@ const findAllVolumerRetourDesarchivages = async (req, res) => {
                     model: Volume,
                     as: 'volume',
                     required: false,
-                    attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
+                    attributes: ['ID_VOLUME', 'ID_MALLE','ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER'],
 
                 }
             ]
@@ -1142,11 +1154,15 @@ const findGetsPvsAgentSupervieur = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
                 [Op.and]: [{
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+                    
+                    ID_ETAPE_FOLIO:{[Op.in]:[
+                        ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,
+                        ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING,
+                    ]} 
                 }, {
                     ID_USER: req.userId
                 }, {
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                    USER_TRAITEMENT: req.userId
                 }, {
                     ID_FOLIO: {
                         [Op.in]: IdsObjet
@@ -1155,28 +1171,13 @@ const findGetsPvsAgentSupervieur = async (req, res) => {
             }
 
         })
-        // const pvRetour = await Etapes_folio_historiques.findOne({
-        //     attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
-        //     where: {
-        //         [Op.and]: [{
-        //             ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
-        //         }, {
-        //             ID_USER: req.userId
-        //         }, {
-        //             USER_TRAITEMENT: AGENT_SUPERVISEUR
-        //         }, {
-        //             ID_FOLIO: {
-        //                 [Op.in]: IdsObjet
-        //             }
-        //         }]
-        //     }
-        // })
+       
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "PVS agent superviseur",
             result: {
-                ...pv.toJSON(),
+                ...pv?.toJSON(),
                 // pvRetour
             }
         })
@@ -2065,7 +2066,7 @@ const findAllVolumeAgenSupArchivesTraites = async (req, res) => {
 const volumeArchivesAgentDesarchivages = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { ARCHIVER } = req.body
+        const { ARCHIVER ,MAILLE} = req.body
         const validation = new Validation(
             { ...req.body },
             {
@@ -2096,6 +2097,13 @@ const volumeArchivesAgentDesarchivages = async (req, res) => {
             }, {
                 where: {
                     ID_VOLUME: ID_VOLUME
+                }
+            })
+            await Maille.update({
+                IS_DISPO: 1
+            }, {
+                where: {
+                    ID_MAILLE: MAILLE
                 }
             })
             await Etapes_volume_historiques.create({
@@ -2165,11 +2173,25 @@ const findAllVolumeAgenDesarchivagesTraites = async (req, res) => {
                         {
                             ID_VOLUME: util.volume.ID_VOLUME
                         },
+                       
                         {
-                            [Op.or]: [
-                                { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU },
-                                { ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING },
-                            ]
+                            ID_ETAPE_FOLIO:{ [Op.in]: [ 
+                                ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU ,
+                                ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING ,
+                                ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                                ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                                ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                                ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                                ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                                ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+                                ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+                                ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                                ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                                ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                                ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                                ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                                ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
+                            ]}
                         }
                     ]
                 },
@@ -3101,10 +3123,23 @@ const getVolumeDetailsVolumeTraitesChefEquiScan = async (req, res) => {
                         IS_VALIDE: 1,
                     },
                     {
-                        [Op.or]: [
-                            { ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU },
-                            { ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING },
-                        ]
+                        ID_ETAPE_FOLIO:{ [Op.in]: [ 
+                            ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU ,
+                            ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING ,
+                            ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                            ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                            ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                            ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                            ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                            ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+                            ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+                            ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                            ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                            ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                            ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                            ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                            ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE
+                        ]}
                     }
                 ]
             },
@@ -4185,7 +4220,10 @@ const findAllAgentsFolioRetour = async (req, res) => {
                         }
                     ]
                 }
-            ]
+            ],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
         })
         var UserFolios = []
         result.forEach(user => {
@@ -4509,7 +4547,10 @@ const findAllVolumerRetourReconcilierPret = async (req, res) => {
                         }
                     },
                 }
-            ]
+            ],
+            order: [
+                ["DATE_INSERTION", "DESC"]
+            ],
         })
         var UserFolios = []
         result.forEach(user => {
@@ -4584,13 +4625,36 @@ const findFoliosGetsPvsPlateauReenvoyez = async (req, res) => {
             }
 
         })
+        const check = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: AGENT_SUPERVISEUR }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: {
+                            [Op.and]: [
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER,]
+                        },
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }
+                }
+            ]
+        })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Chef platteau de la volume",
             result: {
                 ...pv.toJSON(),
-                // pvRetour
+                check
             }
         })
     } catch (error) {
@@ -4614,12 +4678,6 @@ const checkRetourChefPlateauCkeckReenvoyez = async (req, res) => {
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
                 {
-                    model: Users,
-                    as: 'traitement',
-                    required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
-                },
-                {
                     model: Folio,
                     as: 'folio',
                     required: true,
@@ -4633,37 +4691,37 @@ const checkRetourChefPlateauCkeckReenvoyez = async (req, res) => {
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
-            if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
-                    } else {
-                        return vol
-                    }
-                })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
+        // var UserFolios = []
+        // result.forEach(user => {
+        //     const USERS_ID = user.traitement?.USERS_ID
+        //     const users = user.traitement
+        //     const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        //     if (isExists) {
+        //         const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+        //         const newVolumes = { ...volume, folios: [...volume.folios, user] }
+        //         UserFolios = UserFolios.map(vol => {
+        //             if (vol.USERS_ID == USERS_ID) {
+        //                 return newVolumes
+        //             } else {
+        //                 return vol
+        //             }
+        //         })
+        //     } else {
+        //         UserFolios.push({
+        //             USERS_ID,
+        //             users,
+        //             folios: [user]
+        //         })
 
-            }
+        //     }
 
-        })
+        // })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
-            result: UserFolios
-            // result:result
+            // result: UserFolios
+             result:result
         })
     } catch (error) {
         console.log(error)
@@ -4952,7 +5010,7 @@ const findAllVolumerRetourReconcilierIsValid = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO','IS_RECONCILIE' ,'IS_VALIDE','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -5037,7 +5095,6 @@ const findFoliosGetsPvsPlateauReenvoyezPvsss = async (req, res) => {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
 
-
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
@@ -5055,13 +5112,40 @@ const findFoliosGetsPvsPlateauReenvoyezPvsss = async (req, res) => {
             }
 
         })
+
+        const check = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: AGENT_SUPERVISEUR }]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    where: {
+                        ID_ETAPE_FOLIO: {
+                            [Op.and]: [
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,]
+                        }
+                    }
+                }
+            ]
+        })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Chef platteau de la volume",
             result: {
                 ...pv.toJSON(),
-                // pvRetour
+                check
             }
         })
     } catch (error) {
@@ -5557,7 +5641,7 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolumeChefEquipe = async (req, 
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             order: [
@@ -5578,12 +5662,7 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolumeChefEquipe = async (req, 
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
-                                ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
-                                ETAPES_FOLIO.REENVOYER_VOL_AGENT_SUP_AILLE_SCANNING_VERS_CHEF_PLATEAU_SCANNING,
-                                ETAPES_FOLIO.REENVOYER_CHEF_PLATEAU_SCANNING_VERS_AGENT_SUPERVISEUR_SCANNING,
-                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING,
-                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER,
-                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,
+
                                 ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING
                             ]
                         }
@@ -5780,7 +5859,7 @@ const findFoliosGetsPvsPlateauReenvoyezPvsssFinal = async (req, res) => {
             httpStatus: RESPONSE_STATUS.OK,
             message: "Chef platteau de la volume",
             result: {
-                ...pv.toJSON(),
+                ...pv?.toJSON(),
                 // pvRetour
             }
         })
@@ -7000,7 +7079,7 @@ const findAllVolumeSupAilleScanningAllVolumeNice = async (req, res) => {
  * 
  */
 
-const checkRetourChefEquipeReenvoyezHHH = async (req, res) => {
+const checkRetourChefEquipeReenvoyezTraiteesReenvoyez = async (req, res) => {
     try {
         const { USERS_ID } = req.params
         const result = await Etapes_folio_historiques.findAll({
@@ -7568,7 +7647,7 @@ module.exports = {
     folioEquipeScanningReenvoyerNiceArchivees,
     findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG,
     findAllVolumeSupAilleScanningAllVolumeNice,
-    checkRetourChefEquipeReenvoyezHHH,
+    checkRetourChefEquipeReenvoyezTraiteesReenvoyez,
     checkRetourChefEquipeReenvoyezSupCheck,
     findFoliosGetsPvsPlateauReenvoyezPvArchivagesPVS,
     findGetsPvsChefPlateauRetourNonValid,
