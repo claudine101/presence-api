@@ -8,6 +8,8 @@ const Equipes = require('./Equipes');
 const Nature_folio = require("./Nature_folio");
 const Syst_collines = require('./Syst_collines');
 const Folio_documents = require('./Folio_documents');
+const Users = require('./Users');
+const Maille = require('./Maille');
 /**
 * fonction model pour la creation de la table folio
 * @author habiyakare leonard <leonard@mediabox.bi>
@@ -36,6 +38,10 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    FOLIO:{
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     CODE_FOLIO: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -49,6 +55,14 @@ const Folio = sequelize.define("folio", {
         type: DataTypes.INTEGER,
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    IS_PREPARE: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    ID_MOTIF: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     NUMERO_PARCELLE: {
         type: DataTypes.STRING(50),
@@ -149,6 +163,9 @@ Folio.belongsTo(Volume, { foreignKey: "ID_VOLUME", as: 'volume' })
 Folio.belongsTo(Equipes, { foreignKey: "ID_FOLIO_EQUIPE", as: 'equipe' })
 Folio.belongsTo(Nature, { foreignKey:"ID_NATURE", as: 'nature' })
 Folio.belongsTo(Folio_documents, { foreignKey: "ID_FOLIO", as: 'documents' })
+Folio.belongsTo(Users, { foreignKey: "ID_USERS", as: 'user' })
+Folio.belongsTo(Maille, { foreignKey: "ID_MALLE_NO_TRAITE", as: 'malleNonTraite' })
+
 
 
 module.exports = Folio

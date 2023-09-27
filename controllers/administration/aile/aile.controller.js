@@ -10,8 +10,6 @@ const User_ailes = require("../../../models/User_ailes")
 const Profils = require("../../../models/Profils")
 const PROFILS = require("../../../constants/PROFILS")
 const { Sequelize } = require('sequelize');
-
-
 /**
  * Permet de lister et effectuer des recherches sur l'aile
  * @param {express.Request} req 
@@ -456,6 +454,8 @@ const deleteItemsaile = async (req, res) => {
         })
     }
 }
+
+
 
 module.exports = {
     findAllaile,

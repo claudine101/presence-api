@@ -109,44 +109,6 @@ const findAllphase = async (req, res) => {
     }
 }
 
-// /**
-// * Permet de faire la suppression du nature folio
-// * @param {express.Request} req 
-// * @param {express.Response} res 
-// * @author derick <derick@mdiabox.bi>
-// */
-// const deleteItems = async (req, res) => {
-//     try {
-//         const { ids } = req.body
-//         const itemsIds = JSON.parse(ids)
-//         await Nature_folio.destroy({
-//             where: {
-//                 ID_NATURE_FOLIO: {
-//                     [Op.in]: itemsIds
-//                 }
-//             }
-//         })
-//         res.status(RESPONSE_CODES.OK).json({
-//             statusCode: RESPONSE_CODES.OK,
-//             httpStatus: RESPONSE_STATUS.OK,
-//             message: "Les elements ont ete supprimer avec success",
-//         })
-//     } catch (error) {
-//         console.log(error)
-//         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-//             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-//             httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-//             message: "Erreur interne du serveur, réessayer plus tard",
-//         })
-//     }
-// }
-
-
-
-
-
-
-
 module.exports = {
    
     findAllphase,

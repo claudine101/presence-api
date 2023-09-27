@@ -10,6 +10,13 @@ const Etapes_volume_historiques = require('../../models/Etapes_volume_historique
 const Profils = require('../../models/Profils');
 const moment = require('moment');
 const { Op } = require('sequelize');
+const Folio = require('../../models/Folio');
+const Nature_folio = require('../../models/Nature_folio');
+const Etapes_folio = require('../../models/Etapes_folio');
+const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
+const ETAPES_VOLUME = require('../../constants/ETAPES_VOLUME');
+
+
 
 
 
@@ -26,10 +33,10 @@ const { Op } = require('sequelize');
 
 const findAll = async (req, res) => {
     try {
-        const { volume_filters,startDate, endDate, rows = 10, first = 0, sortField, sortOrder, search } = req.query
+        const { volume_filters, startDate, endDate, rows = 10, first = 0, sortField, sortOrder, search } = req.query
 
-        const defaultSortField = 'ID_VOLUME'
-        const defaultSortDirection = "DESC"
+        const defaultSortField = 'DATE_INSERTION'
+        const defaultSortDirection = "desc"
         const sortColumns = {
             volume: {
                 as: "volume",
@@ -42,8 +49,6 @@ const findAll = async (req, res) => {
 
                 }
             },
-
-
             etapes_volumes: {
                 as: "etapes_volumes",
                 fields: {
@@ -80,7 +85,7 @@ const findAll = async (req, res) => {
             }
         }
         if (!orderColumn || !sortModel) {
-            orderColumn = sortColumns.volume.fields.ID_VOLUME
+            orderColumn = sortColumns.volume.fields.DATE_INSERTION
             sortModel = {
                 model: 'volume',
                 as: sortColumns.volume.as
@@ -98,6 +103,10 @@ const findAll = async (req, res) => {
 
         // searching
         const globalSearchColumns = [
+            'NUMERO_VOLUME',
+            'NOMBRE_DOSSIER',
+            'DATE_INSERTION',
+            '$etapes_volumes.NOM_ETAPE$'
 
         ]
         var globalSearchWhereLike = {}
@@ -114,15 +123,15 @@ const findAll = async (req, res) => {
         }
         var dateWhere = {}
 
-        var  volume_filter={}
+        var volume_filter = {}
 
-        if(volume_filters){
-            volume_filter = {ID_ETAPE_VOLUME:volume_filters}
-          }
+        if (volume_filters) {
+            volume_filter = { ID_ETAPE_VOLUME: volume_filters }
+        }
         // Date filter
         if (startDate) {
-            const startDateFormat = 
-            moment(startDate).format("YYYY-MM-DD 00:00:00")
+            const startDateFormat =
+                moment(startDate).format("YYYY-MM-DD 00:00:00")
             const endDateFormat = endDate ?
                 moment(endDate).format("YYYY-MM-DD 23:59:59") :
                 moment().format("YYYY-MM-DD 23:59:59")
@@ -138,10 +147,11 @@ const findAll = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            attributes: ['ID_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME', 'NOMBRE_DOSSIER', 'DATE_INSERTION'],
             where: {
                 ...globalSearchWhereLike,
                 ...dateWhere,
-                ... volume_filter
+                ...volume_filter
             },
             include: [
                 {
@@ -156,7 +166,8 @@ const findAll = async (req, res) => {
                     as: 'maille',
                     attributes: ['NUMERO_MAILLE'],
                     required: false
-                }]
+                },
+            ]
 
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -177,6 +188,112 @@ const findAll = async (req, res) => {
         })
     }
 }
+
+
+/**
+ * permet de  trouver les volumes scanner
+ * @author derick <derick@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 4/24/2023
+ * 
+ */
+
+
+const findAllscanne = async (req, res) => {
+    try {
+        const folios = await Folio.findAll({
+            where: {
+                ID_ETAPE_FOLIO: {
+                    [Op.in]: [
+                        IDS_ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP_AILE_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_CHEF_PLATEAU_INDEXATION,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_INDEXATION,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_INDEX_CHEF_PLATEAU,
+                        IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_AGENT_SUP_AILE,
+                        IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_AILE_CHEF_EQUIPE,
+                        IDS_ETAPES_FOLIO.CHEF_EQUIPE_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_AGENT_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                        IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_ENREG_TO_EDRMS,
+                        IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                    ]
+                }
+            },
+            include:
+                [
+                    {
+                        model: Volume,
+                        as: 'volume',
+                        attributes: ['NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME', 'ID_VOLUME'],
+                        required: false,
+                        include: {
+                            model: Etapes_volumes,
+                            as: 'etapes_volumes',
+                            attributes: ['NOM_ETAPE'],
+                            required: false
+                        }
+                    },
+                    {
+                        model: Nature_folio,
+                        as: "nature",
+                        attributes: ['DESCRIPTION']
+                    },
+                    {
+                        model: Etapes_folio,
+                        as: 'etapes',
+                        attributes: ['NOM_ETAPE']
+                    }
+                ]
+
+        })
+        const uniqueIds = [];
+        const volumesPure = folios.filter(element => {
+            const isDuplicate = uniqueIds.includes(element.toJSON().ID_VOLUME);
+            if (!isDuplicate) {
+                uniqueIds.push(element.toJSON().ID_VOLUME);
+                return true;
+            }
+            return false;
+        });
+
+        const volumes = volumesPure.map(volume => {
+            const foliovolume = folios.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME)
+            const folioscane = folios.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME && f.toJSON().IS_RECONCILIE == 1)
+            const foliononscane = folios.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME && f.toJSON().IS_RECONCILIE == 0)
+            return {
+                ...volume.toJSON(),
+                foliovolume,
+                folioscane,
+                foliononscane
+            }
+        })
+
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Le nombre de volume scanner   est egal à",
+            result: volumes
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+
 
 
 /**
@@ -236,7 +353,6 @@ const gethistoriquevol = async (req, res) => {
                         },
                     ]
                 },
-
             ]
         })
         if (histo) {
@@ -264,7 +380,130 @@ const gethistoriquevol = async (req, res) => {
     }
 }
 
+
+
+
+/**
+ * permet de  trouver les volumes scanner
+ * @author derick <derick@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 4/24/2023
+ * 
+ */
+
+
+const findAllreachive = async (req, res) => {
+
+    try {
+        const foliorea = await Etapes_volume_historiques.findAll({
+            where: {
+
+                ID_ETAPE_VOLUME: {
+                    [Op.in]: [
+
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_VERS_CHEF_EQUIPE_SCANNING,
+                        ETAPES_VOLUME.RETOUR_CHEF_EQUIPE_VERS_AGENT_DISTRIBUTEUR,
+                        ETAPES_VOLUME.RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE,
+                        ETAPES_VOLUME.RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE
+                    ],
+                },
+            },
+            include:
+            {
+                model: Volume,
+                as: 'volume',
+                attributes: ['NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME', 'ID_VOLUME'],
+                required: false,
+
+                include: {
+                    model: maille,
+                    as: 'maille',
+                    attributes: ['NUMERO_MAILLE'],
+                    required: false,
+                }
+            }
+
+        })
+
+        const uniqueIds = [];
+        const volumesPure = foliorea.filter(element => {
+            const isDuplicate = uniqueIds.includes(element.toJSON().ID_VOLUME);
+            if (!isDuplicate) {
+                uniqueIds.push(element.toJSON().ID_VOLUME);
+                return true;
+            }
+            return false;
+        });
+
+        const volumesrea = await Promise.all(volumesPure.map(async volume => {
+            const foliovolume = foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME)
+            // const folioscane=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 1)
+            // const foliononscane=foliorea.filter(f => volume.volume.ID_VOLUME == f.toJSON().ID_VOLUME  && f.toJSON().IS_RECONCILIE == 0)
+            const folioreachive = await Folio.findAll({
+                attributes: ['NUMERO_FOLIO', 'CODE_FOLIO', 'ID_VOLUME', 'FOLIO', 'ID_FOLIO', 'DATE_INSERTION'],
+
+                where: {
+                    ID_VOLUME: volume.volume.ID_VOLUME
+                },
+
+                include:
+                    [
+                        {
+                            model: Volume,
+                            as: 'volume',
+                            attributes: ['NOMBRE_DOSSIER', 'NUMERO_VOLUME', 'CODE_VOLUME', 'ID_VOLUME'],
+                            required: false,
+                            include: {
+                                model: Etapes_volumes,
+                                as: 'etapes_volumes',
+                                attributes: ['NOM_ETAPE'],
+                                required: false
+                            }
+                        },
+                        {
+                            model: Nature_folio,
+                            as: "nature",
+                            attributes: ['DESCRIPTION']
+                        },
+                        {
+                            model: Etapes_folio,
+                            as: 'etapes',
+                            attributes: ['NOM_ETAPE']
+                        }
+                    ]
+
+            })
+
+            return {
+                ...volume.toJSON(),
+                // foliovolume,
+                folioreachive,
+                // foliononscane
+            }
+        }))
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "volume reachive  est egal à",
+            result: volumesrea
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     findAll,
-    gethistoriquevol
+    gethistoriquevol,
+    findAllscanne,
+    findAllreachive
 }

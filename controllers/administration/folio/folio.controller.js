@@ -18,6 +18,7 @@ const Users = require("../../../models/Users")
 const Profils = require("../../../models/Profils")
 const Etapes_folio_historiques = require('../../../models/Etapes_folio_historiques')
 const Flashs = require("../../../models/Flashs")
+const IDS_ETAPES_FOLIO = require("../../../constants/ETAPES_FOLIO")
 
 /**
  * Permet d'afficher les details du folio
@@ -179,6 +180,28 @@ const findUsersByFolio = async (req, res) => {
               attributes: ['ID_PROFIL', 'DESCRIPTION'],
             }
           },
+          {
+            model: Folio,
+            as: 'folio',
+            required: false,
+            attributes: [
+              'FOLIO','NUMERO_FOLIO'
+            ],
+            include:[{
+              model:Nature_folio,
+              as: 'natures',
+              required:false,
+              attributes:[
+                'DESCRIPTION'
+              ]
+            },
+          {
+            model: Volume,
+            as: 'volume',
+            attributes: ['NUMERO_VOLUME'],
+            required: false
+          },]
+          },
 
         ]
 
@@ -231,7 +254,7 @@ const findTraitantFolio = async (req, res) => {
   try {
     const { ID_FOLIO } = req.params
     const agentsFolio = await Etapes_folio_historiques.findAll({
-       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH'],
+       attributes:['ID_FOLIO_HISTORIQUE',	'ID_USER', 'USER_TRAITEMENT', 'ID_FOLIO',	'ID_ETAPE_FOLIO', 'PV_PATH','DATE_INSERTION'],
       //  group : ['ID_USER'],
       where: {
         ID_FOLIO: ID_FOLIO
@@ -278,15 +301,17 @@ const findTraitantFolio = async (req, res) => {
 
     })
 
-    const uniqueIds = [];
-    const distinctAgent = agentsFolio.filter(element => {
-              const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
-              if (!isDuplicate) {
-                        uniqueIds.push(element.USER_TRAITEMENT);
-                        return true;
-              }
-              return false;
-    });
+    // const uniqueIds = [];
+    // const distinctAgent = agentsFolio.filter(element => {
+    //           const isDuplicate = uniqueIds.includes(element.USER_TRAITEMENT);
+    //           if (!isDuplicate) {
+    //                     uniqueIds.push(element.USER_TRAITEMENT);
+    //                     return true;
+    //           }
+    //           return false;
+    // });
+
+    
     // const folioHistorique = {
     //   // count: folioHistoriqueAll.count,
     //   rows: distinctAgent
@@ -317,12 +342,12 @@ const findTraitantFolio = async (req, res) => {
 
     // }))
 
-    if (distinctAgent) {
+    if (agentsFolio) {
       res.status(RESPONSE_CODES.OK).json({
         statusCode: RESPONSE_CODES.OK,
         httpStatus: RESPONSE_STATUS.OK,
         message: "Historique du dossier",
-        result: distinctAgent
+        result: agentsFolio
       })
     } else {
       res.status(RESPONSE_CODES.NOT_FOUND).json({
@@ -341,8 +366,119 @@ const findTraitantFolio = async (req, res) => {
   }
 }
 
+/**
+ * Permet d'afficher les etapes du dossier dans le timeline(Etape deja parcourie, restantes et actuelle)
+ * @date  04/09/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author Jospin Ba <jospin@mdiabox.bi>
+ */
+
+const getEtapesDossier = async (req, res) => {
+  const { ID_FOLIO } = req.params
+  try {
+        //find all etapes dossier
+        const allEtapesDos = await Etapes_folio.findAll({
+          attributes:['ID_ETAPE_FOLIO','NOM_ETAPE'],
+          where: {
+            ID_ETAPE_FOLIO: {
+              [Op.not]: [
+                  IDS_ETAPES_FOLIO.METTRE_FOLIO_FLASH,
+                  IDS_ETAPES_FOLIO.CHEF_EQUIPE_EDRMS,
+                  IDS_ETAPES_FOLIO.FOLIO_NO_UPLOADED_EDRMS,
+                  IDS_ETAPES_FOLIO.SELECTION_VERIF_EDRMS,
+                  IDS_ETAPES_FOLIO.FOLIO_NO_ENREG_TO_EDRMS,
+                  IDS_ETAPES_FOLIO.RETOUR_AGENT_UPLOAD_CHEF_EQUIPE,
+              ]
+          }
+          }
+        });
+
+      const allEtapes= await Promise.all(allEtapesDos.map(async countObject => {
+          const etapeDos = countObject.toJSON()
+      const etapesDos = await Etapes_folio_historiques.findOne({
+        attributes:['DATE_INSERTION','ID_USER','USER_TRAITEMENT','ID_ETAPE_FOLIO','ID_FOLIO'],
+          where: {
+            ID_FOLIO: ID_FOLIO, ID_ETAPE_FOLIO: etapeDos.ID_ETAPE_FOLIO
+          },
+          include: [
+              {
+                  model: Users,
+                  as: 'user',
+                  attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                  required: false,
+                  include: [
+                      {
+                          model: Profils,
+                          as: 'profil',
+                          attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                          required: false,
+                      }
+                  ],
+              },
+              {
+                model: Users,
+                as: 'traitement',
+                attributes: ['USERS_ID', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                required: false,
+                include: [
+                    {
+                        model: Profils,
+                        as: 'profil',
+                        attributes: ['ID_PROFIL', 'DESCRIPTION'],
+                        required: false,
+                    }
+                ],
+            },
+              {
+                  model: Folio,
+                  as: 'folio',
+                  attributes: ['FOLIO','NUMERO_FOLIO','ID_ETAPE_FOLIO'],
+                  required:false
+              },
+               {
+                  model: Etapes_folio,
+                  as: 'etapes',
+                  attributes: ['ID_ETAPE_FOLIO', 'NOM_ETAPE'],
+                  required: false
+              },
+          ],
+
+      })
+          return {
+            ...etapeDos,
+            etapesDos
+          }
+        }))
+
+        const byEtapeDos = allEtapes.sort((a, b) => {
+                  if (!a.etapesDos && !b.etapesDos) return 0;
+                  if (!a.etapesDos) return 1;
+                  if (!b.etapesDos) return -1;
+                  return new Date(a.etapesDos.DATE_INSERTION) - new Date(b.etapesDos.DATE_INSERTION)
+        })
+       
+      res.status(RESPONSE_CODES.OK).json({
+          statusCode: RESPONSE_CODES.OK,
+          httpStatus: RESPONSE_STATUS.OK,
+          message: "Etapes liste",
+          result: {
+            byEtapeDos,
+          }
+        });
+      } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+          statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+          httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+          message: "Erreur interne du serveur, réessayer plus tard",
+        })
+      }
+}
+
 module.exports = {
   findOneFolio,
   findUsersByFolio,
   findTraitantFolio,
+  getEtapesDossier,
 }

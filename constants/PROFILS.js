@@ -105,6 +105,14 @@ const PROFILS = {
     * 
     */
          ADMIN: 21,
+
+    /**
+    * 22- Agent scanning
+    * 
+    */
+      AGENT_SCANNING: 22,
+
+        
         
 }
 

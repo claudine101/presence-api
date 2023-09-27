@@ -12,6 +12,7 @@ const Syst_provinces = require('../../models/Syst_provinces');
 const Syst_communes = require('../../models/Syst_communes');
 const Syst_zones = require('../../models/Syst_zones');
 const Syst_collines = require('../../models/Syst_collines');
+const { where } = require('sequelize');
 
 
 
@@ -50,7 +51,7 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findProvinces = async (req, res) => {
+const findProvinces = async (req, res) => {
     try {
         const { search } = req.query
         const batiment = await Syst_provinces.findAll({
@@ -79,7 +80,7 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findCommunes= async (req, res) => {
+const findCommunes = async (req, res) => {
     try {
         const { PROVINCE_ID } = req.params
         const batiment = await Syst_communes.findAll({
@@ -109,7 +110,7 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findZones= async (req, res) => {
+const findZones = async (req, res) => {
     try {
         const { COMMUNE_ID } = req.params
         const batiment = await Syst_zones.findAll({
@@ -140,7 +141,7 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findCollines= async (req, res) => {
+const findCollines = async (req, res) => {
     try {
         const { ZONE_ID } = req.params
         const batiment = await Syst_collines.findAll({
@@ -170,11 +171,14 @@ const findAll = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findMailles = async (req, res) => {
+const findMailles = async (req, res) => {
     try {
         const { search } = req.query
         const mailles = await Maille.findAll({
-            attributes: ['ID_MAILLE', 'NUMERO_MAILLE']
+            attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
+            where:{
+                IS_DISPO:1
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -232,12 +236,12 @@ const findDistributeur = async (req, res) => {
         const { ID_AILE } = req.params
         const distributeur = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENTS_DISTRIBUTEUR },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER',],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER',],
             include: {
                 model: User_ailes,
                 as: 'userAile',
                 required: false,
-            where: { ID_AILE: ID_AILE, IS_ACTIF: 1 },
+                where: { ID_AILE: ID_AILE, IS_ACTIF: 1 },
 
 
             }
@@ -264,11 +268,11 @@ const findDistributeur = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findAgentArchive = async (req, res) => {
+const findAgentArchive = async (req, res) => {
     try {
         const archive = await Users.findAll({
-            attributes:['USERS_ID','NOM','PRENOM','EMAIL','PHOTO_USER'],
-            where: { ID_PROFIL:PROFILS.AGENTS_SUPERVISEUR_ARCHIVE, IS_ACTIF: 1 },
+            attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
+            where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_ARCHIVE, IS_ACTIF: 1 },
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -292,31 +296,58 @@ const findDistributeur = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findAgentSuperviseurAile= async (req, res) => {
+const findAgentSuperviseurAile = async (req, res) => {
     try {
-        const userObject = await User_ailes.findOne({
-            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
-            attributes: ['ID_AILE']
+        const { aile } = req.query
+        if (!aile) {
+            const userObject = await User_ailes.findOne({
+                where: { USERS_ID: req.userId, IS_ACTIF: 1 },
+                attributes: ['ID_AILE']
             })
-        const userAile = userObject.toJSON()
-        const superviseurAile = await Users.findAll({
-            where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
-            include: {
-                model: User_ailes,
-                as: 'userAile',
-                required: false,
-            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
-
-
+            const userAile  = userObject?.toJSON()
+            const condition = {
+                ID_AILE: userAile.ID_AILE, IS_ACTIF: 1
             }
-        })
-        res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des agents superviseurs ailes",
-            result: superviseurAile
-        })
+            const superviseurAile = await Users.findAll({
+                where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
+                attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                include: {
+                    model: User_ailes,
+                    as: 'userAile',
+                    required: false,
+                    where: condition,
+                }
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Liste des agents superviseurs ailes",
+                result: superviseurAile
+            })
+
+        }
+        else{
+            const condition = {
+                ID_AILE: aile, IS_ACTIF: 1
+            }
+            const superviseurAile = await Users.findAll({
+                where: { ID_PROFIL: PROFILS.AGENTS_SUPERVISEUR_AILE },
+                attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
+                include: {
+                    model: User_ailes,
+                    as: 'userAile',
+                    required: false,
+                    where: condition,
+                }
+            })
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: "Liste des agents superviseurs ailes",
+                result: superviseurAile
+            })
+        }
+        
     } catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
@@ -333,21 +364,21 @@ const findDistributeur = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findAgentSuperviseurPreparation= async (req, res) => {
+const findAgentSuperviseurPreparation = async (req, res) => {
     try {
         const userObject = await User_ailes.findOne({
-            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            where: { USERS_ID: req.userId, IS_ACTIF: 1 },
             attributes: ['ID_AILE']
-            })
+        })
         const userAile = userObject.toJSON()
         const superviseurPreparation = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_SUPERVISEUR },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',
                 required: false,
-            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+                where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
             }
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -372,21 +403,21 @@ const findDistributeur = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findAgentPreparation= async (req, res) => {
+const findAgentPreparation = async (req, res) => {
     try {
         const userObject = await User_ailes.findOne({
-            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            where: { USERS_ID: req.userId, IS_ACTIF: 1 },
             attributes: ['ID_AILE']
-            })
+        })
         const userAile = userObject.toJSON()
         const superviseurPreparation = await Users.findAll({
             where: { ID_PROFIL: PROFILS.AGENT_PREPARATION },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',
                 required: false,
-            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+                where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
             }
         })
         res.status(RESPONSE_CODES.OK).json({
@@ -411,21 +442,21 @@ const findDistributeur = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res 
  */
- const findChefPlateau= async (req, res) => {
+const findChefPlateau = async (req, res) => {
     try {
         const userObject = await User_ailes.findOne({
-            where: {USERS_ID:req.userId, IS_ACTIF: 1 },
+            where: { USERS_ID: req.userId, IS_ACTIF: 1 },
             attributes: ['ID_AILE']
-            })
+        })
         const userAile = userObject.toJSON()
         const superviseurAile = await Users.findAll({
             where: { ID_PROFIL: PROFILS.CHEF_PLATEAU },
-            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM','PHOTO_USER'],
+            attributes: ['USERS_ID', 'EMAIL', 'NOM', 'PRENOM', 'PHOTO_USER'],
             include: {
                 model: User_ailes,
                 as: 'userAile',
                 required: false,
-            where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
+                where: { ID_AILE: userAile.ID_AILE, IS_ACTIF: 1 },
 
 
             }

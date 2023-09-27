@@ -13,8 +13,16 @@ const useraile_routes=require('./useraile.routes')
 const naturefolio_routes=require('./naturefolio.routes')
 const foliotypedocument_routes=require('./foliotypedocument.routes')
 const flash_routes=require('./flashs.routes')
-const aile_routes=require('./aile.routes');
-const folio_routes = require('./folio.routes');
+const aile_routes=require('./aile.routes')
+const folio_routes = require('./folio.routes')
+const institution_routes=require('./institution.routes')
+const planification_routes = require('./preparation_administration.routes');
+const uploadEDRMS_routes =require('./rapport_phase_uploadEDRMS.routes')
+const rapport_routes= require('./rapport.routes')
+const rapport_phase_scanning_routes=require('./rapport_phase_scanning.routes');
+const typesincident_routes = require('./types_incident.routes');
+const ordreincident_routes = require('./ordre_incident.routes');
+const dashboard_routes = require('./dashborad_administration.routes');
 
 const administrationRouter=express.Router();
 
@@ -26,7 +34,7 @@ administrationRouter.use('/etape_folio',etape_folio_routes)
 administrationRouter.use('/phase',phase_routes)
 administrationRouter.use('/volume_folio',volume_folio_routes)
 administrationRouter.use('/malle',malle_routes)
-
+administrationRouter.use('/institution',institution_routes)
 administrationRouter.use('/users',user_routes)
 administrationRouter.use('/profil',profile_routes)
 administrationRouter.use('/useraile',useraile_routes)
@@ -34,5 +42,11 @@ administrationRouter.use('/naturefolio',naturefolio_routes)
 administrationRouter.use('/foliotypedocument',foliotypedocument_routes)
 administrationRouter.use('/flashs',flash_routes)
 administrationRouter.use('/aile',aile_routes)
-
+administrationRouter.use('/planification',planification_routes)
+administrationRouter.use('/rapport_edrms',uploadEDRMS_routes)
+administrationRouter.use('/rapport',rapport_routes)
+administrationRouter.use('/rapport',rapport_phase_scanning_routes)
+administrationRouter.use('/incident',typesincident_routes)
+administrationRouter.use('/ordreincident', ordreincident_routes)
+administrationRouter.use('/dashboard',dashboard_routes)
 module.exports = administrationRouter

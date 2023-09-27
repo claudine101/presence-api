@@ -11,6 +11,7 @@ const md5 = require("md5")
 const generateToken = require('../../../utils/generateToken')
 const Profils = require("../../../models/Profils")
 const PROFILS = require("../../../constants/PROFILS")
+const Institutions = require("../../../models/Institutions")
 
 
 
@@ -60,7 +61,7 @@ const login = async (req, res) => {
         }
         const userObject = await Users.findOne({
             where: { EMAIL: EMAIL, ID_PROFIL: PROFILS.ADMIN },
-            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF'],
+            attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL','PHOTO_USER','NOM', 'PRENOM', 'IS_ACTIF'],
             include: [{
                 model: Profils,
                 as: 'profil',
@@ -68,6 +69,7 @@ const login = async (req, res) => {
                 attributes: ['ID_PROFIL', 'DESCRIPTION']
             }]
         })
+        console.log(userObject)
         if (userObject) {
             const user = userObject.toJSON()
             if (user.PASSEWORD == md5(PASSEWORD)) {
@@ -122,11 +124,16 @@ const login = async (req, res) => {
  */
 const createuser = async (req, res) => {
     try {
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
+        const { ID_INSTITUTION,NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, PASSEWORD, IS_ACTIF } = req.body
         const files = req.files || {}
         const { PHOTO_USER } = files
         const data = { ...req.body, ...req.files }
         const validation = new Validation(data, {
+            ID_INSTITUTION:{
+                required: true,
+                number: true,
+                exists: "institutions,ID_INSTITUTION"
+            },
             NOM: {
                 required: true,
                 length: [1, 50],
@@ -137,14 +144,8 @@ const createuser = async (req, res) => {
                 length: [1, 50],
                 alpha: true
             },
-            // PASSWORD: {
-            //     required: true,
-            //     length: [1, 8],
-            //     alpha: true
-            // },
-            
             EMAIL: {
-                required: true,
+                required: false,
                 length: [1, 255],
                 email: true,
                 unique: "users,EMAIL"
@@ -186,9 +187,10 @@ const createuser = async (req, res) => {
         }
         const photoUpload = new UserUpload()
         const { fileInfo } = await photoUpload.upload(PHOTO_USER, false)
-        const filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
+        const filename = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         const generatepassword = `${TELEPHONE}`
         const user = await Users.create({
+            ID_INSTITUTION,
             NOM,
             PRENOM,
             EMAIL,
@@ -225,7 +227,7 @@ const createuser = async (req, res) => {
 const Updateuser = async (req, res) => {
     try {
         const { USERS_ID } = req.params
-        const { NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, IS_ACTIF } = req.body
+        const { ID_INSTITUTION,NOM, PRENOM, EMAIL, TELEPHONE, ID_PROFIL, IS_ACTIF } = req.body
 
         const files = req.files || {}
         const { PHOTO_USER } = files
@@ -237,6 +239,11 @@ const Updateuser = async (req, res) => {
         const data = { ...req.body, ...req.files }
         // const data = { ...req.body }
         const validation = new Validation(data, {
+            ID_INSTITUTION:{
+                required: true,
+                number: true,
+                exists: "institutions,ID_INSTITUTION"
+            },
             NOM: {
                 required: true,
                 alpha: true,
@@ -248,7 +255,7 @@ const Updateuser = async (req, res) => {
                 length: [2, 50]
             },
             EMAIL: {
-                required: true,
+                required: false,
                 email: true,
                 length: [2, 250]
             },
@@ -263,10 +270,6 @@ const Updateuser = async (req, res) => {
                 number: true,
                 exists: "profils,ID_PROFIL"
             },
-            // PHOTO_USER: {
-            //     required: true,
-            //     image: 4000000
-            // }
 
         })
 
@@ -285,10 +288,11 @@ const Updateuser = async (req, res) => {
         if (PHOTO_USER) {
             const userUpload = new UserUpload()
             const { fileInfo } = await userUpload.upload(PHOTO_USER, false)
-            filename = `${req.protocol}://${req.get("host")}/${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
+            filename = `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.photousers}/${fileInfo.fileName}`
         }
 
         const userUpdate = await Users.update({
+            ID_INSTITUTION,
             NOM,
             PRENOM,
             EMAIL,
@@ -300,11 +304,26 @@ const Updateuser = async (req, res) => {
                 USERS_ID: USERS_ID
             }
         })
+
+         const userInformation = await Users.findOne({
+            where: { USERS_ID: USERS_ID },
+            attributes: ['TELEPHONE', 'EMAIL','PHOTO_USER','NOM', 'PRENOM'],
+            include: [{
+                model: Profils,
+                as: 'profil',
+                required: false,
+                attributes: ['ID_PROFIL', 'DESCRIPTION']
+            }]
+        })
+        const userInformation_json = userInformation.toJSON()
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
             message: "L'utilisateur  a bien été modifie avec succes",
-            result: userUpdate
+            result: {
+                userUpdate,
+                userInformation_json
+            }
         })
 
 
@@ -331,6 +350,18 @@ const findOneuser = async (req, res) => {
     try {
         const { USERS_ID } = req.params
         const userone = await Users.findOne({
+            attributes: [
+                'USERS_ID',
+                'ID_INSTITUTION',
+                'NOM',
+                'PRENOM',
+                'EMAIL',
+                'TELEPHONE',
+                'ID_PROFIL',
+                'PASSEWORD',
+                'PHOTO_USER',
+                'IS_ACTIF'
+              ],
             where: {
                 USERS_ID
             },
@@ -338,7 +369,14 @@ const findOneuser = async (req, res) => {
                 model: Profils,
                 as: 'profil',
                 required: false,
-                attributes: ['ID_PROFIL', 'DESCRIPTION']
+                attributes: ['ID_PROFIL','DESCRIPTION']
+
+            },
+            {
+                model: Institutions,
+                as: 'institution',
+                required: false,
+                attributes: ['ID_INSTITUTION','NOM_INSTITUTION']
 
             }
             ]
@@ -395,6 +433,12 @@ const findAlluser = async (req, res) => {
                 fields: {
                     DESCRIPTION: 'DESCRIPTION'
                 }
+            },
+            institutions: {
+                as: "institution",
+                fields: {
+                    NOM_INSTITUTION: 'NOM_INSTITUTION'
+                }
             }
         }
 
@@ -437,7 +481,8 @@ const findAlluser = async (req, res) => {
             'PRENOM',
             'EMAIL',
             'TELEPHONE',
-            '$profil.DESCRIPTION$'
+            '$profil.DESCRIPTION$',
+            '$institution.NOM_INSTITUTION$'
         ]
         var globalSearchWhereLike = {}
         if (search && search.trim() != "") {
@@ -461,17 +506,33 @@ const findAlluser = async (req, res) => {
             order: [
                 [sortModel, orderColumn, orderDirection]
             ],
+            attributes: [
+                'USERS_ID',
+                'ID_INSTITUTION',
+                'NOM',
+                'PRENOM',
+                'EMAIL',
+                'TELEPHONE',
+                'ID_PROFIL',
+                'PASSEWORD',
+                'PHOTO_USER',
+                'IS_ACTIF'
+              ],
             where: {
                 ...globalSearchWhereLike,
                 ...profileInfo,
             },
-            include: {
+            include: [{
                 model: Profils,
                 as: 'profil',
                 required: false,
                 attributes: ['ID_PROFIL', 'DESCRIPTION']
-
-            }
+            },{
+                model: Institutions,
+                as: 'institution',
+                required: false,
+                attributes: ['ID_INSTITUTION', 'NOM_INSTITUTION']
+            }]
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -515,6 +576,40 @@ const deleteItemsuser = async (req, res) => {
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Les elements ont ete supprimer avec success",
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
+/**
+ * Permet de lister des institutions
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author leonard <leonard@mdiabox.bi>
+ * @date 17/08/2023
+ */
+
+const listeInstitutions = async (req, res) => {
+    try {
+        const institution = await Institutions.findAll({
+            attributes: ['ID_INSTITUTION', 'NOM_INSTITUTION'],
+            order: [
+                ['NOM_INSTITUTION', 'ASC']
+            ]
+        })
+
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Listes des institutions",
+            result: institution
         })
     } catch (error) {
         console.log(error)
@@ -605,6 +700,264 @@ const activer_descativer_utilisateur = async (req, res) => {
 }
 
 
+/**
+ * permet de  compter le nombre d'utilisateur par profil
+ * @author Jospin BA <jospin@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date 14/08/2023
+ * 
+ */
+
+const getnumber_user_by_profil = async (req, res) => {
+    try {
+        const { profilebackend } = req.query
+        const user_by_profil = await Users.findAndCountAll({
+          attributes:['ID_PROFIL'],
+          include:[{
+            model: Profils,
+            as: 'profil',
+            required: false,
+            attributes: ['DESCRIPTION'],
+            // where:{ID_PROFIL}
+
+            }]
+        })
+
+
+        const uniqueIds = [];
+        const folioHistoriqueRows = user_by_profil.rows.filter(element => {
+                  const isDuplicate = uniqueIds.includes(element.ID_PROFIL);
+                  if (!isDuplicate) {
+                            uniqueIds.push(element.ID_PROFIL);
+                            return true;
+                  }
+                  return false;
+        });
+        const folioHistorique = {
+          count: user_by_profil.count,
+          rows: folioHistoriqueRows
+        };
+
+        var profileInfo = {}
+        if (profilebackend) {
+            profileInfo = { ID_PROFIL: profilebackend }
+        }
+        const result = await Promise.all(folioHistorique.rows.map(async countObject => {
+
+            const util = countObject.toJSON()
+          
+            const fetCmpt = await Users.findAndCountAll({
+                // group:['ID_FOLIO'],
+               
+                include:[{
+                    model: Profils,
+                    as: 'profil',
+                    required: false,
+                    attributes: ['ID_PROFIL','DESCRIPTION'],
+                    }],
+                    where:{ID_PROFIL:util.ID_PROFIL,...profileInfo,}
+            })
+            return {
+                ...util,
+                count_users: fetCmpt.length,
+                fetCmpt: {
+                    rows: fetCmpt,
+                    count: fetCmpt.length
+                },
+            }
+
+        }))
+
+        const userProfil = result.map((uP)=> {
+            return uP.profil.DESCRIPTION
+         });
+         const numberUser=result.map((uP)=> {
+            return uP.fetCmpt.rows.count
+         });
+
+const rapport={
+// Highcharts.chart('container', {
+    chart: {
+        type: 'line'
+    },
+    title: {
+        text: 'Rapport par profil des utilisateurs'
+    },
+    subtitle: {
+        text: 'Ces utilisateurs sont groupés selon leur profil'
+    },
+    xAxis: {
+        // categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+       
+         categories : userProfil,
+    },
+    yAxis: {
+        title: {
+            text: 'Nombre des utilisateurs par profil'
+        },
+    },
+    plotOptions: {
+        spline: {
+            marker: {
+                radius: 4,
+                lineColor: '#666666',
+                lineWidth: 1
+            }
+        }
+    },
+    // plotOptions: {
+    //     line: {
+    //         dataLabels: {
+    //             enabled: true
+    //         },
+    //         enableMouseTracking: false
+    //     }
+    // },
+    series: [{
+        name: 'Utilisateurs',
+        // data: [16.0, 18.2, 23.1, 27.9, 32.2, 36.4, 39.8, 38.4, 35.5, 29.2,
+            // 22.0, 17.8,1,2,3,4,0,96]
+
+            data:numberUser
+    }]
+// })
+};
+
+          res.status(RESPONSE_CODES.OK).json({
+              statusCode: RESPONSE_CODES.OK,
+              httpStatus: RESPONSE_STATUS.OK,
+              message: "Le users by profil",
+              result: rapport
+          })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+  }
+
+
+  
+/**
+ * Permet de modifier le mot de passe
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author ELOGE<nirema.eloge@mediabox.bi>
+ * @date 29/08/2023
+ */
+const changePWD = async (req, res) => {
+    try {
+
+        const { USERS_ID } = req.params;
+        const { OLDPWD, NEWPWD, CONFIRMPWD} = req.body;
+        const validation = new Validation(
+            req.body,
+            {
+                OLDPWD:
+                {   
+                    length :[2,8],
+                    required: true,
+                },
+                NEWPWD:
+                {
+                    length :[2,8],
+                    required: true,
+                },
+                CONFIRMPWD:
+                {
+                    length :[2,8],
+                    required: true,
+                },
+            },
+            {
+                OLDPWD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+                NEWPWD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+                CONFIRMPWD:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+        const userObject = await Users.findOne({
+            where: {USERS_ID: USERS_ID },
+            attributes: ['USERS_ID', 'PASSEWORD', 'EMAIL'],
+        })
+            const user = userObject.toJSON()
+            if (md5(OLDPWD) == user.PASSEWORD) {
+                if (md5(NEWPWD)==md5(CONFIRMPWD)) {
+                    const password = `${CONFIRMPWD}`;
+                    await Users.update(
+                        { 
+                            PASSEWORD: md5(password)
+                        },
+                        {
+                            where: {
+                                USERS_ID: USERS_ID,
+                            },
+                        }
+                    );
+
+                    res.status(RESPONSE_CODES.CREATED).json({
+                        statusCode: RESPONSE_CODES.CREATED,
+                        httpStatus: RESPONSE_STATUS.CREATED,
+                        message: "Vous êtes connecté avec succès",
+                        result: {
+                            user
+                        }
+                    })
+
+                }else{
+                    res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                        message: "Deux mot de passe ne sont pas identiques",
+                    })
+
+                }
+            }else{
+                console.log("Ancien Mot de passe incorrect");
+                res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+                    statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+                    httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+                    message: "Ancien Mot de passe incorrect",
+                })
+
+            }
+
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
 module.exports = {
     createuser,
     Updateuser,
@@ -613,5 +966,8 @@ module.exports = {
     deleteItemsuser,
     listeprofiles,
     activer_descativer_utilisateur,
-    login
+    login,
+    getnumber_user_by_profil,
+    listeInstitutions,
+    changePWD
 }

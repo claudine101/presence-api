@@ -10,24 +10,64 @@ const preparation_volume_routes = express.Router()
  preparation_volume_routes.post('/', preparation_volume_controller.createVolume)
 
  /**
- * Une route  permet  recupere les volumes
+ * Une route  permet  un chef  de divisions des archives d'ajouter   les volumes 
  *@method POST
  * @url /preparation/volume
  */
+ preparation_volume_routes.post('/', preparation_volume_controller.createVolume)
+
+
+ /**
+ * Une route  permet  recupere les volumes
+ *@method GET
+ * @url /preparation/volume
+ */
  preparation_volume_routes.get('/', preparation_volume_controller.findAll)
+
+  /**
+ * Une route  permet  recupere les volumes desarchives par  un agent  desarchivages
+ *@method GET
+ * @url /preparation/volume/desarchives
+ */
+ preparation_volume_routes.get('/desarchives', preparation_volume_controller.findAllDesarchive)
+ 
+  /**
+ * Une route  permet  recupere les volumes desarchives par  un agent  desarchivages
+ *@method GET
+ * @url /preparation/volume/distribues
+ */
+ preparation_volume_routes.get('/distribues', preparation_volume_controller.findAllDistribue)
+
+
+ /**
+ * Une route  permet  un agent  superviseur  aile de voir  les volume prepares 
+ *@method GET
+ * @url /preparation/volume/volumePrepares
+ */
+ preparation_volume_routes.get('/volumePrepares', preparation_volume_controller.findAllVolume)
+
 /**
  * Une route  permet  recupere les volumes et leurs details
- *@method POST
+ *@method GET
  * @url /preparation/volume
  */
  preparation_volume_routes.get('/allVolume', preparation_volume_controller.findAll)
 
   /**
  * Une route  permet  recupere les volumes detailler
- *@method POST
+ *@method GET
  * @url /preparation/volume/volumeDetailler
  */
  preparation_volume_routes.get('/volumeDetailler', preparation_volume_controller.findDetailler)
+
+ 
+  /**
+ * Une route  permet  recupere les volumes superviser par  un agnt  sup  archive
+ *@method GET
+ * @url /preparation/volume/volumeSuperviser
+ */
+ preparation_volume_routes.get('/volumeSuperviser', preparation_volume_controller.findAllVolumeSuperviser)
+
 
  /**
  * Une route  permet  recupere les volumes detailler
@@ -81,13 +121,35 @@ const preparation_volume_routes = express.Router()
  preparation_volume_routes.put('/nommerChefPlateau/:ID_VOLUME', preparation_volume_controller.nommerChefPlateau)
 
   /**
+ * Une route  permet  de nommer  chef plateau en retour
+ *@method PUT
+ * @url /preparation/volume/addChefEquipe
+ */
+ preparation_volume_routes.put('/addChefEquipe', preparation_volume_controller.addChefPlateau)
+
+  /**
  * Une route  permet  un agent  suoerviseur  archive 
  * de voir chef plateau  et  les volumes   
  *@method GET
  * @url /preparation/volume/chefPlateau
  */
  preparation_volume_routes.get('/chefPlateau', preparation_volume_controller.findAllChefPlateau)
+   /**
+ * Une route  permet  un agent  superviseur  archive 
+ * de voir chef plateau  et  les volumes avec les details  
+ *@method GET
+ * @url /preparation/volume/detailsVolume/
+ */
+ preparation_volume_routes.get('/detailsVolume/:ID_VOLUME', preparation_volume_controller.getVolumeDetail)
 
+ /**
+ * Permet de recuperer un chef plateau n d'une volume  
+ *@method GET
+ * @url /preparation/volume/chefsPlateaux/
+ */
+ preparation_volume_routes.get('/chefsPlateaux/:ID_VOLUME', preparation_volume_controller.getVolumeChefPlateau)
+
+ 
  /**
  * Une route  permet  de retour  chef plateau
  *@method PUT
@@ -95,6 +157,7 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.put('/retourChefPlateau', preparation_volume_controller.retourChefPlateau)
 
+ 
   /**
  * Une route  permet  visualiser  les agent superviseur aile et les nombre de volume recu
  * de voir chef plateau  et  les volumes   
@@ -103,11 +166,47 @@ const preparation_volume_routes = express.Router()
  */
  preparation_volume_routes.get('/agentSuperviseurAile', preparation_volume_controller.findAllAgentSupAile)
 
+  /**
+ * Une route  permet  visualiser  les agent superviseur aile et les nombre de volume recu
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/agentSupRetourPhase
+ */
+ preparation_volume_routes.get('/agentSupRetourPhase', preparation_volume_controller.findAllAgentSupAileRetour)
+ /**
+ * Une route  permet  v agent superviseur aile de voir  le volume 
+ * de voir chef plateau  et  les volumes   
+ *@method GET
+ * @url /preparation/volume/volumeRetourPhase
+ */
+ preparation_volume_routes.get('/volumeRetourPhase', preparation_volume_controller.findAllVolumeRetour)
+ 
  /**
  * Une route  permet  de retour  agent superviseur aile
  *@method PUT
  * @url /preparation/volume/retourAgentSuperviseurAile
  */
  preparation_volume_routes.put('/retourAgentSuperviseurAile', preparation_volume_controller.retourAgentSupAile)
+
+ /**
+ * Une route  permet  de retour  agent superviseur aile vers chef equipe
+ *@method PUT
+ * @url /preparation/volume/retourAgentSupAile
+ */
+ preparation_volume_routes.put('/retourAgentSupAile', preparation_volume_controller.retourAgentSupAileRetourne)
+
+  /**
+ * Une route  permet  de retour  chef plateau  vers agent superviseur aile
+ *@method PUT
+ * @url /preparation/volume/retournerChefPlateau
+ */
+ preparation_volume_routes.put('/retournerChefPlateau', preparation_volume_controller.retourPlateauRetourne)
+
+ /**
+ * Une route  permet  de retour  chef plateau
+ *@method PUT
+ * @url /preparation/volume/retourChefPlateau
+ */
+ preparation_volume_routes.put('/retourChefPlateau', preparation_volume_controller.retourAgentSupAile)
 
 module.exports = preparation_volume_routes

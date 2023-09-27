@@ -43,7 +43,4 @@ const Folio_documents = sequelize.define("folio_documents", {
     timestamps: false
 })
 Folio_documents.belongsTo(Folio_types_documents, { foreignKey: "ID_TYPE_FOLIO_DOCUMENT", as: 'types' })
-
-
-
 module.exports = Folio_documents

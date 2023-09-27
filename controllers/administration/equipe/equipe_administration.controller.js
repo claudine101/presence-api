@@ -5,6 +5,9 @@ const Validation = require("../../../class/Validation")
 const { Op } = require("sequelize")
 const Profils = require("../../../models/Profils")
 const Equipe= require('../../../models/Equipes')
+const Equipes_agents = require("../../../models/Equipes_agents")
+const Users = require("../../../models/Users")
+const PROFILS = require("../../../constants/PROFILS")
 
 /**
  * Permet de creer un nature folio
@@ -12,12 +15,17 @@ const Equipe= require('../../../models/Equipes')
  * @param {express.Request} req 
  * @param {express.Response} res 
  * @author derick <derick@mdiabox.bi>
+ * 
+ * 
+ * mise a jour par
+ * @author leonard<leonard@mediabox.bi>
+ * @date 17/08/2023
  */
 
 
 const createequipe = async (req, res) => {
     try {
-        const {NOM_EQUIPE,CHAINE,ORDINATEUR} = req.body
+        const {NOM_EQUIPE,CHAINE,ORDINATEUR,selectedUser} = req.body
         const data = { ...req.body };
         const validation = new Validation(data, {
             NOM_EQUIPE: {
@@ -50,11 +58,24 @@ const createequipe = async (req, res) => {
             })
         }
 
+        const userselect= JSON.parse(selectedUser)
+
         const equipe = await Equipe.create({
             NOM_EQUIPE,
             CHAINE,
             ORDINATEUR
         })
+        const last_id = equipe.toJSON()
+        const equipeData=userselect.map(reponse=>{
+            return {
+                ID_USER: reponse,
+                ID_EQUIPE: last_id.ID_EQUIPE,
+            }
+        })
+
+         //Insertion de multiselect alors
+         await Equipes_agents.bulkCreate(equipeData)
+
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
@@ -92,6 +113,18 @@ const findAllequipe = async (req, res) => {
                     ORDINATEUR:"ORDINATEUR",
                 }
             },
+            equipes_agents:{
+                as: "equipeAgents",
+                fields: {
+                    ID_EQUIPE_AGENT: 'ID_EQUIPE_AGENT'
+                }
+            },
+            users: {
+                as: "users",
+                fields: {
+                    NOM: 'NOM',PRENOM: 'PRENOM',EMAIL: 'EMAIL',TELEPHONE: 'TELEPHONE'
+                }
+            }
         }
 
         var orderColumn, orderDirection
@@ -152,6 +185,21 @@ const findAllequipe = async (req, res) => {
             where: {
                 ...globalSearchWhereLike,
             },
+            include:[{
+                model: Equipes_agents,
+                attributes: ['ID_EQUIPE_AGENT'],
+                as: 'equipeAgents',
+                include: [
+                    {
+                        model: Users,
+                        attributes: ['USERS_ID', 'NOM','PRENOM','EMAIL','TELEPHONE'],
+                        as: 'users',
+                    },
+                ],
+            },
+        ],
+            order: [['ID_EQUIPE', 'DESC']],
+            limit: 10,
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
@@ -218,6 +266,18 @@ const findOneequipe = async (req, res) => {
             where: {
                 ID_EQUIPE 
             },
+           include: {
+                model: Equipes_agents,
+                attributes: ['ID_EQUIPE_AGENT'],
+                as: 'equipeAgents',
+                include: [
+                    {
+                        model: Users,
+                        attributes: ['USERS_ID', 'NOM', 'PRENOM'],
+                        as: 'users',
+                    },
+                ],
+            },
         })
         if (equipeone) {
             res.status(RESPONSE_CODES.OK).json({
@@ -257,7 +317,8 @@ const updateequipe = async (req, res) => {
 
     try {
         // Validate request
-        const { NOM_EQUIPE,CHAINE,ORDINATEUR} = req.body
+        const { NOM_EQUIPE,CHAINE,ORDINATEUR,selectedUser} = req.body
+        const alluser = JSON.parse(selectedUser)
         const data = { ...req.body };
         const validation = new Validation(data, {
             NOM_EQUIPE: {
@@ -288,7 +349,7 @@ const updateequipe = async (req, res) => {
             })
         }
 
-        const batiment = await Equipe.update({
+        const equip = await Equipe.update({
             NOM_EQUIPE,
             CHAINE,
             ORDINATEUR
@@ -297,11 +358,28 @@ const updateequipe = async (req, res) => {
                 ID_EQUIPE : ID_EQUIPE  
             }
         })
+
+        await Equipes_agents.destroy({
+            where: { ID_EQUIPE: ID_EQUIPE }
+        })
+
+        //arrangement de l'insertion de multiselect
+        const userdata = alluser.map(reponse => {
+            return {
+                ID_USER: reponse,
+                ID_EQUIPE: ID_EQUIPE,
+            }
+        })
+
+        //Insertion de multiselect alors
+        await Equipes_agents.bulkCreate(userdata)
+
+
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
             httpStatus: RESPONSE_STATUS.CREATED,
-            message: "Nature folio  a bien été modifie avec succes",
-            result: batiment
+            message: "Les equipes  sont bien été modifie avec succes",
+            result: equip
         })
 
 
@@ -316,13 +394,47 @@ const updateequipe = async (req, res) => {
 
 };
 
+
+/**
+ * Permet de lister les utilisateurs
+ * @date  17/08/2023
+ * @param {express.Request} req 
+ * @param {express.Response} res 
+ * @author leonard <leonard@mdiabox.bi>
+ */
+const findalluser = async (req, res) => {
+    try {
+        const users = await Users.findAll({
+            where:{
+                ID_PROFIL:{
+                    [Op.in]:[PROFILS.AGENT_SCANNING]
+                }
+            },
+            attributes: ['USERS_ID', 'NOM', 'PRENOM'],
+           
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des utilisateurs",
+            result: users
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     createequipe,
     findAllequipe,
     findOneequipe,
     updateequipe,
     deleteItems,
-    // findOneNaturefolio,
-    // updateNUMERO
+    findalluser
 
 }

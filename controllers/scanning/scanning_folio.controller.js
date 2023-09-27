@@ -21,6 +21,7 @@ const Users = require('../../models/Users');
 const User_ailes = require('../../models/User_ailes');
 const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
+const Nature_folio = require('../../models/Nature_folio');
 
 /**
  * Permet de recuperer la liste des tous les folios
@@ -35,8 +36,15 @@ const findAllFolio = async (req, res) => {
         const { ID_VOLUME } = req.params
         const folios = await Folio.findAll({
             where: { ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU },
-            attributes: ['ID_FOLIO', 'ID_VOLUME', 'NUMERO_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO'],
-        })
+            attributes: ['ID_FOLIO','FOLIO', 'ID_VOLUME', 'NUMERO_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO'],
+            include:{
+                model: Nature_folio,
+                as: 'natures',
+                attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                required: false
+            }
+        }
+        )
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
@@ -112,7 +120,7 @@ const findAll = async (req, res) => {
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
+            message: "Liste des volumes djdjjdjd",
             result: volumeFolios
             // result:result
         })
@@ -183,8 +191,6 @@ const folioEquipeScanning = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
-        // console.log(folioObjet)
-        // folioObjet = folio
         await Promise.all(folioObjet.map(async (folio) => {
             const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
@@ -232,8 +238,6 @@ const folioEquipeScanning = async (req, res) => {
 
 const updateReconsilier = async (req, res) => {
     try {
-        // const {ID_FOLIO} = route.params
-        console.log("ID_FOLIO")
         const {
             IS_RECONCILIE,
             ID_FOLIO
