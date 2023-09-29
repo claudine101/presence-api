@@ -2323,7 +2323,19 @@ const checkAgentsup = async (req, res) => {
         const IdsObjet = JSON.parse(folioIds)
         const result = await Etapes_folio_historiques.findAll({
             where: {
-                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID }]
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID },
+                    {
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                ETAPES_FOLIO.RETOUR_AGENT_PEPARATION_V_AGENT_SUP,
+                                ETAPES_FOLIO.ADD_DETAILLER_FOLIO]
+                        }
+                    }, {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }
+                ]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
