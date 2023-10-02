@@ -3619,18 +3619,18 @@ const renvoyezVoluSupAilleScanning = async (req, res) => {
         })
         var volumeFolios = []
         result.forEach(folio => {
-            const ID_VOLUME = folio.folio.ID_VOLUME
+            const ID_MAILLE = folio.folio.malleNonTraite.ID_MAILLE
             const volume = folio.folio.volume
             const date = folio.DATE_INSERTION
             const users = folio.traitement
             const maille = folio.folio.malleNonTraite
-            const isExists = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME) ? true : false
+            const isExists = volumeFolios.find(vol => vol.ID_MAILLE == ID_MAILLE) ? true : false
             if (isExists) {
-                const volume = volumeFolios.find(vol => vol.ID_VOLUME == ID_VOLUME)
+                const volume = volumeFolios.find(vol => vol.ID_MAILLE == ID_MAILLE)
 
                 const newVolumes = { ...volume, folios: [...volume.folios, folio] }
                 volumeFolios = volumeFolios.map(vol => {
-                    if (vol.ID_VOLUME == ID_VOLUME) {
+                    if (vol.ID_MAILLE == ID_MAILLE) {
                         return newVolumes
                     } else {
                         return vol
@@ -3638,7 +3638,7 @@ const renvoyezVoluSupAilleScanning = async (req, res) => {
                 })
             } else {
                 volumeFolios.push({
-                    ID_VOLUME,
+                    ID_MAILLE,
                     volume,
                     date,
                     users,
@@ -3647,11 +3647,10 @@ const renvoyezVoluSupAilleScanning = async (req, res) => {
                 })
             }
         })
-
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
-            message: "Liste des volumes",
+            message: "Liste des dossiers",
             result: volumeFolios
             // result:result
         })
@@ -3679,7 +3678,8 @@ const renvoyezVoluSupAilleScanning = async (req, res) => {
 const volumeChefPlateauReenvoyez = async (req, res) => {
     try {
         const { ID_VOLUME } = req.params
-        const { USER_TRAITEMENT } = req.body
+        const { USER_TRAITEMENT,folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
         const validation = new Validation(
             { ...req.body, ...req.files },
             {
@@ -3720,32 +3720,16 @@ const volumeChefPlateauReenvoyez = async (req, res) => {
             filename_pv = fileInfo_2
         }
 
-
-        const results = await Folio.findAll({
-            where: {
-                [Op.and]: [
-                    {
-                        ID_VOLUME: ID_VOLUME,
-                    },
-                    {
-                        ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
-                    }
-                ]
-            },
-            attributes: ['ID_FOLIO'],
-        })
-        const id_folios = results.map(folio => folio.ID_FOLIO)
-
         await Folio.update({
             ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_VOL_AGENT_SUP_AILLE_SCANNING_VERS_CHEF_PLATEAU_SCANNING,
         }, {
             where: {
                 ID_FOLIO: {
-                    [Op.in]: id_folios
+                    [Op.in]: IdsObjet
                 }
             }
         })
-        const folio_historiques_reconcilier = id_folios.map(folio => {
+        const folio_historiques_reconcilier = IdsObjet.map(folio => {
             return {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: USER_TRAITEMENT,
@@ -3905,6 +3889,9 @@ const folioChefScanningReenvoyez = async (req, res) => {
             folio,
             USER_TRAITEMENT
         } = req.body;
+        var folioObjet = {}
+        folioObjet = JSON.parse(folio)
+        
         const PV = req.files?.PV
         const validation = new Validation(
             { ...req.body, ...req.files },
@@ -3944,20 +3931,14 @@ const folioChefScanningReenvoyez = async (req, res) => {
             const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await volumeUpload.upload(PV, false)
             filename_pv = fileInfo_2
         }
-        var folioObjet = {}
-        folioObjet = JSON.parse(folio)
-        // folioObjet = folio
+       
         await Promise.all(folioObjet.map(async (folio) => {
-            // const CODE_REFERENCE = `${folio.NUMERO_FOLIO}${req.userId}${moment().get("s")}`
-            const dateinsert = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
             await Folio.update(
                 {
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_PLATEAU_SCANNING_VERS_AGENT_SUPERVISEUR_SCANNING
                 }, {
                 where: {
-                    ID_VOLUME: ID_VOLUME,
-                    // ID_NATURE: folio.ID_NATURE,
-                    NUMERO_FOLIO: folio.NUMERO_FOLIO
+                    ID_FOLIO: folio.ID_FOLIO
                 }
             }
             )
@@ -4552,36 +4533,64 @@ const findAllVolumerRetourReconcilierPret = async (req, res) => {
                 ["DATE_INSERTION", "DESC"]
             ],
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        // var UserFolios = []
+        // result.forEach(user => {
+        //     const USERS_ID = user.traitement?.USERS_ID
+        //     const users = user.traitement
+        //     const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        //     if (isExists) {
+        //         const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+        //         const newVolumes = { ...volume, folios: [...volume.folios, user] }
+        //         UserFolios = UserFolios.map(vol => {
+        //             if (vol.USERS_ID == USERS_ID) {
+        //                 return newVolumes
+        //             } else {
+        //                 return vol
+        //             }
+        //         })
+        //     } else {
+        //         UserFolios.push({
+        //             USERS_ID,
+        //             users,
+        //             folios: [user]
+        //         })
+
+        //     }
+
+        // })
+        var PvFolios = []
+        result.forEach(histo => {
+            const PV_PATH = histo.PV_PATH
+            const folio = histo.folio
+            const users = histo.traitement
+            const date = histo.DATE_INSERTION
+
+            const isExists = PvFolios.find(pv => pv.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
-                        return newVolumes
+                const allFolio = PvFolios.find(pv => pv.PV_PATH == PV_PATH)
+                const newFolios = { ...allFolio, folios: [...allFolio.folios, folio] }
+                PvFolios = PvFolios.map(pv => {
+                    if (pv.PV_PATH == PV_PATH) {
+                        return newFolios
                     } else {
-                        return vol
+                        return pv
                     }
                 })
-            } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
-                    folios: [user]
-                })
-
             }
-
+            else {
+                PvFolios.push({
+                    PV_PATH,
+                    users,
+                    date,
+                    folios: [folio]
+                })
+            }
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folio donnees",
-            UserFolios
+            UserFolios:PvFolios
             // result:result
         })
     } catch (error) {
@@ -4999,6 +5008,9 @@ const findAllVolumerRetourReconcilierIsValid = async (req, res) => {
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_VOL_AGENT_SUP_AILLE_SCANNING_VERS_CHEF_PLATEAU_SCANNING,
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
+            order: [
+                ["DATE_INSERTION", "DESC"]
+            ],
             include: [
                 {
                     model: Users,
@@ -5037,38 +5049,43 @@ const findAllVolumerRetourReconcilierIsValid = async (req, res) => {
                 }
             ]
         })
-        var UserFolios = []
-        result.forEach(user => {
-            const USERS_ID = user.traitement?.USERS_ID
-            const users = user.traitement
-            const volume = user.folio.volume
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+        
+        var volumeFolios = []
+        result.forEach(folio => {
+            const ID_MAILLE = folio.folio.malleNonTraite.ID_MAILLE
+            const volume = folio.folio.volume
+            const date = folio.DATE_INSERTION
+            const users = folio.traitement
+            const maille = folio.folio.malleNonTraite
+            const isExists = volumeFolios.find(vol => vol.ID_MAILLE == ID_MAILLE) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
-                const newVolumes = { ...volume, folios: [...volume.folios, user] }
-                UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
+                const volume = volumeFolios.find(vol => vol.ID_MAILLE == ID_MAILLE)
+
+                const newVolumes = { ...volume, folios: [...volume.folios, folio] }
+                volumeFolios = volumeFolios.map(vol => {
+                    if (vol.ID_MAILLE == ID_MAILLE) {
                         return newVolumes
                     } else {
                         return vol
                     }
                 })
             } else {
-                UserFolios.push({
-                    USERS_ID,
-                    users,
+                volumeFolios.push({
+                    ID_MAILLE,
                     volume,
-                    folios: [user]
+                    date,
+                    users,
+                    maille,
+                    folios: [folio]
                 })
-
             }
-
         })
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des folio donnees",
-            UserFolios
+            volumeFolios
+            // UserFolios
             // result:result
         })
     } catch (error) {

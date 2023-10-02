@@ -1366,12 +1366,12 @@ const findAllAgentSupAileRetour = async (req, res) => {
         }
         else if (user.ID_PROFIL == PROFILS.AGENTS_SUPERVISEUR_AILE) {
             condition = [
+                IDS_ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
                 IDS_ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU,
                 IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                 IDS_ETAPES_FOLIO.AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                 IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                 IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
-
             ],
             conditionFolio={
                 ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION
@@ -1388,7 +1388,7 @@ const findAllAgentSupAileRetour = async (req, res) => {
                     ID_ETAPE_FOLIO: { [Op.in]: condition }
                 }]
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT','PV_PATH', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE','ID_FOLIO', 'USER_TRAITEMENT','PV_PATH', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],

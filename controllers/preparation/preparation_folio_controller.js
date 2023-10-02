@@ -2795,7 +2795,6 @@ const getPvs = async (req, res) => {
     try {
         const { AGENT_SUPERVISEUR, folioIds } = req.body
         const IdsObjet = JSON.parse(folioIds)
-
         const pv = await Etapes_folio_historiques.findOne({
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
             where: {
@@ -2804,7 +2803,6 @@ const getPvs = async (req, res) => {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
                                 IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
-                                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                             ]
                         }
                     }, {
@@ -2824,6 +2822,67 @@ const getPvs = async (req, res) => {
             where: {
                 [Op.and]: [{
                     ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...pv.toJSON(),
+                pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+const getPvsRetour = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [
+                    {
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                            ]
+                        }
+                    }, {
+                        ID_USER: req.userId
+                    }, {
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR
+                    }, {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
+            }
+
+        })
+        const pvRetour = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                 }, {
                     ID_USER: req.userId
                 }, {
@@ -4046,5 +4105,6 @@ module.exports = {
     getPvsAgentSupRetour,
     checkAgentsupDetails,
     checkPlateau,
-    getRePvsAgentSupRetour
+    getRePvsAgentSupRetour,
+    getPvsRetour
 }

@@ -143,7 +143,7 @@ const IDS_ETAPES_FOLIO = {
           RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION: 30,
 
           /**
-          * 31-  retour  chef plateau selectione agent sup aile praparation
+          * 31-  retour  chef plateau selectione agent sup  praparation
           */
           RETOUR_CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION: 31,
 
