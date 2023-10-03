@@ -23,6 +23,8 @@ const Maille = require('../../models/Maille');
 const Equipes = require('../../models/Equipes');
 const { Op } = require('sequelize');
 const Nature_folio = require('../../models/Nature_folio');
+const Etapes_folio = require('../../models/Etapes_folio');
+const IDS_ETAPES_FOLIO = require('../../constants/ETAPES_FOLIO');
 
 /**
  * Permet de faire la mise a jour des volume envoyer chez un agent superviseur aille phase scanning
@@ -4185,7 +4187,7 @@ const findAllAgentsFolioRetour = async (req, res) => {
                 '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH','USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION'],
             include: [
                 {
                     model: Folio,
@@ -4209,16 +4211,18 @@ const findAllAgentsFolioRetour = async (req, res) => {
         var UserFolios = []
         result.forEach(user => {
             const ID_EQUIPE = user.folio.equipe.ID_EQUIPE
+            const PV_PATH = user.PV_PATH
+            const date = user.DATE_INSERTION
             const USERS_ID = user.USER_TRAITEMENT
             const folio = user.folio
             const equipe = user.folio.equipe
 
-            const isExists = UserFolios.find(vol => vol.ID_EQUIPE == ID_EQUIPE) ? true : false
+            const isExists = UserFolios.find(vol => vol.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.ID_EQUIPE == ID_EQUIPE)
+                const volume = UserFolios.find(vol => vol.PV_PATH == PV_PATH)
                 const newVolumes = { ...volume, folios: [...volume.folios, folio] }
                 UserFolios = UserFolios.map(vol => {
-                    if (vol.ID_EQUIPE == ID_EQUIPE) {
+                    if (vol.PV_PATH == PV_PATH) {
                         return newVolumes
                     } else {
                         return vol
@@ -4228,7 +4232,9 @@ const findAllAgentsFolioRetour = async (req, res) => {
                 UserFolios.push({
                     USERS_ID,
                     ID_EQUIPE,
+                    PV_PATH,
                     equipe,
+                    date,
                     folios: [folio]
                 })
 
@@ -4636,7 +4642,10 @@ const findFoliosGetsPvsPlateauReenvoyez = async (req, res) => {
         })
         const check = await Etapes_folio_historiques.findAll({
             where: {
-                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: AGENT_SUPERVISEUR }]
+                [Op.and]: [{ ID_USER:AGENT_SUPERVISEUR}, 
+                    { USER_TRAITEMENT: AGENT_SUPERVISEUR },
+                    { ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER}
+                ]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
@@ -4809,7 +4818,7 @@ const updateRetourPlateauSupReenvoyezValid = async (req, res) => {
             filename_pv = fileInfo_2
         }
         folioObjet = JSON.parse(folio)
-        const folio_reconcilier = folioObjet.map(folio => folio.folio.ID_FOLIO)
+        const folio_reconcilier = folioObjet.map(folio => folio.ID_FOLIO)
 
         await Folio.update({
             ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,
@@ -4825,7 +4834,7 @@ const updateRetourPlateauSupReenvoyezValid = async (req, res) => {
             return {
                 ID_USER: req.userId,
                 USER_TRAITEMENT: USER_TRAITEMENT,
-                ID_FOLIO: folio.folio.ID_FOLIO,
+                ID_FOLIO: folio.ID_FOLIO,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,
                 PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
 
@@ -5132,26 +5141,24 @@ const findFoliosGetsPvsPlateauReenvoyezPvsss = async (req, res) => {
 
         const check = await Etapes_folio_historiques.findAll({
             where: {
-                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: AGENT_SUPERVISEUR }]
+                [Op.and]: [{ ID_USER:AGENT_SUPERVISEUR },
+                    {ID_FOLIO:{[Op.in]: IdsObjet}},
+                    { ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID}
+                ]
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT','ID_USER', 'ID_ETAPE_FOLIO'],
             include: [
-                {
-                    model: Users,
-                    as: 'traitement',
-                    required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
-                },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
                                 ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,]
-                        }
+                        },
+                        ID_FOLIO:{[Op.in]: IdsObjet}
                     }
                 }
             ]
@@ -7557,6 +7564,10 @@ const getVolumeDetailsVolumeTraitesValid = async (req, res) => {
             where: {
                 ID_VOLUME: ID_VOLUME,
                 IS_VALIDE: 1,
+                ID_ETAPE_FOLIO:{[Op.in]:[
+                    IDS_ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU,
+                    IDS_ETAPES_FOLIO.REENVOYER_Vol_AGENT_SUPERVISEUR_AILLE_SCANNING_VERS_CHEF_EQUIPE_SCANNING
+                ]}
             },
         })
         res.status(RESPONSE_CODES.OK).json({

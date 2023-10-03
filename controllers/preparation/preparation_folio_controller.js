@@ -2863,7 +2863,7 @@ const getPvsRetour = async (req, res) => {
                     {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
-                                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
+                                IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
                             ]
                         }
                     }, {
