@@ -342,7 +342,7 @@ const findAllVolumerRetourDistributeur = async (req, res) => {
                     model: Users,
                     as: 'users',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -425,7 +425,7 @@ const findAllVolumerRetourAgentSupeArchives = async (req, res) => {
                     model: Users,
                     as: 'users',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -509,7 +509,7 @@ const findAllVolumerRetourDesarchivages = async (req, res) => {
                     model: Users,
                     as: 'users',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -1001,20 +1001,27 @@ const checkRetourChefPlateau = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
                                 ETAPES_FOLIO.RETOUR_EQUIPE_SCANNING_V_AGENT_SUP_SCANNING,]
                         }
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     }
-                }
+                },
+                
             ]
         })
         var UserFolios = []
@@ -1219,18 +1226,24 @@ const checkRetourAgentSupScann = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
                                 ETAPES_FOLIO.SELECTION_EQUIPE_SCANNIMG,]
                         }
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     }
                 }
             ]
@@ -1531,13 +1544,13 @@ const findAllVolumePlateauChefTraites = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM', 'PHOTO_USER','PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
+                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -1562,7 +1575,14 @@ const findAllVolumePlateauChefTraites = async (req, res) => {
                                 attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
 
                             }
-                        }]
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                            required: false
+                        }
+                    ]
 
                 }
             ]
@@ -1685,7 +1705,7 @@ const findAllVolumeSupAileScanningTraites = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -1824,7 +1844,7 @@ const findAllVolumeChefEquipScanningTraites = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -1910,7 +1930,7 @@ const findAllVolumeAgentDistributeurTraites = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -1996,7 +2016,7 @@ const findAllVolumeAgenSupArchivesTraites = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
@@ -2351,7 +2371,7 @@ const findAllVolumePlateauChefNonValide = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -2452,7 +2472,7 @@ const findAllVolumePlateauChefNonValideRetour = async (req, res) => {
                     model: Users,
                     as: 'user',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -4201,13 +4221,19 @@ const findAllAgentsFolioRetour = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: false,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE'],
                     include: [
                         {
                             model: Equipes,
                             as: 'equipe',
                             required: false,
                             attributes: ['ID_EQUIPE', 'NOM_EQUIPE', 'CHAINE', 'ORDINATEUR'],
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                            required: false
                         }
                     ]
                 }
@@ -4531,13 +4557,13 @@ const findAllVolumerRetourReconcilierPret = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -4547,6 +4573,12 @@ const findAllVolumerRetourReconcilierPret = async (req, res) => {
                             ]
                         }
                     },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
+                    }
                 }
             ],
             order: [
@@ -4667,7 +4699,7 @@ const findFoliosGetsPvsPlateauReenvoyez = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
@@ -4676,6 +4708,12 @@ const findFoliosGetsPvsPlateauReenvoyez = async (req, res) => {
                         ID_FOLIO: {
                             [Op.in]: IdsObjet
                         }
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     }
                 }
             ]
@@ -4713,12 +4751,18 @@ const checkRetourChefPlateauCkeckReenvoyez = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
                                 ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER,]
                         }
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     }
                 }
             ]
@@ -4901,7 +4945,7 @@ const findAllVolumePlateauChefTraitesReenvoyer = async (req, res) => {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
+                    attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
                     include: [
                         {
                             model: Volume,
@@ -4916,7 +4960,15 @@ const findAllVolumePlateauChefTraitesReenvoyer = async (req, res) => {
                                 attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
 
                             }
-                        }]
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                            required: false
+                        }
+                        
+                    ]
 
                 }
             ]
@@ -5039,7 +5091,7 @@ const findAllVolumerRetourReconcilierIsValid = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -5062,6 +5114,12 @@ const findAllVolumerRetourReconcilierIsValid = async (req, res) => {
                         as: 'volume',
                         required: false,
                         attributes: ['ID_VOLUME', 'ID_ETAPE_VOLUME', 'NUMERO_VOLUME', 'CODE_VOLUME'],
+                    },
+                    {
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     },
                     {
                         model: Maille,
@@ -5317,13 +5375,13 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolume = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
+                    attributes: ['ID_FOLIO', 'FOLIO','ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
                     include: [
                         {
                             model: Volume,
@@ -5338,6 +5396,12 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolume = async (req, res) => {
                                 attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
 
                             }
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                            required: false
                         }]
 
                 }
@@ -5457,13 +5521,13 @@ const findAllVolumerRetourReconcilierPretEquipeChef = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
@@ -5477,6 +5541,12 @@ const findAllVolumerRetourReconcilierPretEquipeChef = async (req, res) => {
                             ]
                         }
                     },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
+                    }
                 }
             ]
         })
@@ -5679,7 +5749,15 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolumeChefEquipe = async (req, 
     try {
         const result = await Etapes_folio_historiques.findAll({
             where: {
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,
+                ID_ETAPE_FOLIO: {[Op.in]:[
+                    ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
+                    ETAPES_FOLIO.REENVOYER_VOL_AGENT_SUP_AILLE_SCANNING_VERS_CHEF_PLATEAU_SCANNING,
+                    ETAPES_FOLIO.REENVOYER_CHEF_PLATEAU_SCANNING_VERS_AGENT_SUPERVISEUR_SCANNING,
+                    ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING,
+                    ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER,
+                    ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,
+                    ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,
+                ]}
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO', 'DATE_INSERTION', 'PV_PATH'],
             order: [
@@ -5689,19 +5767,27 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolumeChefEquipe = async (req, 
                 {
                     model: Users,
                     as: 'traitement',
-                    required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    required: true,
+                    where:{
+                        ID_PROFIL:PROFILS.AGENT_SUPERVISEUR_AILE_SCANNING
+                    },
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
+                    attributes: ['ID_FOLIO','FOLIO',  'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO', 'IS_RECONCILIE', 'IS_VALIDE'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
-
-                                ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING
+                                ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
+                                ETAPES_FOLIO.REENVOYER_VOL_AGENT_SUP_AILLE_SCANNING_VERS_CHEF_PLATEAU_SCANNING,
+                                ETAPES_FOLIO.REENVOYER_CHEF_PLATEAU_SCANNING_VERS_AGENT_SUPERVISEUR_SCANNING,
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING,
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_EQUIPE_SCANNING_IS_RECONCILIER,
+                                ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,
+                                ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,
                             ]
                         }
                     },
@@ -5719,7 +5805,14 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolumeChefEquipe = async (req, 
                                 attributes: ['ID_MAILLE', 'NUMERO_MAILLE'],
 
                             }
-                        }]
+                        },
+                        {
+                            model: Nature_folio,
+                            as: 'natures',
+                            attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                            required: false
+                        }
+                    ]
 
                 }
             ]
@@ -6032,7 +6125,7 @@ const findAllVolumePlateauChefTraitesReenvoyerGetVolumeOriginal = async (req, re
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -6223,13 +6316,13 @@ const findAllVolumerRetourReconcilierPretArchives = async (req, res) => {
                     model: Users,
                     as: 'user',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
@@ -6237,6 +6330,12 @@ const findAllVolumerRetourReconcilierPretArchives = async (req, res) => {
                             ]
                         }
                     },
+                    inclue:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
+                    }
                 }
             ]
         })
@@ -6446,7 +6545,7 @@ const findAllVolumePlateauChefTraitesReenvoyerOri = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -6545,13 +6644,13 @@ const findAllVolumerRetourReconcilierArchivv = async (req, res) => {
                     model: Users,
                     as: 'user',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
@@ -6559,6 +6658,12 @@ const findAllVolumerRetourReconcilierArchivv = async (req, res) => {
                             ]
                         }
                     },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
+                    }
                 }
             ]
         })
@@ -6720,7 +6825,7 @@ const findAllVolumePlateauChefTraitesReenvoyerOriFinArchives = async (req, res) 
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -6819,13 +6924,13 @@ const findAllVolumerRetourReconcilierArchivvFiniti = async (req, res) => {
                     model: Users,
                     as: 'user',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
@@ -6833,6 +6938,12 @@ const findAllVolumerRetourReconcilierArchivvFiniti = async (req, res) => {
                             ]
                         }
                     },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
+                    }
                 }
             ]
         })
@@ -6951,7 +7062,7 @@ const findAllVolumePlateauChefTraitesReenvoyerOriFinArchivesGGG = async (req, re
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -7130,18 +7241,24 @@ const checkRetourChefEquipeReenvoyezTraiteesReenvoyez = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
                                 ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING,]
                         }
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     }
                 }
             ]
@@ -7210,18 +7327,24 @@ const checkRetourChefEquipeReenvoyezSupCheck = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
                     as: 'folio',
                     required: true,
-                    attributes: ['ID_FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+                    attributes: ['ID_FOLIO','FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
                     where: {
                         ID_ETAPE_FOLIO: {
                             [Op.and]: [
                                 ETAPES_FOLIO.REENVOYER_AGENT_SUPERVISEUR_SCANNING_VERS_CHEF_PLATEAU_IS_VALID,]
                         }
+                    },
+                    include:{
+                        model: Nature_folio,
+                        as: 'natures',
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                        required: false
                     }
                 }
             ]
@@ -7366,7 +7489,59 @@ const findGetsPvsChefPlateauRetourNonValid = async (req, res) => {
         })
     }
 }
+/**
+ * Permet de recuper les pvs d'un chef plateau signe avec agent superviseur scanning
+ * @author Vanny Boy <vanny@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  27/08/2023
+ * 
+ */
 
+const findGetsPvsChefPlateauRetourEquipe = async (req, res) => {
+    try {
+        const { folioIds} = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_CHEF_EAUIPE_SCANNING_VERS_AGENT_SUP_AILLE_SCANNING,
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+
+        })
+        const check = await Folio.findAll({
+            attributes: ['ID_FOLIO', 'NUMERO_FOLIO', 'ID_ETAPE_FOLIO', 'IS_VALIDE'],
+            where: {
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.REENVOYER_Vol_CHEF_PLATEAU_VERS_AGENT_SUPERVISEUR_AILLE_SCANNING
+                ,ID_FOLIO: {
+                    [Op.in]: IdsObjet
+                }
+            },
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "PVS agent superviseur",
+            result: {
+                ...pv.toJSON(),
+                check
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 /**
  * Permet de recuper les pvs d'un chef plateau signe avec agent superviseur scanning
  * @author Vanny Boy <vanny@mediabox.bi>
@@ -7440,7 +7615,7 @@ const findAllVolumeChefEquipeTraitesReenvoyerFolios = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER', 'NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -7698,6 +7873,7 @@ module.exports = {
     findGetsPvsSupAilletourNonValid,
     findAllVolumeChefEquipeTraitesReenvoyerFolios,
     checkRetourSupAilleScanningTraites,
-    getVolumeDetailsVolumeTraitesValid
+    getVolumeDetailsVolumeTraitesValid,
+    findGetsPvsChefPlateauRetourEquipe
 
 }

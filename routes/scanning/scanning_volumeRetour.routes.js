@@ -635,6 +635,13 @@ scanning_volumeRetour_routes.post('/agent/pvs/reenvoyer/archivages/pvs', scannin
 */
 scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/nonValid/plateau', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourNonValid)
 
+   /**
+* Une route pour recuperer les pvs de retour de agent  sup  aile signe avec chef equip
+*@method POST
+* @url /scanning/retour/agent/chefPlateau/retour/pvs/nonValid/chefEquipes
+*/
+scanning_volumeRetour_routes.post('/agent/chefPlateau/retour/pvs/nonValid/chefEquipes', scanning_volumeRetour_controller.findGetsPvsChefPlateauRetourEquipe)
+
 
    /**
 * Une route pour recuperer les pvs de retour de chef plateau signe avec agent superviseur

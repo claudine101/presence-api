@@ -1344,6 +1344,12 @@ const allVolume = []
             const util = resObject.toJSON()
             const folios = await Folio.findAll({
                 attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO'],
+                include:{
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO','DESCRIPTION'],
+                    required: false
+                },
                 where: {
                     [Op.and]: [{
                         ID_ETAPE_FOLIO:{
