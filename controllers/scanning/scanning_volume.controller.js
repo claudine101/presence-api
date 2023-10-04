@@ -1228,7 +1228,7 @@ const findAllVolumerRetour = async (req, res) => {
                     model: Users,
                     as: 'traitement',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID', 'NOM','PHOTO_USER', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Folio,
@@ -1256,8 +1256,6 @@ const findAllVolumerRetour = async (req, res) => {
                 ['DATE_INSERTION', 'DESC']
             ],
         })
-        var UserFolios = []
-       
         var PvFolios = []
         result.forEach(histo => {
             const PV_PATH = histo.PV_PATH
@@ -1330,7 +1328,7 @@ const findAllVolumerSupAille = async (req, res) => {
                     model: Users,
                     as: 'traitant',
                     required: false,
-                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL'],
+                    attributes: ['USERS_ID','PHOTO_USER','NOM', 'PRENOM', 'EMAIL'],
                 },
                 {
                     model: Volume,
