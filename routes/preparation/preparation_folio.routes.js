@@ -125,7 +125,7 @@ const preparation_folio_routes = express.Router()
  * Une route  permet les PV d un chef  plateau  et  agent  superviseur pour  les dossiers retourne
  *  dans la phase preparation
  *@method POST
- * @url /preparation/folio/getPv
+ * @url /preparation/folio/getPvRetourne
  */
  preparation_folio_routes.post('/getPvRetourne', preparation_folio_controller.getPvsRetour)
   /**
