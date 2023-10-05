@@ -1452,7 +1452,10 @@ const findAllAgents = async (req, res) => {
                 }
 
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            attributes: ['ID_FOLIO_HISTORIQUE','PV_PATH','DATE_INSERTION', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
                 {
                     model: Users,
@@ -1481,13 +1484,15 @@ const findAllAgents = async (req, res) => {
         var UserFolios = []
         result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
+            const PV_PATH = user.PV_PATH
             const users = user.traitement
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            const date = user.DATE_INSERTION
+            const isExists = UserFolios.find(vol => vol.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const volume = UserFolios.find(vol => vol.PV_PATH == PV_PATH)
                 const newVolumes = { ...volume, folios: [...volume.folios, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
+                    if (vol.PV_PATH == PV_PATH) {
                         return newVolumes
                     } else {
                         return vol
@@ -1496,6 +1501,8 @@ const findAllAgents = async (req, res) => {
             } else {
                 UserFolios.push({
                     USERS_ID,
+                    PV_PATH,
+                    date,
                     users,
                     folios: [user]
                 })
@@ -1537,7 +1544,10 @@ const findAllAgentsRetourne = async (req, res) => {
                 '$folio.ID_ETAPE_FOLIO$': ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION
             },
-            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            order: [
+                ['DATE_INSERTION', 'DESC']
+            ],
+            attributes: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'USER_TRAITEMENT','DATE_INSERTION', 'ID_ETAPE_FOLIO'],
             include: [
                 {
                     model: Users,
@@ -1571,14 +1581,16 @@ const findAllAgentsRetourne = async (req, res) => {
         var UserFolios = []
         result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
+            const PV_PATH=user.PV_PATH
             const users = user.traitement
+            const  date=user.DATE_INSERTION
             const mailleNoTraite = user.folio.malleNonTraite
-            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            const isExists = UserFolios.find(vol => vol.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
-                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const volume = UserFolios.find(vol => vol.PV_PATH == PV_PATH)
                 const newVolumes = { ...volume, folios: [...volume.folios, user] }
                 UserFolios = UserFolios.map(vol => {
-                    if (vol.USERS_ID == USERS_ID) {
+                    if (vol.PV_PATH == PV_PATH) {
                         return newVolumes
                     } else {
                         return vol
@@ -1588,6 +1600,8 @@ const findAllAgentsRetourne = async (req, res) => {
                 UserFolios.push({
                     USERS_ID,
                     users,
+                    PV_PATH,
+                    date,
                     mailleNoTraite,
                     folios: [user]
                 })
@@ -1629,7 +1643,7 @@ const findAllSuperviseurs = async (req, res) => {
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
-            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
@@ -1728,7 +1742,7 @@ const findAllSuperviseurRetourPhase = async (req, res) => {
                             ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                             ETAPES_FOLIO.AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                             ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
-                            ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
+                            ETAPES_FOLIO.READD_DETAILLER_FOLIO,
                         ]
                     }
 
@@ -1756,7 +1770,7 @@ const findAllSuperviseurRetourPhase = async (req, res) => {
                                 ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                                 ETAPES_FOLIO.AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
                                 ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
-                                ETAPES_FOLIO.ADD_DETAILLER_FOLIO,
+                                ETAPES_FOLIO.READD_DETAILLER_FOLIO,
                             ]
                         }
                     },
@@ -2408,6 +2422,110 @@ const checkAgentsup = async (req, res) => {
         })
     }
 }
+
+/**
+ * Une route  permet  un agents superviseur 
+ * de voir  les agents preparation apres retour
+ * @author NDAYISABA Claudine <claudine@mediabox.bi>
+ * @param {express.Request} req
+ * @param {express.Response} res 
+ * @date  16/07/2023
+ * 
+ */
+const checkAgentsupRetourne = async (req, res) => {
+    try {
+        const { USERS_ID,
+            folioIds
+        } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        const result = await Etapes_folio_historiques.findAll({
+            where: {
+                [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID },
+                     {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }
+                ]
+            },
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            include: [
+                {
+                    model: Users,
+                    as: 'traitement',
+                    required: false,
+                    attributes: ['USERS_ID', 'NOM', 'PRENOM', 'EMAIL', 'PHOTO_USER'],
+                },
+                {
+                    model: Folio,
+                    as: 'folio',
+                    required: true,
+                    attributes: ['ID_FOLIO', 'FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'NUMERO_FOLIO', 'CODE_FOLIO'],
+
+                    where: {
+                        [Op.and]: [{
+                            ID_ETAPE_FOLIO: {
+                                [Op.in]: [
+                                    ETAPES_FOLIO.RETOUR_AGENT_SUP_PREPARATION_SELECT_AGENT_PREPARATION,
+                                    ETAPES_FOLIO.READD_DETAILLER_FOLIO]
+                            }
+                        }, {
+                            ID_FOLIO: {
+                                [Op.in]: IdsObjet
+                            }
+                        },]
+                    },
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
+                }
+            ]
+        })
+        var UserFolios = []
+        result.forEach(user => {
+            const USERS_ID = user.traitement?.USERS_ID
+            const users = user.traitement
+            const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
+            if (isExists) {
+                const volume = UserFolios.find(vol => vol.USERS_ID == USERS_ID)
+                const newVolumes = { ...volume, folios: [...volume.folios, user] }
+                UserFolios = UserFolios.map(vol => {
+                    if (vol.USERS_ID == USERS_ID) {
+                        return newVolumes
+                    } else {
+                        return vol
+                    }
+                })
+            } else {
+                UserFolios.push({
+                    USERS_ID,
+                    users,
+                    folios: [user]
+                })
+
+            }
+
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Liste des volumes",
+            result: UserFolios
+            // result:result
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 const checkAgentsupDetails = async (req, res) => {
     try {
         const { USERS_ID,
@@ -2709,7 +2827,8 @@ const addDetails = async (req, res) => {
             NUMERO_FEUILLE,
             NOMBRE_DOUBLON,
             ID_FOLIO,
-            ID_MAILLE_NO_TRAITE
+            ID_MAILLE_NO_TRAITE,
+            folioRetour
 
         } = req.body;
         const PHOTO_DOSSIER = req.files?.PHOTO_DOSSIER
@@ -2760,7 +2879,7 @@ const addDetails = async (req, res) => {
                 PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.dossiers}/${filename_dossiers.fileName}` : null,
                 NUMERO_FEUILLE: NUMERO_FEUILLE,
                 NOMBRE_DOUBLON: NOMBRE_DOUBLON,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+                ID_ETAPE_FOLIO: folioRetour?ETAPES_FOLIO.READD_DETAILLER_FOLIO:ETAPES_FOLIO.ADD_DETAILLER_FOLIO
 
             }, {
             where: {
@@ -2773,7 +2892,8 @@ const addDetails = async (req, res) => {
                 ID_USER: req.userId,
                 ID_FOLIO: ID_FOLIO,
                 USER_TRAITEMENT: req.userId,
-                ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+                ID_ETAPE_FOLIO: folioRetour?ETAPES_FOLIO.READD_DETAILLER_FOLIO:ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+
             })
 
         res.status(RESPONSE_CODES.OK).json({
@@ -2863,8 +2983,67 @@ const getPvsRetour = async (req, res) => {
                     {
                         ID_ETAPE_FOLIO: {
                             [Op.in]: [
-                                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                                 IDS_ETAPES_FOLIO.SELECTION_AGENT_SUP,
+                            ]
+                        }
+                    }, {
+                        ID_USER: req.userId
+                    }, {
+                        USER_TRAITEMENT: AGENT_SUPERVISEUR
+                    }, {
+                        ID_FOLIO: {
+                            [Op.in]: IdsObjet
+                        }
+                    }]
+            }
+
+        })
+        const pvRetour = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [{
+                    ID_ETAPE_FOLIO: IDS_ETAPES_FOLIO.RETOUR__AGENT_SUP_V_CHEF_PLATEAU,
+                }, {
+                    ID_USER: req.userId
+                }, {
+                    USER_TRAITEMENT: AGENT_SUPERVISEUR
+                }, {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
+                    }
+                }]
+            }
+        })
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: "Chef platteau de la volume",
+            result: {
+                ...pv.toJSON(),
+                pvRetour
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+const getPvsRetourne = async (req, res) => {
+    try {
+        const { AGENT_SUPERVISEUR, folioIds } = req.body
+        const IdsObjet = JSON.parse(folioIds)
+        const pv = await Etapes_folio_historiques.findOne({
+            attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'PV_PATH', 'DATE_INSERTION'],
+            where: {
+                [Op.and]: [
+                    {
+                        ID_ETAPE_FOLIO: {
+                            [Op.in]: [
+                                IDS_ETAPES_FOLIO.CHEF_PLATEAU_SELECT_AGENT_SUP_PREPARATION,
                             ]
                         }
                     }, {
@@ -4107,5 +4286,7 @@ module.exports = {
     checkAgentsupDetails,
     checkPlateau,
     getRePvsAgentSupRetour,
-    getPvsRetour
+    getPvsRetour,
+    getPvsRetourne,
+    checkAgentsupRetourne
 }

@@ -127,7 +127,19 @@ const preparation_folio_routes = express.Router()
  *@method POST
  * @url /preparation/folio/getPvRetourne
  */
- preparation_folio_routes.post('/getPvRetourne', preparation_folio_controller.getPvsRetour)
+ preparation_folio_routes.post('/getPvRetourne', preparation_folio_controller.getPvsRetourne)
+
+ /**
+ * Une route  permet les PV d un chef  plateau  et  agent  superviseur pour  les dossiers retourne
+ *  dans la phase preparation
+ *@method POST
+ * @url /preparation/folio/getPvRetour
+ */
+ preparation_folio_routes.post('/getPvRetour', preparation_folio_controller.getPvsRetour)
+
+
+
+
   /**
  * Une route  permet les PV d un   agent  superviseur et  agent  de preparation
  *@method POST
@@ -183,6 +195,16 @@ const preparation_folio_routes = express.Router()
  * @url /preparation/folio/checkAgentsup
  */
  preparation_folio_routes.post('/checkAgentsup', preparation_folio_controller.checkAgentsup)
+
+   /**
+ * Une route  permet  de voir si tel  agent  superviseur phase preparation 
+ * ont  déja effectuer  retour  avec agent  preparation
+ * de voir  les agents superviseur   
+ *@method POST
+ * @url /preparation/folio/checkAgentsupRetourne
+ */
+ preparation_folio_routes.post('/checkAgentsupRetourne', preparation_folio_controller.checkAgentsupRetourne)
+
 
   /** 
  *@method POST

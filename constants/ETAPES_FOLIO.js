@@ -226,6 +226,12 @@ const IDS_ETAPES_FOLIO = {
            * 49 - Retour: is non Valide meme si il'est reconcilier (agent sup. scanning vers chef plateau scanning)
            */
                                       //  RETOUR_AGENT_SUP_SCANNING_IS_NON_VALIDE_V_CHEF_PLATEAU: 49, vanny
+          
+           /**
+        * 50-  Ajouter les details pour  les dossiers reprepare
+        */
+          
+        READD_DETAILLER_FOLIO:50
 }
 
 module.exports = IDS_ETAPES_FOLIO

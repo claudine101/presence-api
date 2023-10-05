@@ -2303,6 +2303,33 @@ const findAllVolumeChefEquipePrepqrqtionTraites = async (req, res) => {
                 }
             ]
         })
+        const allVolume = []
+        const volume = await Promise.all(result?.map(async resObject => {
+            const util = resObject.toJSON()
+            const folios = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU
+                    }, {
+                        ID_VOLUME: util.volume.ID_VOLUME
+                    }]
+                },
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    required: false
+                }
+            })
+            if (folios?.length > 0) {
+                allVolume.push({
+                    ...util,
+                    folios,
+                });
+            }
+        })
+        )
         var PvVolume = []
         result.forEach(histo => {
             const PV_PATH = histo.PV_PATH
@@ -2620,8 +2647,36 @@ const findVolumeAssocierAgentsupAilleScan = async (req, res) => {
                 }
             ]
         })
+        const allVolume = []
+        const volume = await Promise.all(result?.map(async resObject => {
+            const util = resObject.toJSON()
+            const folios = await Folio.findAll({
+                attributes: ['ID_FOLIO', 'FOLIO', 'NUMERO_FOLIO', 'NUMERO_FOLIO'],
+                where: {
+                    [Op.and]: [{
+                        ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_AGENT_SUP_SCANNING_V_CHEF_PLATEAU
+                    }, {
+                        ID_VOLUME: util.volume.ID_VOLUME
+                    }]
+                },
+                include: {
+                    model: Nature_folio,
+                    as: 'natures',
+                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    required: false
+                }
+            })
+            if (folios?.length > 0) {
+                allVolume.push({
+                    ...util,
+                    folios,
+                });
+            }
+        })
+        )
+        
         var UserFolios = []
-        result.forEach(user => {
+        allVolume.forEach(user => {
             const USERS_ID = user.users?.USERS_ID
             const users = user.users
             const isExists = UserFolios.find(vol => vol.USERS_ID == USERS_ID) ? true : false
@@ -2644,12 +2699,13 @@ const findVolumeAssocierAgentsupAilleScan = async (req, res) => {
 
             }
         })
+        
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
             httpStatus: RESPONSE_STATUS.OK,
             message: "Liste des volumes",
             result: UserFolios
-            // result:result
+            // result:allVolume
         })
     } catch (error) {
         console.log(error)
