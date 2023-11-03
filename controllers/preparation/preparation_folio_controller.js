@@ -67,6 +67,7 @@ const createfolio = async (req, res) => {
             })
         }
         var folioObjet = {}
+        var ids_existe = []
         folioObjet = JSON.parse(folio)
         const dossiers_ids = folioObjet.map(folio => folio.NUMERO_DOSSIER)
         const dossiersExiste = await Folio.findAll({
@@ -89,14 +90,20 @@ const createfolio = async (req, res) => {
             }
         })
         if (dossiersExiste.length > 0) {
-            res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                message: "les dossiers existe déjà",
-                result: dossiersExiste
+            dossiersExiste.map(async (folio) => {
+                const folios = folio.toJSON()
+                ids_existe.push(
+                    folios.NUMERO_FOLIO
+                )
             })
+            // res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+            //     statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+            //     httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+            //     message: "les dossiers existe déjà",
+            //     result: dossiersExiste
+            // })
         }
-        else {
+
             const PV = req.files?.PV
             const folioUpload = new VolumePvUpload()
             var filename_pv
@@ -106,28 +113,33 @@ const createfolio = async (req, res) => {
             }
             // const histoPv = histo.toJSON()
             await Promise.all(folioObjet.map(async (folio) => {
-                const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-                const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
-                const folioInsert = await Folio.create({
-                    ID_VOLUME: ID_VOLUME,
-                    NUMERO_FOLIO: folio.NUMERO_DOSSIER,
-                    FOLIO: folio.NUMERO_FOLIO,
-                    ID_NATURE: folio.ID_NATURE,
-                    CODE_FOLIO: CODE_REFERENCE,
-                    ID_USERS: req.userId,
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
+                const isExists = ids_existe?.find(NUMERO_FOLIO => NUMERO_FOLIO == folio.NUMERO_DOSSIER) ? true : false
+                if (isExists) {
                 }
-                )
-                const insertData = folioInsert.toJSON()
-                await Etapes_folio_historiques.create(
-                    {
-                        PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                        ID_USER: req.userId,
-                        ID_FOLIO: insertData.ID_FOLIO,
+                else {
+                    const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+                    const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
+                    const folioInsert = await Folio.create({
+                        ID_VOLUME: ID_VOLUME,
+                        NUMERO_FOLIO: folio.NUMERO_DOSSIER,
+                        FOLIO: folio.NUMERO_FOLIO,
+                        ID_NATURE: folio.ID_NATURE,
+                        CODE_FOLIO: CODE_REFERENCE,
+                        ID_USERS: req.userId,
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
-                        USER_TRAITEMENT: req.userId,
                     }
-                )
+                    )
+                    const insertData = folioInsert.toJSON()
+                    await Etapes_folio_historiques.create(
+                        {
+                            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                            ID_USER: req.userId,
+                            ID_FOLIO: insertData.ID_FOLIO,
+                            ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
+                            USER_TRAITEMENT: req.userId,
+                        }
+                    )
+                }
             }))
             const results = await Volume.update({
                 ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
@@ -150,7 +162,7 @@ const createfolio = async (req, res) => {
                 // result: histoPv
             })
         }
-    } catch (error) {
+     catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
@@ -174,7 +186,7 @@ const findAll = async (req, res) => {
             where: {
                 ID_VOLUME: ID_VOLUME, ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG
             },
-            include:{
+            include: {
                 model: Nature_folio,
                 as: 'natures',
                 required: false,
@@ -213,7 +225,7 @@ const findAllFolioNoTraite = async (req, res) => {
             where: {
                 ID_MALLE_NO_TRAITE: ID_MAILLE, ID_ETAPE_FOLIO: ETAPES_FOLIO.AGENT_SUP_AILE_SELECT_CHEF_PLATEAU
             },
-            include:{
+            include: {
                 model: Nature_folio,
                 as: 'natures',
                 required: false,
@@ -260,7 +272,7 @@ const findAllFolioEquipe = async (req, res) => {
                 where: {
                     ID_VOLUME: ID_VOLUME
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -281,7 +293,7 @@ const findAllFolioEquipe = async (req, res) => {
                     ID_VOLUME: ID_VOLUME,
                     ID_ETAPE_FOLIO: ETAPES_FOLIO.RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -321,7 +333,7 @@ const findAllFolioEquipeNoPrepare = async (req, res) => {
                 ID_VOLUME: ID_VOLUME,
                 IS_PREPARE: 0
             },
-            include:{
+            include: {
                 model: Nature_folio,
                 as: 'natures',
                 required: false,
@@ -1002,7 +1014,7 @@ const nbre = async (req, res) => {
                     where: {
                         ID_ETAPE_FOLIO: ETAPES_FOLIO.ADD_DETAILLER_FOLIO
                     },
-                    include:{
+                    include: {
                         model: Nature_folio,
                         as: 'natures',
                         required: false,
@@ -1198,7 +1210,7 @@ const findAllFolioChefPlateau = async (req, res) => {
                         ID_VOLUME: util.volume.ID_VOLUME
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -1455,7 +1467,7 @@ const findAllAgents = async (req, res) => {
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
-            attributes: ['ID_FOLIO_HISTORIQUE','PV_PATH','DATE_INSERTION', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'DATE_INSERTION', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
             include: [
                 {
                     model: Users,
@@ -1547,7 +1559,7 @@ const findAllAgentsRetourne = async (req, res) => {
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
-            attributes: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'USER_TRAITEMENT','DATE_INSERTION', 'ID_ETAPE_FOLIO'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION', 'ID_ETAPE_FOLIO'],
             include: [
                 {
                     model: Users,
@@ -1581,9 +1593,9 @@ const findAllAgentsRetourne = async (req, res) => {
         var UserFolios = []
         result.forEach(user => {
             const USERS_ID = user.traitement?.USERS_ID
-            const PV_PATH=user.PV_PATH
+            const PV_PATH = user.PV_PATH
             const users = user.traitement
-            const  date=user.DATE_INSERTION
+            const date = user.DATE_INSERTION
             const mailleNoTraite = user.folio.malleNonTraite
             const isExists = UserFolios.find(vol => vol.PV_PATH == PV_PATH) ? true : false
             if (isExists) {
@@ -1643,7 +1655,7 @@ const findAllSuperviseurs = async (req, res) => {
             order: [
                 ['DATE_INSERTION', 'DESC']
             ],
-            attributes: ['ID_FOLIO_HISTORIQUE','PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION'],
+            attributes: ['ID_FOLIO_HISTORIQUE', 'PV_PATH', 'USER_TRAITEMENT', 'DATE_INSERTION'],
             include: [
                 {
                     model: Users,
@@ -2051,12 +2063,12 @@ const findAllChefPlateauReValides = async (req, res) => {
                     as: 'folio',
                     required: true,
                     attributes: ['ID_FOLIO', 'FOLIO', 'ID_ETAPE_FOLIO', 'IS_PREPARE', 'NUMERO_FOLIO', 'CODE_FOLIO'],
-                include:{
-                    model: Nature_folio,
-                    as: 'natures',
-                    required: false,
-                    attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
-                }
+                    include: {
+                        model: Nature_folio,
+                        as: 'natures',
+                        required: false,
+                        attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
+                    }
                 }
             ]
         })
@@ -2338,11 +2350,11 @@ const checkAgentsup = async (req, res) => {
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID },
-                     {
-                        ID_FOLIO: {
-                            [Op.in]: IdsObjet
-                        }
+                {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
                     }
+                }
                 ]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
@@ -2441,11 +2453,11 @@ const checkAgentsupRetourne = async (req, res) => {
         const result = await Etapes_folio_historiques.findAll({
             where: {
                 [Op.and]: [{ ID_USER: req.userId }, { USER_TRAITEMENT: USERS_ID },
-                     {
-                        ID_FOLIO: {
-                            [Op.in]: IdsObjet
-                        }
+                {
+                    ID_FOLIO: {
+                        [Op.in]: IdsObjet
                     }
+                }
                 ]
             },
             attributes: ['ID_FOLIO_HISTORIQUE', 'USER_TRAITEMENT', 'ID_ETAPE_FOLIO'],
@@ -2545,7 +2557,7 @@ const checkAgentsupDetails = async (req, res) => {
                         }
                     },]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -2660,7 +2672,7 @@ const checkAgentsupAile = async (req, res) => {
                             }
                         },]
                     },
-                    include:{
+                    include: {
                         model: Nature_folio,
                         as: 'natures',
                         required: false,
@@ -2758,7 +2770,7 @@ const checkAgentsuper = async (req, res) => {
                             }
                         },]
                     },
-                    include:{
+                    include: {
                         model: Nature_folio,
                         as: 'natures',
                         required: false,
@@ -2879,7 +2891,7 @@ const addDetails = async (req, res) => {
                 PHOTO_DOSSIER: filename_dossiers ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.dossiers}/${filename_dossiers.fileName}` : null,
                 NUMERO_FEUILLE: NUMERO_FEUILLE,
                 NOMBRE_DOUBLON: NOMBRE_DOUBLON,
-                ID_ETAPE_FOLIO: folioRetour?ETAPES_FOLIO.READD_DETAILLER_FOLIO:ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+                ID_ETAPE_FOLIO: folioRetour ? ETAPES_FOLIO.READD_DETAILLER_FOLIO : ETAPES_FOLIO.ADD_DETAILLER_FOLIO
 
             }, {
             where: {
@@ -2892,7 +2904,7 @@ const addDetails = async (req, res) => {
                 ID_USER: req.userId,
                 ID_FOLIO: ID_FOLIO,
                 USER_TRAITEMENT: req.userId,
-                ID_ETAPE_FOLIO: folioRetour?ETAPES_FOLIO.READD_DETAILLER_FOLIO:ETAPES_FOLIO.ADD_DETAILLER_FOLIO
+                ID_ETAPE_FOLIO: folioRetour ? ETAPES_FOLIO.READD_DETAILLER_FOLIO : ETAPES_FOLIO.ADD_DETAILLER_FOLIO
 
             })
 
@@ -3122,7 +3134,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3198,7 +3210,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
                         }
                     }]
                 },
-               include: {
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3218,7 +3230,7 @@ const getPvsAgentPREPARATION = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3272,7 +3284,7 @@ const getPvsAgentSuperviseur = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3363,7 +3375,7 @@ const getPvsAgentSuperviseur = async (req, res) => {
                         }
                     }]
                 },
-              include: {
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3423,7 +3435,7 @@ const getPvsAgentSupRetour = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3499,7 +3511,7 @@ const getPvsAgentSupRetour = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3519,7 +3531,7 @@ const getPvsAgentSupRetour = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3675,7 +3687,7 @@ const getRePvsAgentSupRetour = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3730,7 +3742,7 @@ const getPvsChefPlateau = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "IS_PREPARE", "ID_NATURE", "FOLIO"],
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3801,7 +3813,7 @@ const getPvsChefPlateau = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3821,7 +3833,7 @@ const getPvsChefPlateau = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -3967,7 +3979,7 @@ const getPvsAgentSupAile = async (req, res) => {
                         }
                     }]
                 },
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
@@ -4040,7 +4052,7 @@ const findAllFolioPrepare = async (req, res) => {
                     where: {
                         IS_PREPARE: { [Op.in]: [1, 0] },
                     },
-                    include:{
+                    include: {
                         model: Nature_folio,
                         as: 'natures',
                         required: false,
@@ -4126,7 +4138,7 @@ const getAgentDetail = async (req, res) => {
                     as: 'folio',
                     required: false,
                     attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
-                    include:{
+                    include: {
                         model: Nature_folio,
                         as: 'natures',
                         required: false,
@@ -4159,7 +4171,7 @@ const getAgentDetail = async (req, res) => {
                 as: 'folio',
                 required: true,
                 attributes: ["ID_FOLIO", "NUMERO_FOLIO", "ID_NATURE", "FOLIO"],
-                include:{
+                include: {
                     model: Nature_folio,
                     as: 'natures',
                     required: false,
