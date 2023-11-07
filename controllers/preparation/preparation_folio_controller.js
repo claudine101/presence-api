@@ -67,7 +67,7 @@ const createfolio = async (req, res) => {
             })
         }
         var folioObjet = {}
-        var ids_existe = []
+        var newFolios = []
         folioObjet = JSON.parse(folio)
         const dossiers_ids = folioObjet.map(folio => folio.NUMERO_DOSSIER)
         const dossiersExiste = await Folio.findAll({
@@ -81,88 +81,87 @@ const createfolio = async (req, res) => {
                         }
                     }
                 ]
-            },
-            include: {
-                model: Nature_folio,
-                as: 'natures',
-                required: false,
-                attributes: ['ID_NATURE_FOLIO', 'DESCRIPTION'],
             }
         })
-        if (dossiersExiste.length > 0) {
-            dossiersExiste.map(async (folio) => {
-                const folios = folio.toJSON()
-                ids_existe.push(
-                    folios.NUMERO_FOLIO
-                )
-            })
-            // res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-            //     statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-            //     httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-            //     message: "les dossiers existe déjà",
-            //     result: dossiersExiste
-            // })
-        }
-
-            const PV = req.files?.PV
-            const folioUpload = new VolumePvUpload()
-            var filename_pv
-            if (PV) {
-                const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
-                filename_pv = fileInfo_2
+        folioObjet.forEach((folio) => {
+            const isExists = dossiersExiste?.find(d => d.toJSON().NUMERO_FOLIO == folio.NUMERO_DOSSIER) ? true : false
+            if (!isExists) {
+                newFolios.push(folio)
             }
-            // const histoPv = histo.toJSON()
-            await Promise.all(folioObjet.map(async (folio) => {
-                const isExists = ids_existe?.find(NUMERO_FOLIO => NUMERO_FOLIO == folio.NUMERO_DOSSIER) ? true : false
-                if (isExists) {
-                }
-                else {
-                    const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
-                    const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
-                    const folioInsert = await Folio.create({
-                        ID_VOLUME: ID_VOLUME,
-                        NUMERO_FOLIO: folio.NUMERO_DOSSIER,
-                        FOLIO: folio.NUMERO_FOLIO,
-                        ID_NATURE: folio.ID_NATURE,
-                        CODE_FOLIO: CODE_REFERENCE,
-                        ID_USERS: req.userId,
-                        ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
-                    }
-                    )
-                    const insertData = folioInsert.toJSON()
-                    await Etapes_folio_historiques.create(
-                        {
-                            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                            ID_USER: req.userId,
-                            ID_FOLIO: insertData.ID_FOLIO,
-                            ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
-                            USER_TRAITEMENT: req.userId,
-                        }
-                    )
-                }
-            }))
-            const results = await Volume.update({
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
-            }, {
-                where: {
-                    ID_VOLUME: ID_VOLUME
-                }
-            })
-            await Etapes_volume_historiques.create({
-                USERS_ID: req.userId,
-                USER_TRAITEMENT: req.userId,
-                ID_VOLUME: ID_VOLUME,
-                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
-            })
-            res.status(RESPONSE_CODES.CREATED).json({
-                statusCode: RESPONSE_CODES.CREATED,
-                httpStatus: RESPONSE_STATUS.CREATED,
-                message: "Insertion faite  avec succès",
-                // result: histoPv
-            })
+        })
+
+        const PV = req.files?.PV
+        const folioUpload = new VolumePvUpload()
+        var filename_pv
+        if (PV) {
+            const { fileInfo: fileInfo_2, thumbInfo: thumbInfo_2 } = await folioUpload.upload(PV, false)
+            filename_pv = fileInfo_2
         }
-     catch (error) {
+        //Insertion de folio
+        const folio_insert = newFolios.map(folio => {
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            const CODE_REFERENCE = `${req.userId}${moment().get("s")}`
+            return {
+                ID_VOLUME: ID_VOLUME,
+                NUMERO_FOLIO: folio.NUMERO_DOSSIER,
+                FOLIO: folio.NUMERO_FOLIO,
+                ID_NATURE: folio.ID_NATURE,
+                CODE_FOLIO: CODE_REFERENCE,
+                ID_USERS: req.userId,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
+            }
+
+        })
+        await Folio.bulkCreate(folio_insert)
+
+        //insertion dans la table Etapes_folio_historiques
+        const numeroFolios = newFolios.map(folio => folio.NUMERO_DOSSIER)
+        const folio_last_insert = await Folio.findAll({
+            attributes: ['ID_FOLIO'],
+            where: {
+                [Op.and]: [
+                    {
+                        NUMERO_FOLIO: {
+                            [Op.in]: numeroFolios
+
+                        }
+                    }
+                ]
+            }
+        })
+        const histo_folio_insert = folio_last_insert.map(histo => {
+            return {
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                ID_USER: req.userId,
+                ID_FOLIO: histo.ID_FOLIO,
+                ID_ETAPE_FOLIO: ETAPES_FOLIO.FOLIO_ENREG,
+                USER_TRAITEMENT: req.userId,
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(histo_folio_insert)
+
+        const results = await Volume.update({
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+        }, {
+            where: {
+                ID_VOLUME: ID_VOLUME
+            }
+        })
+        await Etapes_volume_historiques.create({
+            USERS_ID: req.userId,
+            USER_TRAITEMENT: req.userId,
+            ID_VOLUME: ID_VOLUME,
+            PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+            ID_ETAPE_VOLUME: ETAPES_VOLUME.DETAILLER_LES_FOLIO
+        })
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "Insertion faite  avec succès",
+            // result: histoPv
+        })
+    }
+    catch (error) {
         console.log(error)
         res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
             statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
