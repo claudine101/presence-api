@@ -41,12 +41,10 @@ const createfolio = async (req, res) => {
         const validation = new Validation(
             req.files,
             {
-
                 PV: {
                     required: true,
                     image: 21000000
                 }
-
             },
             {
                 PV: {
