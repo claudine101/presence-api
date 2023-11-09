@@ -405,24 +405,25 @@ const nommerSuperviseurPreparation = async (req, res) => {
         }
         var folioObjet = {}
         folioObjet = JSON.parse(folio)
-        await Promise.all(folioObjet.map(async (folio) => {
-            const results = await Folio.update({
+
+        const folio_ids = folioObjet.map(folio => folio.ID_FOLIO)
+        await Folio.update({
+            ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP
+        }, {
+            where: {
+                ID_FOLIO:{[Op.in]:folio_ids} ,
+            }
+        })
+        const histo_folio_insert = folioObjet.map(folio => {
+            return {
+                PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
+                ID_USER: 1,
+                ID_FOLIO: folio.ID_FOLIO,
+                USER_TRAITEMENT: AGENT_SUPERVISEUR,
                 ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP
-            }, {
-                where: {
-                    ID_FOLIO: folio.ID_FOLIO,
-                }
-            })
-            await Etapes_folio_historiques.create(
-                {
-                    PV_PATH: filename_pv ? `${req.protocol}://${req.get("host")}${IMAGES_DESTINATIONS.pv}/${filename_pv.fileName}` : null,
-                    ID_USER: req.userId,
-                    ID_FOLIO: folio.ID_FOLIO,
-                    USER_TRAITEMENT: AGENT_SUPERVISEUR,
-                    ID_ETAPE_FOLIO: ETAPES_FOLIO.SELECTION_AGENT_SUP
-                }
-            )
-        }))
+            }
+        })
+        await Etapes_folio_historiques.bulkCreate(histo_folio_insert)
 
         res.status(RESPONSE_CODES.OK).json({
             statusCode: RESPONSE_CODES.OK,
