@@ -74,18 +74,18 @@ const ETAPES_VOLUME = {
   RETOUR_AGENT_DISTRIBUTEUR_VERS_AGENT_SUP_ARCHIVE: 16,
 
   /**
-   * 17-Retour:agent sup. archive vers agent de desarchivage 
+   * 17-Retour:agent sup. archive vers agent de despresence 
    */
-  RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESARCHIVAGE: 17,
+  RETOUR_AGENT_SUP_ARCHIVE_VERS_AGENT_DESpresence: 17,
   /**
 * 18-Retour:agent sup aile vers chef d'equipe (phase preparation) 
 */
   RETOUR_AGENT_SUP_AILE_VERS_CHEF_EQUIPE: 18,
 
   /**
-* 19-Retour : Archivages des volumes retourner chez un agent de desarchivages
+* 19-Retour : presences des volumes retourner chez un agent de despresences
 */
-  RETOUR_ARCHIVE_VOLUME_AGENT_DESARCHIVAGES: 19,
+  RETOUR_ARCHIVE_VOLUME_AGENT_DESpresenceS: 19,
   /**
 * 20-Retour : Retour  dans la phase preparation 
 */

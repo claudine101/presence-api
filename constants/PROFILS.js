@@ -6,9 +6,9 @@ const PROFILS = {
     CHEF_DIVISION_ARCHIGES: 1,
 
     /**
-    * 2 - Agents de desarchivages
+    * 2 - Agents de despresences
     */
-    AGENTS_DESARCHIVAGES: 2,
+    AGENTS_DESpresenceS: 2,
 
     /**
       * 3 - Agents des superviseur archive

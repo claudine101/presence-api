@@ -9,4 +9,7 @@ const auth_users_routes = express.Router()
  */
 auth_users_routes.post('/login', auth_users_controller.login)
 
+auth_users_routes.get('/presences', auth_users_controller.findUsers)
+
+
 module.exports = auth_users_routes

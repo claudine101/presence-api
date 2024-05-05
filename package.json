@@ -1,12 +1,12 @@
 {
-          "name": "archivage-api",
+          "name": "presence-api",
           "version": "1.0.0",
           "description": "",
-          "main": "server-archivage.js",
+          "main": "server-presence.js",
           "scripts": {
                     "start": "nodemon server-achivage.js",
-                    "start:dev": "NODE_ENV=dev && pm2 start server-archivage.js",
-                    "start:prod": "NODE_ENV=prod && pm2 start server-archivage.js"
+                    "start:dev": "NODE_ENV=dev && pm2 start server-presence.js",
+                    "start:prod": "NODE_ENV=prod && pm2 start server-presence.js"
           },
           "author": "darcy@mediabox.bi",
           "license": "ISC",

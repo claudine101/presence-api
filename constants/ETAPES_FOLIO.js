@@ -198,19 +198,19 @@ const IDS_ETAPES_FOLIO = {
           /**
       * 43 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent preparation distributeur reenvoyer vers agent archives)
       */
-          RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_DISTRIBUTEUR_VERS_AGENT_DESARCHIVAGES: 43,
+          RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_DISTRIBUTEUR_VERS_AGENT_DESpresenceS: 43,
 
           /**
-      * 44 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent archives vers agent desarchivages)
+      * 44 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent archives vers agent despresences)
       */
-          RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_ARCHIVES_VERS_AGENT_DESARCHIVAGES_PREPARATION: 44,
+          RETOUR_FOLIOS_VALID_RECONCILIER_AGENT_ARCHIVES_VERS_AGENT_DESpresenceS_PREPARATION: 44,
           /**
           * 45-  retour CHEF EQUIPE  selectione agent SUP  AILE
           */
           RETOUR_CHEF_EQUIPE_SELECT_AGENT_SUP_AILE: 45,
 
           /**
-      * 46 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent desarchivages)
+      * 46 - Reenvoyer: le retour de folios bien valider bien reconciliers (agent despresences)
       */
           RETOUR_IS_BIEN_ARCHIVES: 46,
           /**

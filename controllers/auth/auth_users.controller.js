@@ -7,8 +7,8 @@ const { query } = require('../../utils/db');
 const generateToken = require('../../utils/generateToken');
 const md5 = require('md5')
 const path = require('path')
-const Users = require('../../models/Users');
-const Profils = require('../../models/Profils');
+const Utilisateurs = require('../../models/Utilisateurs');
+const utilisateurs_model = require('../../models/utilisateurs.model');
 
 
 
@@ -57,20 +57,11 @@ const login = async (req, res) => {
                                   result: errors
                         })
               }
-              const userObject = await Users.findOne({
-                        where: { EMAIL: email },
-                        attributes: ['USERS_ID', 'PASSEWORD', 'ID_PROFIL', 'TELEPHONE', 'EMAIL', 'NOM', 'PRENOM', 'IS_ACTIF', 'PHOTO_USER'],
-                        include: [{
-                              model: Profils,
-                              as: 'profil',
-                              required: false,
-                              attributes: ['ID_PROFIL', 'DESCRIPTION']
-                        }]
-              })
-              if (userObject) {
-                        const user = userObject.toJSON()
-                        if (user.PASSEWORD == md5(password)) {
-                                  const token = generateToken({ user: user.USERS_ID, ID_PROFIL: user.ID_PROFIL,PHOTO_USER:user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
+             
+              var user = (await utilisateurs_model.findUserLogin(email))[0];
+              if (user) {
+                        if (user.PASSWORD == md5(password)) {
+                                  const token = generateToken({ user: user.ID_UTILISATEUR , ID_PROFIL: user.ID_PROFIL,PHOTO_USER:user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
                                   const { password, ...other } = user
                                   if (PUSH_NOTIFICATION_TOKEN) {
                                             // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
@@ -156,7 +147,7 @@ const createUser = async (req, res) => {
                 {
                     required: true,
                     email: true,
-                    unique: "users,EMAIL"
+                    unique: "Utilisateurs,EMAIL"
                 },
                 password:
                 {
@@ -270,7 +261,7 @@ const createUser = async (req, res) => {
             fileUrluser = `${req.protocol}://${req.get("host")}/user/document/${fileName}`;
         }
         departemants = departemantObjet?.DEPARTEMENT_ID
-        const { insertId } = await Users.create(
+        const { insertId } = await Utilisateurs.create(
             departemants,
             profil,
             fileUrluser,
@@ -294,12 +285,12 @@ const createUser = async (req, res) => {
             plaque
         )
 
-        // const user = (await users_model.findById(insertId))[0]
-        // const token = generateToken({ user: user.USERS_ID }, 3 * 12 * 30 * 24 * 3600)
+        // const user = (await Utilisateurs_model.findById(insertId))[0]
+        // const token = generateToken({ user: user.ID_UTILISATEUR  }, 3 * 12 * 30 * 24 * 3600)
         // const { password, USERNAME, ...other } = user
-        // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM notification_tokens WHERE TOKEN = ? AND ID_UTILISATEUR = ?', [PUSH_NOTIFICATION_TOKEN, user.USERS_ID]))[0]
+        // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM notification_tokens WHERE TOKEN = ? AND ID_UTILISATEUR = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_UTILISATEUR ]))[0]
         // if (!notification && PUSH_NOTIFICATION_TOKEN) {
-        //     await query('INSERT INTO notification_tokens(ID_UTILISATEUR, DEVICE, TOKEN, ID_PROFIL) VALUES(?, ?, ?, ?)', [user.USERS_ID, DEVICE, PUSH_NOTIFICATION_TOKEN, user.ID_PROFIL]);
+        //     await query('INSERT INTO notification_tokens(ID_UTILISATEUR, DEVICE, TOKEN, ID_PROFIL) VALUES(?, ?, ?, ?)', [user.ID_UTILISATEUR , DEVICE, PUSH_NOTIFICATION_TOKEN, user.ID_PROFIL]);
         // }
         res.status(RESPONSE_CODES.CREATED).json({
             statusCode: RESPONSE_CODES.CREATED,
@@ -318,7 +309,27 @@ const createUser = async (req, res) => {
     }
 }
 
+const findUsers = async (req, res) => {
+    try {
+        var presences = (await utilisateurs_model.findById(req.userId));
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des presences",
+            result: presences
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 module.exports = {
     login,
-    createUser
+    createUser,
+    findUsers
 }
