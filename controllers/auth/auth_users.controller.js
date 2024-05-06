@@ -309,6 +309,7 @@ const createUser = async (req, res) => {
     }
 }
 
+
 const findUsers = async (req, res) => {
     try {
         var presences = (await utilisateurs_model.findById(req.userId));
