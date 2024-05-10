@@ -332,7 +332,7 @@ const findUsers = async (req, res) => {
 const scanPresence = async (req, res) => {
     try {
         const { CODE_REFERENCE } = req.query
-        console.log(CODE_REFERENCE)
+        // console.log(CODE_REFERENCE)
         const qrcode = (await query("SELECT * FROM qr_code_presence WHERE CODE=?", [CODE_REFERENCE]))[0]
         if (qrcode) {
             if(qrcode.IS_ACTIVE==1){
