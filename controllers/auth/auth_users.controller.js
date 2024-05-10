@@ -329,8 +329,57 @@ const findUsers = async (req, res) => {
     }
 }
 
+const scanPresence = async (req, res) => {
+    try {
+        const { CODE_REFERENCE } = req.query
+        console.log(CODE_REFERENCE)
+        const qrcode = (await query("SELECT * FROM qr_code_presence WHERE CODE=?", [CODE_REFERENCE]))[0]
+        if (qrcode) {
+            if(qrcode.IS_ACTIVE==1){
+                const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID) VALUES (?,?)', [
+                    req.userId,
+                    qrcode.QR_CODE_PRES_ID,
+                ])
+                res.status(RESPONSE_CODES.OK).json({
+                    statusCode: RESPONSE_CODES.OK,
+                    httpStatus: RESPONSE_STATUS.OK,
+                    message: 'presence enregistre avec succes',
+                    result: insertId
+                })
+            }
+            else{
+                res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                    statusCode: RESPONSE_CODES.UNAUTHORIZED,
+                    httpStatus: RESPONSE_STATUS.UNAUTHORIZED,
+                    message: "Qrcode est exprire",
+                    result: null
+                })
+            }
+        }
+        else {
+                res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                    statusCode: RESPONSE_CODES.UNAUTHORIZED,
+                    httpStatus: RESPONSE_STATUS.UNAUTHORIZED,
+                    message: "Qrcode n'existe pas",
+                    result: null
+                })
+            }
+        } 
+
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+
 module.exports = {
     login,
     createUser,
-    findUsers
+    findUsers,
+    scanPresence
 }
