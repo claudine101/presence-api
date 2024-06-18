@@ -9,6 +9,7 @@ const md5 = require('md5')
 const path = require('path')
 const Utilisateurs = require('../../models/Utilisateurs');
 const utilisateurs_model = require('../../models/utilisateurs.model');
+const moment = require("moment")
 
 
 
@@ -328,6 +329,24 @@ const findUsers = async (req, res) => {
         })
     }
 }
+const findRetards = async (req, res) => {
+    try {
+        var retards = (await utilisateurs_model.findByIdRetard(req.userId));
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des retards",
+            result: retards
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 const scanPresence = async (req, res) => {
     try {
@@ -336,16 +355,35 @@ const scanPresence = async (req, res) => {
         const qrcode = (await query("SELECT * FROM qr_code_presence WHERE CODE=?", [CODE_REFERENCE]))[0]
         if (qrcode) {
             if(qrcode.IS_ACTIVE==1){
-                const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID) VALUES (?,?)', [
-                    req.userId,
-                    qrcode.QR_CODE_PRES_ID,
-                ])
-                res.status(RESPONSE_CODES.OK).json({
-                    statusCode: RESPONSE_CODES.OK,
-                    httpStatus: RESPONSE_STATUS.OK,
-                    message: 'presence enregistre avec succes',
-                    result: insertId
-                })
+                const dateCurrent = moment(new Date());
+           const targetTime = moment('07:30', 'HH:mm');
+           if (dateCurrent.isBefore(targetTime)){
+            const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                req.userId,
+                qrcode.QR_CODE_PRES_ID,
+                1
+            ])
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: 'presence enregistre avec succes',
+                result: insertId
+            })
+           }
+           else{
+            const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                req.userId,
+                qrcode.QR_CODE_PRES_ID,
+                0
+            ])
+            res.status(RESPONSE_CODES.OK).json({
+                statusCode: RESPONSE_CODES.OK,
+                httpStatus: RESPONSE_STATUS.OK,
+                message: 'presence enregistre avec succes',
+                result: insertId
+            })
+           }
+                
             }
             else{
                 res.status(RESPONSE_CODES.UNAUTHORIZED).json({
@@ -376,10 +414,34 @@ const scanPresence = async (req, res) => {
     }
 }
 
+const nbreScan = async (req, res) => {
+    try {
+        const dateCurrent=moment(new Date()).format("YYYY-MM-DD")
+        const nbreScan = (await query("SELECT count(*) as Nbre FROM presences WHERE ID_UTILISATEUR=? AND date_format(DATE_PRESENCE,'%Y-%m-%d')=?", [req.userId,dateCurrent]))[0]
+        res.status(RESPONSE_CODES.OK).json({
+                    statusCode: RESPONSE_CODES.OK,
+                    httpStatus: RESPONSE_STATUS.OK,
+                    message: 'Nombre de presence ',
+                    result: nbreScan
+                })
+            }
+
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
 
 module.exports = {
     login,
     createUser,
     findUsers,
-    scanPresence
+    scanPresence,
+    nbreScan,
+    findRetards
 }

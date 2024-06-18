@@ -96,7 +96,21 @@ const createOne = (
 }
 const findById = async (id) => {
     try {
-        return query("SELECT * FROM  presences p  WHERE ID_UTILISATEUR  = ? ORDER BY DATE_PRESENCE DESC", [id]);
+        return query("SELECT * FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND STATUT=1 ORDER BY DATE_PRESENCE DESC", [id]);
+    } catch (error) {
+        throw error;
+    }
+};
+const findByIdRetard = async (id) => {
+    try {
+        return query("SELECT * FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND STATUT=0  ORDER BY DATE_PRESENCE DESC", [id]);
+    } catch (error) {
+        throw error;
+    }
+};
+const findByIdAbsent = async (id) => {
+    try {
+        return query("SELECT * FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND STATUT=0  ORDER BY DATE_PRESENCE DESC", [id]);
     } catch (error) {
         throw error;
     }
@@ -106,5 +120,7 @@ module.exports = {
     createOne,
     findById,
     findUserLogin,
+    findByIdRetard,
+    findByIdAbsent
 
 }
