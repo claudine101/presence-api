@@ -448,17 +448,18 @@ const scanPresence = async (req, res) => {
     }
 }
 
+
 const nbreScan = async (req, res) => {
     try {
-        const dateCurrent = moment(new Date()).format("YYYY-MM-DD")
-        const nbreScan = (await query("SELECT count(*) as Nbre FROM presences WHERE ID_UTILISATEUR=? AND date_format(DATE_PRESENCE,'%Y-%m-%d')=?", [req.userId, dateCurrent]))[0]
+        const dateCurrent=moment(new Date()).format("YYYY-MM-DD")
+        const nbreScan = (await query("SELECT count(*) as Nbre FROM presences WHERE ID_UTILISATEUR=? AND date_format(DATE_PRESENCE,'%Y-%m-%d')=?", [req.userId,dateCurrent]))[0]
         res.status(RESPONSE_CODES.OK).json({
-            statusCode: RESPONSE_CODES.OK,
-            httpStatus: RESPONSE_STATUS.OK,
-            message: 'Nombre de presence ',
-            result: nbreScan
-        })
-    }
+                    statusCode: RESPONSE_CODES.OK,
+                    httpStatus: RESPONSE_STATUS.OK,
+                    message: 'Nombre de presence ',
+                    result: nbreScan
+                })
+            }
 
     catch (error) {
         console.log(error)
