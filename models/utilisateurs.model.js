@@ -1,6 +1,7 @@
 
 // const { query } = require('../../..');
 const { query } = require("../utils/db");
+const moment = require("moment")
 
 /**
  * Permet de récuper l'utilisateur comme client
@@ -96,7 +97,25 @@ const createOne = (
 }
 const findById = async (id) => {
     try {
-        return query("SELECT * FROM  presences p  WHERE ID_UTILISATEUR  = ? ORDER BY DATE_PRESENCE DESC", [id]);
+        const dateCurrent =moment(new Date()).format("YYYY-MM-DD");
+
+        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p')  as avant FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND STATUT=1 AND date_format(DATE_PRESENCE,'%Y-%m-%d')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
+    } catch (error) {
+        throw error;
+    }
+};
+const findByIdRetard = async (id) => {
+    try {
+        const dateCurrent =moment(new Date()).format("YYYY-MM-DD");
+        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p')  as avant FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND date_format(DATE_PRESENCE,'%Y-%m-%d')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
+    } catch (error) {
+        throw error;
+    }
+};
+const findByIdAbsent = async (id) => {
+    try {
+        const dateCurrent =moment(new Date()).format("YYYY-MM-DD");
+        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p') as avant FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND date_format(DATE_PRESENCE,'%Y-%m-%d')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
     } catch (error) {
         throw error;
     }
@@ -106,5 +125,7 @@ module.exports = {
     createOne,
     findById,
     findUserLogin,
+    findByIdRetard,
+    findByIdAbsent
 
 }

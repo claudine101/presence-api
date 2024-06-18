@@ -12,6 +12,10 @@ auth_users_routes.post('/login', auth_users_controller.login)
 auth_users_routes.get('/presences', auth_users_controller.findUsers)
 
 auth_users_routes.get('/scanPresence', auth_users_controller.scanPresence)
+auth_users_routes.get('/retards', auth_users_controller.findRetards)
+
+auth_users_routes.get('/nbreScan', auth_users_controller.nbreScan)
+
 
 
 

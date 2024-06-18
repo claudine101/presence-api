@@ -9,6 +9,7 @@ const md5 = require('md5')
 const path = require('path')
 const Utilisateurs = require('../../models/Utilisateurs');
 const utilisateurs_model = require('../../models/utilisateurs.model');
+const moment = require("moment")
 
 
 
@@ -22,91 +23,91 @@ const utilisateurs_model = require('../../models/utilisateurs.model');
  */
 const login = async (req, res) => {
     try {
-              const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
-              const validation = new Validation(
-                        req.body,
-                        {
-                                  email: {
-                                            required: true,
-                                            email: true
-                                  },
-                                  password:
-                                  {
-                                            required: true,
-                                  },
-                        },
-                        {
-                                  password:
-                                  {
-                                            required: "Le mot de passe est obligatoire",
-                                  },
-                                  email: {
-                                            required: "L'email est obligatoire",
-                                            email: "Email invalide"
-                                  }
-                        }
-              );
-              await validation.run();
-              const isValid = await validation.isValidate()
-              const errors = await validation.getErrors()
-              if (!isValid) {
-                        return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
-                                  statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
-                                  httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
-                                  message: "Probleme de validation des donnees",
-                                  result: errors
-                        })
-              }
-             
-              var user = (await utilisateurs_model.findUserLogin(email))[0];
-              if (user) {
-                        if (user.PASSWORD == md5(password)) {
-                                  const token = generateToken({ user: user.ID_UTILISATEUR , ID_PROFIL: user.ID_PROFIL,PHOTO_USER:user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
-                                  const { password, ...other } = user
-                                  if (PUSH_NOTIFICATION_TOKEN) {
-                                            // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
-                                            // if (notification) {
-                                            //           await query('UPDATE notification_tokens SET DEVICE = ?, TOKEN = ?, LOCALE = ? WHERE ID_NOTIFICATION_TOKEN = ?', [DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE, notification.ID_NOTIFICATION_TOKEN]);
-                                            // } else {
-                                            //           await query('INSERT INTO notification_tokens(ID_DRIVER, DEVICE, TOKEN, LOCALE) VALUES(?, ?, ?, ?)', [user.ID_DRIVER, DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE]);
-                                            // }
-                                  }
-                                  res.status(RESPONSE_CODES.CREATED).json({
-                                            statusCode: RESPONSE_CODES.CREATED,
-                                            httpStatus: RESPONSE_STATUS.CREATED,
-                                            message: "Vous êtes connecté avec succès",
-                                            result: {
-                                                      ...other,
-                                                      token
-                                            }
-                                  })
-                        } else {
-                                  validation.setError('main', 'Identifiants incorrects')
-                                  const errors = await validation.getErrors()
-                                  res.status(RESPONSE_CODES.NOT_FOUND).json({
-                                            statusCode: RESPONSE_CODES.NOT_FOUND,
-                                            httpStatus: RESPONSE_STATUS.NOT_FOUND,
-                                            message: "Utilisateur n'existe pas",
-                                            result: errors
-                                  })
-                        }
-              } else {
-                        validation.setError('main', 'Identifiants incorrects')
-                        const errors = await validation.getErrors()
-                        res.status(RESPONSE_CODES.NOT_FOUND).json({
-                                  statusCode: RESPONSE_CODES.NOT_FOUND,
-                                  httpStatus: RESPONSE_STATUS.NOT_FOUND,
-                                  message: "Utilisateur n'existe pas",
-                                  result: errors
-                        })
-              }
+        const { email, password, PUSH_NOTIFICATION_TOKEN, DEVICE, LOCALE } = req.body;
+        const validation = new Validation(
+            req.body,
+            {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password:
+                {
+                    required: true,
+                },
+            },
+            {
+                password:
+                {
+                    required: "Le mot de passe est obligatoire",
+                },
+                email: {
+                    required: "L'email est obligatoire",
+                    email: "Email invalide"
+                }
+            }
+        );
+        await validation.run();
+        const isValid = await validation.isValidate()
+        const errors = await validation.getErrors()
+        if (!isValid) {
+            return res.status(RESPONSE_CODES.UNPROCESSABLE_ENTITY).json({
+                statusCode: RESPONSE_CODES.UNPROCESSABLE_ENTITY,
+                httpStatus: RESPONSE_STATUS.UNPROCESSABLE_ENTITY,
+                message: "Probleme de validation des donnees",
+                result: errors
+            })
+        }
+
+        var user = (await utilisateurs_model.findUserLogin(email))[0];
+        if (user) {
+            if (user.PASSWORD == md5(password)) {
+                const token = generateToken({ user: user.ID_UTILISATEUR, ID_PROFIL: user.ID_PROFIL, PHOTO_USER: user.PHOTO_USER }, 3 * 12 * 30 * 24 * 3600)
+                const { password, ...other } = user
+                if (PUSH_NOTIFICATION_TOKEN) {
+                    // const notification = (await query('SELECT ID_NOTIFICATION_TOKEN FROM driver_notification_tokens WHERE TOKEN = ? AND ID_DRIVER = ?', [PUSH_NOTIFICATION_TOKEN, user.ID_DRIVER]))[0]
+                    // if (notification) {
+                    //           await query('UPDATE notification_tokens SET DEVICE = ?, TOKEN = ?, LOCALE = ? WHERE ID_NOTIFICATION_TOKEN = ?', [DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE, notification.ID_NOTIFICATION_TOKEN]);
+                    // } else {
+                    //           await query('INSERT INTO notification_tokens(ID_DRIVER, DEVICE, TOKEN, LOCALE) VALUES(?, ?, ?, ?)', [user.ID_DRIVER, DEVICE, PUSH_NOTIFICATION_TOKEN, LOCALE]);
+                    // }
+                }
+                res.status(RESPONSE_CODES.CREATED).json({
+                    statusCode: RESPONSE_CODES.CREATED,
+                    httpStatus: RESPONSE_STATUS.CREATED,
+                    message: "Vous êtes connecté avec succès",
+                    result: {
+                        ...other,
+                        token
+                    }
+                })
+            } else {
+                validation.setError('main', 'Identifiants incorrects')
+                const errors = await validation.getErrors()
+                res.status(RESPONSE_CODES.NOT_FOUND).json({
+                    statusCode: RESPONSE_CODES.NOT_FOUND,
+                    httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                    message: "Utilisateur n'existe pas",
+                    result: errors
+                })
+            }
+        } else {
+            validation.setError('main', 'Identifiants incorrects')
+            const errors = await validation.getErrors()
+            res.status(RESPONSE_CODES.NOT_FOUND).json({
+                statusCode: RESPONSE_CODES.NOT_FOUND,
+                httpStatus: RESPONSE_STATUS.NOT_FOUND,
+                message: "Utilisateur n'existe pas",
+                result: errors
+            })
+        }
     } catch (error) {
-              console.log(error)
-              res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
-                        statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
-                        httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
-                        message: "Erreur interne du serveur, réessayer plus tard",
-              })
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
     }
 }
 
@@ -328,6 +329,24 @@ const findUsers = async (req, res) => {
         })
     }
 }
+const findRetards = async (req, res) => {
+    try {
+        var retards = (await utilisateurs_model.findByIdRetard(req.userId));
+        res.status(RESPONSE_CODES.CREATED).json({
+            statusCode: RESPONSE_CODES.CREATED,
+            httpStatus: RESPONSE_STATUS.CREATED,
+            message: "listes des retards",
+            result: retards
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
 
 const scanPresence = async (req, res) => {
     try {
@@ -335,19 +354,72 @@ const scanPresence = async (req, res) => {
         // console.log(CODE_REFERENCE)
         const qrcode = (await query("SELECT * FROM qr_code_presence WHERE CODE=?", [CODE_REFERENCE]))[0]
         if (qrcode) {
-            if(qrcode.IS_ACTIVE==1){
-                const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID) VALUES (?,?)', [
-                    req.userId,
-                    qrcode.QR_CODE_PRES_ID,
-                ])
-                res.status(RESPONSE_CODES.OK).json({
-                    statusCode: RESPONSE_CODES.OK,
-                    httpStatus: RESPONSE_STATUS.OK,
-                    message: 'presence enregistre avec succes',
-                    result: insertId
-                })
+            if (qrcode.IS_ACTIVE == 1) {
+                const dateCurrent = moment(new Date());
+                const targetTimeAM = moment('07:30', 'HH:mm');
+                const targetTimePM = moment('14:00', 'HH:mm A');
+                const formattedDate = dateCurrent.format('A');
+                if(formattedDate=='AM'){
+                    if (dateCurrent.isBefore(targetTimeAM)) {
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                            req.userId,
+                            qrcode.QR_CODE_PRES_ID,
+                            1
+                        ])
+                        res.status(RESPONSE_CODES.OK).json({
+                            statusCode: RESPONSE_CODES.OK,
+                            httpStatus: RESPONSE_STATUS.OK,
+                            message: 'presence enregistre avec succes',
+                            result: insertId
+                        })
+                    }
+                    else {
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                            req.userId,
+                            qrcode.QR_CODE_PRES_ID,
+                            0
+                        ])
+                        res.status(RESPONSE_CODES.OK).json({
+                            statusCode: RESPONSE_CODES.OK,
+                            httpStatus: RESPONSE_STATUS.OK,
+                            message: 'presence enregistre avec succes',
+                            result: insertId
+                        })
+                    }
+
+                }
+                else{
+                    if (dateCurrent.isBefore(targetTimePM)) {
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                            req.userId,
+                            qrcode.QR_CODE_PRES_ID,
+                            1
+                        ])
+                        res.status(RESPONSE_CODES.OK).json({
+                            statusCode: RESPONSE_CODES.OK,
+                            httpStatus: RESPONSE_STATUS.OK,
+                            message: 'presence enregistre avec succes',
+                            result: insertId
+                        })
+                    }
+                    else {
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                            req.userId,
+                            qrcode.QR_CODE_PRES_ID,
+                            0
+                        ])
+                        res.status(RESPONSE_CODES.OK).json({
+                            statusCode: RESPONSE_CODES.OK,
+                            httpStatus: RESPONSE_STATUS.OK,
+                            message: 'presence enregistre avec succes',
+                            result: insertId
+                        })
+                    }
             }
-            else{
+               
+
+            }
+            else {
                 res.status(RESPONSE_CODES.UNAUTHORIZED).json({
                     statusCode: RESPONSE_CODES.UNAUTHORIZED,
                     httpStatus: RESPONSE_STATUS.UNAUTHORIZED,
@@ -357,14 +429,36 @@ const scanPresence = async (req, res) => {
             }
         }
         else {
-                res.status(RESPONSE_CODES.UNAUTHORIZED).json({
-                    statusCode: RESPONSE_CODES.UNAUTHORIZED,
-                    httpStatus: RESPONSE_STATUS.UNAUTHORIZED,
-                    message: "Qrcode n'existe pas",
-                    result: null
-                })
-            }
-        } 
+            res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                statusCode: RESPONSE_CODES.UNAUTHORIZED,
+                httpStatus: RESPONSE_STATUS.UNAUTHORIZED,
+                message: "Qrcode n'existe pas",
+                result: null
+            })
+        }
+    }
+
+    catch (error) {
+        console.log(error)
+        res.status(RESPONSE_CODES.INTERNAL_SERVER_ERROR).json({
+            statusCode: RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            httpStatus: RESPONSE_STATUS.INTERNAL_SERVER_ERROR,
+            message: "Erreur interne du serveur, réessayer plus tard",
+        })
+    }
+}
+
+const nbreScan = async (req, res) => {
+    try {
+        const dateCurrent = moment(new Date()).format("YYYY-MM-DD")
+        const nbreScan = (await query("SELECT count(*) as Nbre FROM presences WHERE ID_UTILISATEUR=? AND date_format(DATE_PRESENCE,'%Y-%m-%d')=?", [req.userId, dateCurrent]))[0]
+        res.status(RESPONSE_CODES.OK).json({
+            statusCode: RESPONSE_CODES.OK,
+            httpStatus: RESPONSE_STATUS.OK,
+            message: 'Nombre de presence ',
+            result: nbreScan
+        })
+    }
 
     catch (error) {
         console.log(error)
@@ -381,5 +475,7 @@ module.exports = {
     login,
     createUser,
     findUsers,
-    scanPresence
+    scanPresence,
+    nbreScan,
+    findRetards
 }
