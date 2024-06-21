@@ -41,12 +41,14 @@ app.all("*", (req, res) => {
           })
 });
 const port = process.env.PORT || 8000;
-const isHttps = false
+const isHttps = true
 var server
 if (isHttps) {
           var options = {
-                    key: fs.readFileSync('/var/www/html/api/https/privkey.pem'),
-                    cert: fs.readFileSync('/var/www/html/api/https/fullchain.pem')
+                    // key: fs.readFileSync('/var/www/html/api/https/privkey.pem'),
+                    // cert: fs.readFileSync('/var/www/html/api/https/fullchain.pem')
+                    key: fs.readFileSync('C:\\Program Files\\FireDaemon OpenSSL 3\\server.key'),
+                    cert: fs.readFileSync('C:\\Program Files\\FireDaemon OpenSSL 3\\server.crt')
           };
           server = https.createServer(options, app)
 } else {
