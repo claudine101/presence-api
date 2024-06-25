@@ -97,17 +97,19 @@ const createOne = (
 }
 const findById = async (id) => {
     try {
-        const dateCurrent =moment(new Date()).format("YYYY-MM-DD");
+        const dateCurren =moment(new Date());
+        const dateCurrent = dateCurren.format('MM');
 
-        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p')  as avant FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND STATUT=1 AND date_format(DATE_PRESENCE,'%Y-%m-%d')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
+        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p')  as avant FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND STATUT=1 AND date_format(DATE_PRESENCE,'%m')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
     } catch (error) {
         throw error;
     }
 };
 const findByIdRetard = async (id) => {
     try {
-        const dateCurrent =moment(new Date()).format("YYYY-MM-DD");
-        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p')  as avant FROM  presences p  WHERE ID_UTILISATEUR  = ?  AND date_format(DATE_PRESENCE,'%Y-%m-%d')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
+        const dateCurren =moment(new Date());
+        const dateCurrent = dateCurren.format('MM');
+        return query("SELECT p.* ,DATE_FORMAT(p.DATE_PRESENCE, '%p')  as avant FROM  presences p  WHERE ID_UTILISATEUR  = ? AND STATUT=0 AND date_format(DATE_PRESENCE,'%m')=? ORDER BY DATE_PRESENCE DESC", [id,dateCurrent]);
     } catch (error) {
         throw error;
     }
