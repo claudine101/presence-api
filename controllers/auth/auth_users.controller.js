@@ -356,8 +356,8 @@ const scanPresence = async (req, res) => {
         if (qrcode) {
             if (qrcode.IS_ACTIVE == 1) {
                 const dateCurrent = moment(new Date());
-                const targetTimeAM = moment('08:00', 'HH:mm');
-                const targetTimePM = moment('14:00', 'HH:mm');
+                const targetTimeAM = moment('07:30', 'HH:mm');
+                const targetTimePM = moment('15:00', 'HH:mm');
                 const formattedDate = dateCurrent.format('A');
                 if(formattedDate=='AM'){
                     if (dateCurrent.isBefore(targetTimeAM)) {
