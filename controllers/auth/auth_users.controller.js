@@ -353,10 +353,12 @@ const scanPresence = async (req, res) => {
         const { CODE_REFERENCE } = req.query
         // console.log(CODE_REFERENCE)
         const qrcode = (await query("SELECT * FROM qr_code_presence WHERE CODE=?", [CODE_REFERENCE]))[0]
+        const date_arr = (await query("SELECT a.HEURES FROM utilisateurs u JOIN arrivees a ON a.ID_ARRIVE=u.ID_ARRIVE WHERE u.ID_UTILISATEUR=?", [req.userId]))[0]
+console.log(date_arr)
         if (qrcode) {
             if (qrcode.IS_ACTIVE == 1) {
                 const dateCurrent = moment(new Date());
-                const targetTimeAM = moment('08:00', 'HH:mm');
+                const targetTimeAM = moment(date_arr, 'HH:mm');
                 const targetTimePM = moment('14:00', 'HH:mm');
                 const formattedDate = dateCurrent.format('A');
                 if(formattedDate=='AM'){
