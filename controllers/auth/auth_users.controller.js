@@ -354,7 +354,6 @@ const scanPresence = async (req, res) => {
         // console.log(CODE_REFERENCE)
         const qrcode = (await query("SELECT * FROM qr_code_presence WHERE CODE=?", [CODE_REFERENCE]))[0]
         const date_arr = (await query("SELECT a.HEURES FROM utilisateurs u JOIN arrivees a ON a.ID_ARRIVE=u.ID_ARRIVE WHERE u.ID_UTILISATEUR=?", [req.userId]))[0]
-console.log(date_arr)
         if (qrcode) {
             if (qrcode.IS_ACTIVE == 1) {
                 const dateCurrent = moment(new Date());
@@ -363,10 +362,11 @@ console.log(date_arr)
                 const formattedDate = dateCurrent.format('A');
                 if(formattedDate=='AM'){
                     if (dateCurrent.isBefore(targetTimeAM)) {
-                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT,DATE_PRESENCE) VALUES (?,?,?,?)', [
                             req.userId,
                             qrcode.QR_CODE_PRES_ID,
-                            1
+                            1,
+                            moment(new Date()).subtract(1,'hours').format('YYYY-MM-DD HH:mm:ss')
                         ])
                         res.status(RESPONSE_CODES.OK).json({
                             statusCode: RESPONSE_CODES.OK,
@@ -376,10 +376,12 @@ console.log(date_arr)
                         })
                     }
                     else {
-                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT,DATE_PRESENCE) VALUES (?,?,?,?)', [
                             req.userId,
                             qrcode.QR_CODE_PRES_ID,
-                            0
+                            0,
+                            moment(new Date()).subtract(1,'hours').format('YYYY-MM-DD HH:mm:ss')
+
                         ])
                         res.status(RESPONSE_CODES.OK).json({
                             statusCode: RESPONSE_CODES.OK,
@@ -392,10 +394,12 @@ console.log(date_arr)
                 }
                 else{
                     if (dateCurrent.isBefore(targetTimePM)) {
-                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT,DATE_PRESENCE) VALUES (?,?,?,?)', [
                             req.userId,
                             qrcode.QR_CODE_PRES_ID,
-                            1
+                            1,
+                            moment(new Date()).subtract(1,'hours').format('YYYY-MM-DD HH:mm:ss')
+
                         ])
                         res.status(RESPONSE_CODES.OK).json({
                             statusCode: RESPONSE_CODES.OK,
@@ -405,10 +409,12 @@ console.log(date_arr)
                         })
                     }
                     else {
-                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT) VALUES (?,?,?)', [
+                        const { insertId } = await query('INSERT INTO presences( ID_UTILISATEUR, QR_CODE_PRES_ID,STATUT,DATE_PRESENCE) VALUES (?,?,?,?)', [
                             req.userId,
                             qrcode.QR_CODE_PRES_ID,
-                            0
+                            0,
+                            moment(new Date()).subtract(1,'hours').format('YYYY-MM-DD HH:mm:ss')
+
                         ])
                         res.status(RESPONSE_CODES.OK).json({
                             statusCode: RESPONSE_CODES.OK,
@@ -453,7 +459,7 @@ console.log(date_arr)
 
 const nbreScan = async (req, res) => {
     try {
-        const dateCurrent=moment(new Date()).format("YYYY-MM-DD")
+        const dateCurrent=moment(new Date()).format("YYYYY-MM-DD")
         const nbreScan = (await query("SELECT count(*) as Nbre FROM presences WHERE ID_UTILISATEUR=? AND date_format(DATE_PRESENCE,'%Y-%m-%d')=?", [req.userId,dateCurrent]))[0]
         res.status(RESPONSE_CODES.OK).json({
                     statusCode: RESPONSE_CODES.OK,
